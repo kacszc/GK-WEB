@@ -1,8 +1,9 @@
-import { MapPin, ChevronDown, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
 import { Pill } from "@/components/ui/Pill";
 import { Button } from "@/components/ui/Button";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { MobileNav } from "./MobileNav";
 import { getI18n } from "@/i18n/server";
 
 export async function Header() {
@@ -11,39 +12,37 @@ export async function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-surface/90 backdrop-blur">
       <div className="mx-auto flex w-full max-w-[1280px] items-center justify-between gap-4 px-4 py-3 sm:px-8">
-        {/* Left */}
-        <div className="flex items-center gap-3">
-          <Logo />
-          <Pill className="hidden border border-line-2 bg-pill text-xs text-ink sm:inline-flex">
-            <MapPin className="h-3.5 w-3.5 text-ink-3" />
-            Warszawa
-            <ChevronDown className="h-3.5 w-3.5 text-ink-3" />
-          </Pill>
-        </div>
+        <Logo />
 
-        {/* Right */}
-        <nav className="flex items-center gap-2 sm:gap-4">
-          <a href="#" className="hidden text-sm font-medium text-ink-2 hover:text-ink md:inline">
+        {/* Desktop nav */}
+        <nav className="hidden items-center gap-4 md:flex">
+          <a href="#" className="text-sm font-medium text-ink-2 hover:text-ink">
             {t("nav.pricing")}
           </a>
-          <a href="#" className="hidden text-sm font-medium text-ink-2 hover:text-ink md:inline">
+          <a href="#" className="text-sm font-medium text-ink-2 hover:text-ink">
             {t("nav.howItWorks")}
           </a>
           <Pill
             as="button"
-            className="hidden border border-line-2 bg-pill text-ink hover:bg-line-2 lg:inline-flex"
+            className="border border-line-2 bg-pill text-ink hover:bg-line-2"
           >
             <Plus className="h-4 w-4" />
             {t("nav.addJob")}
           </Pill>
           <LanguageSwitcher />
-          <a href="#" className="hidden text-sm font-medium text-ink-2 hover:text-ink sm:inline">
+          <a href="#" className="text-sm font-medium text-ink-2 hover:text-ink">
             {t("nav.login")}
           </a>
           <Button variant="dark" className="rounded-full px-4 py-2 text-sm">
             {t("nav.register")}
           </Button>
         </nav>
+
+        {/* Mobile */}
+        <div className="flex items-center gap-2 md:hidden">
+          <LanguageSwitcher />
+          <MobileNav />
+        </div>
       </div>
     </header>
   );
