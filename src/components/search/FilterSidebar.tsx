@@ -1,9 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { BellPlus } from "lucide-react";
 import { useI18n } from "@/i18n/I18nProvider";
-import { Button } from "@/components/ui/Button";
 import { specialistFacets, type SpecialistFilters } from "@/services";
 import type { Availability, UserLocation } from "@/lib/types";
 import { LocationButton } from "./LocationButton";
@@ -58,30 +56,13 @@ export function FilterSidebar({
   return (
     <aside
       className={cn(
-        "flex w-full flex-col gap-6 text-sm",
+        "filters-scroll flex w-full flex-col gap-6 pb-12 text-sm",
         variant === "full"
           ? "self-start lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-2"
           : "h-full overflow-y-auto pr-2",
       )}
     >
       <LocationButton value={userLocation} onLocate={onLocate} onClear={onClearLocation} />
-
-      {variant === "full" && (
-        <div className="rounded-panel border border-brand-violet/30 bg-[#f6f3ff] p-4">
-          <p className="text-[11px] font-bold tracking-[0.5px] text-brand-violet">
-            {t("results.saveTitle")}
-          </p>
-          <p className="mt-1 text-[12px] leading-snug text-ink-2">{t("results.saveDesc")}</p>
-          <label className="mt-3 flex items-center gap-2 text-[12px] text-ink-2">
-            <input type="checkbox" defaultChecked className="accent-brand-violet" />
-            {t("results.saveEmailPush")} · {t("results.saveDaily")}
-          </label>
-          <Button variant="gradient" className="mt-3 w-full rounded-tile py-2 text-[13px]">
-            <BellPlus className="h-4 w-4" />
-            {t("results.saveButton")}
-          </Button>
-        </div>
-      )}
 
       {/* Trust score */}
       <Section title={t(variant === "full" ? "results.fMinTrust" : "results.fMinTrust")}>

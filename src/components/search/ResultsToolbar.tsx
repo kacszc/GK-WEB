@@ -1,6 +1,13 @@
 "use client";
 
-import { List, Columns2, Map as MapIcon, ChevronDown, Check } from "lucide-react";
+import {
+  List,
+  Columns2,
+  Map as MapIcon,
+  ChevronDown,
+  Check,
+  SlidersHorizontal,
+} from "lucide-react";
 import { Popover } from "@/components/ui/Popover";
 import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
@@ -27,6 +34,8 @@ export function ResultsToolbar({
   onView,
   sort,
   onSort,
+  onOpenFilters,
+  filterCount = 0,
 }: {
   title: string;
   subtitle: string;
@@ -34,6 +43,8 @@ export function ResultsToolbar({
   onView: (v: ResultsView) => void;
   sort: SpecialistSort;
   onSort: (s: SpecialistSort) => void;
+  onOpenFilters?: () => void;
+  filterCount?: number;
 }) {
   const { t } = useI18n();
 
@@ -61,6 +72,23 @@ export function ResultsToolbar({
             </button>
           ))}
         </div>
+
+        {/* Filters (mobile) — between the view toggle and sort */}
+        {onOpenFilters && (
+          <button
+            onClick={onOpenFilters}
+            aria-label={t("results.filtersToggle")}
+            className="flex items-center gap-1.5 rounded-tile border border-line-2 bg-surface px-3 py-2 text-[13px] font-semibold text-ink lg:hidden"
+          >
+            <SlidersHorizontal className="h-4 w-4" />
+            <span className="hidden sm:inline">{t("results.filtersToggle")}</span>
+            {filterCount > 0 && (
+              <span className="grid h-5 min-w-5 place-items-center rounded-full bg-ink px-1 text-[11px] text-on-dark">
+                {filterCount}
+              </span>
+            )}
+          </button>
+        )}
 
         {/* Sort */}
         <Popover

@@ -9,6 +9,7 @@ import { ResultsToolbar, type ResultsView } from "./ResultsToolbar";
 import { SpecialistCard, SpecialistCardSkeleton } from "./SpecialistCard";
 import { Pagination } from "./Pagination";
 import { MapView } from "./MapView";
+import { FiltersModal } from "./FiltersModal";
 import { useSpecialistSearch } from "@/hooks/useSpecialistSearch";
 import { useI18n } from "@/i18n/I18nProvider";
 import type { SpecialistFilters } from "@/services";
@@ -33,6 +34,15 @@ export function SearchScreen({ initialQuery }: { initialQuery: string }) {
   const [page, setPage] = useState(1);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
+  const [filtersOpen, setFiltersOpen] = useState(false); // mobile filters toggle
+
+  const activeCount =
+    (filters.availability?.length ?? 0) +
+    (filters.specialties?.length ?? 0) +
+    (filters.languages?.length ?? 0) +
+    (filters.kyc ? 1 : 0) +
+    (filters.minTrust ? 1 : 0) +
+    (filters.maxDistanceKm != null ? 1 : 0);
 
   const queryFilters: SpecialistFilters = {
     ...filters,
@@ -68,16 +78,20 @@ export function SearchScreen({ initialQuery }: { initialQuery: string }) {
           week: data?.availableWeek ?? 0,
         });
 
+  const sidebarProps = {
+    filters,
+    onPatch: patch,
+    onClear: clear,
+    userLocation,
+    onLocate: setUserLocation,
+    onClearLocation: () => setUserLocation(null),
+  };
+
+  // Inline sidebar — desktop only; mobile uses the fullscreen modal.
   const sidebar = (
-    <FilterSidebar
-      filters={filters}
-      onPatch={patch}
-      onClear={clear}
-      userLocation={userLocation}
-      onLocate={setUserLocation}
-      onClearLocation={() => setUserLocation(null)}
-      variant={view === "list" ? "full" : "compact"}
-    />
+    <div className="hidden lg:block">
+      <FilterSidebar {...sidebarProps} variant={view === "list" ? "full" : "compact"} />
+    </div>
   );
 
   return (
@@ -85,12 +99,6 @@ export function SearchScreen({ initialQuery }: { initialQuery: string }) {
       <SearchTopbar category={category} />
 
       <main className="mx-auto flex w-full max-w-[1280px] flex-1 flex-col gap-4 px-4 pt-6 pb-20 sm:px-8">
-        {/* Live banner */}
-        <div className="flex items-center gap-2 rounded-tile bg-success-chip px-4 py-2.5 text-[13px] font-medium text-success-chip-text">
-          <span className="h-2 w-2 animate-pulse rounded-full bg-success" />
-          {view === "list" ? t("results.liveList") : t("results.liveMap", { count: total })}
-        </div>
-
         <ResultsToolbar
           title={title}
           subtitle={subtitle}
@@ -98,6 +106,8 @@ export function SearchScreen({ initialQuery }: { initialQuery: string }) {
           onView={setView}
           sort={filters.sort ?? "trust"}
           onSort={(s) => patch({ sort: s })}
+          onOpenFilters={() => setFiltersOpen(true)}
+          filterCount={activeCount}
         />
 
         <ActiveFilters filters={filters} onPatch={patch} />
@@ -169,6 +179,10 @@ export function SearchScreen({ initialQuery }: { initialQuery: string }) {
           </div>
         )}
       </main>
+
+      <FiltersModal open={filtersOpen} onClose={() => setFiltersOpen(false)}>
+        <FilterSidebar {...sidebarProps} variant="full" />
+      </FiltersModal>
     </>
   );
 }

@@ -140,6 +140,8 @@ const uk: Dictionary = {
     langRu: "Російська",
     clear: "Очистити фільтри",
     advanced: "Розширені фільтри",
+    filtersToggle: "Фільтри",
+    showResults: "Показати результати",
     cardAvailNow: "Доступний зараз",
     cardAvailWeek: "Цього тижня",
     cardAvailDate: "Від {date}",

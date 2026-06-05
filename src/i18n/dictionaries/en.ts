@@ -140,6 +140,8 @@ const en: Dictionary = {
     langRu: "Russian",
     clear: "Clear filters",
     advanced: "Advanced filters",
+    filtersToggle: "Filters",
+    showResults: "Show results",
     cardAvailNow: "Available now",
     cardAvailWeek: "This week",
     cardAvailDate: "From {date}",

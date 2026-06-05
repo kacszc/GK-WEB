@@ -139,6 +139,8 @@ const pl = {
     langRu: "Rosyjski",
     clear: "Wyczyść filtry",
     advanced: "Filtry zaawansowane",
+    filtersToggle: "Filtry",
+    showResults: "Pokaż wyniki",
     cardAvailNow: "Dostępny teraz",
     cardAvailWeek: "W tym tygodniu",
     cardAvailDate: "Od {date}",
