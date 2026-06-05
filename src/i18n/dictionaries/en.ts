@@ -269,6 +269,12 @@ const en: Dictionary = {
     myProfile: "My profile",
     settings: "Settings",
   },
+  notFoundPage: {
+    title: "Page not found",
+    desc: "The page you're looking for doesn't exist or has been moved.",
+    home: "Home",
+    search: "Browse specialists",
+  },
   jobs: {
     title: "Jobs",
     titleCount: "{count} jobs in {city}",

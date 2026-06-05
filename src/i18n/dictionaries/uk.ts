@@ -269,6 +269,12 @@ const uk: Dictionary = {
     myProfile: "Мій профіль",
     settings: "Налаштування",
   },
+  notFoundPage: {
+    title: "Сторінку не знайдено",
+    desc: "Сторінка, яку ви шукаєте, не існує або була переміщена.",
+    home: "Головна",
+    search: "Переглянути спеціалістів",
+  },
   jobs: {
     title: "Вакансії",
     titleCount: "{count} вакансій у {city}",

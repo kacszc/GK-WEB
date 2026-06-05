@@ -268,6 +268,12 @@ const pl = {
     myProfile: "Mój profil",
     settings: "Ustawienia",
   },
+  notFoundPage: {
+    title: "Nie znaleziono strony",
+    desc: "Strona, której szukasz, nie istnieje lub została przeniesiona.",
+    home: "Strona główna",
+    search: "Szukaj specjalistów",
+  },
   jobs: {
     title: "Oferty pracy",
     titleCount: "{count} ofert w {city}",
