@@ -76,20 +76,20 @@ export function AvailabilityCalendar({
 
   return (
     <div className="relative rounded-panel border border-line-3 bg-surface p-4 sm:p-5">
-      {/* Month nav */}
-      <div className="mb-4 flex items-center gap-3">
+      {/* Month nav — full width */}
+      <div className="mb-4 flex items-center justify-between gap-3">
         <button
           onClick={() => onMonthChange(new Date(month.getFullYear(), month.getMonth() - 1, 1))}
           aria-label="prev"
-          className="grid h-8 w-8 place-items-center rounded-tile border border-line-2 text-ink hover:bg-muted"
+          className="grid h-8 w-8 shrink-0 place-items-center rounded-tile border border-line-2 text-ink hover:bg-muted"
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
-        <span className="min-w-[140px] text-[15px] font-semibold capitalize text-ink">{monthFormatter(month)}</span>
+        <span className="flex-1 text-center text-[15px] font-semibold capitalize text-ink">{monthFormatter(month)}</span>
         <button
           onClick={() => onMonthChange(new Date(month.getFullYear(), month.getMonth() + 1, 1))}
           aria-label="next"
-          className="grid h-8 w-8 place-items-center rounded-tile border border-line-2 text-ink hover:bg-muted"
+          className="grid h-8 w-8 shrink-0 place-items-center rounded-tile border border-line-2 text-ink hover:bg-muted"
         >
           <ChevronRight className="h-4 w-4" />
         </button>
