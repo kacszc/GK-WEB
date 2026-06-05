@@ -1,0 +1,143 @@
+"use client";
+
+import { createContext, useContext, useState } from "react";
+import Link from "next/link";
+import { Check, Star } from "lucide-react";
+import { Dialog } from "@/components/ui/Dialog";
+import { Avatar } from "@/components/ui/Avatar";
+import { Button } from "@/components/ui/Button";
+import { useI18n } from "@/i18n/I18nProvider";
+import { useAuth } from "@/lib/AuthProvider";
+import { messagesService } from "@/services";
+import type { Specialist } from "@/lib/types";
+
+type ContactContextValue = { open: (s: Specialist) => void };
+const ContactContext = createContext<ContactContextValue | null>(null);
+
+export function ContactProvider({ children }: { children: React.ReactNode }) {
+  const [specialist, setSpecialist] = useState<Specialist | null>(null);
+
+  return (
+    <ContactContext.Provider value={{ open: setSpecialist }}>
+      {children}
+      <ContactModal
+        key={specialist?.id ?? "none"}
+        specialist={specialist}
+        onClose={() => setSpecialist(null)}
+      />
+    </ContactContext.Provider>
+  );
+}
+
+export function useContact(): ContactContextValue {
+  const ctx = useContext(ContactContext);
+  if (!ctx) throw new Error("useContact must be used within ContactProvider");
+  return ctx;
+}
+
+function ContactModal({
+  specialist,
+  onClose,
+}: {
+  specialist: Specialist | null;
+  onClose: () => void;
+}) {
+  const { t } = useI18n();
+  const { user } = useAuth();
+  const [text, setText] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [err, setErr] = useState(false);
+
+  const s = specialist;
+  const min = 5;
+
+  async function send() {
+    if (!s) return;
+    if (!text.trim()) {
+      setErr(true);
+      return;
+    }
+    setSending(true);
+    try {
+      await messagesService.send(s.id, text);
+      setSent(true);
+    } finally {
+      setSending(false);
+    }
+  }
+
+  return (
+    <Dialog open={!!s} onClose={onClose} title={sent ? undefined : t("contact.title")}>
+      {!s ? null : sent ? (
+        <div className="py-2 text-center">
+          <span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-success-chip text-success-chip-text">
+            <Check className="h-6 w-6" />
+          </span>
+          <h2 className="mt-3 text-lg font-bold text-ink">{t("contact.successTitle")}</h2>
+          <p className="mt-1 text-sm text-ink-2">
+            {t("contact.successDesc", { name: s.name, min })}
+          </p>
+          <Button variant="dark" onClick={onClose} className="mt-5 w-full rounded-tile py-3 text-sm">
+            {t("contact.done")}
+          </Button>
+        </div>
+      ) : (
+        <>
+          {/* Specialist summary */}
+          <div className="flex items-center gap-3 rounded-tile bg-subtle p-3">
+            <Avatar name={s.name} index={s.avatarIndex} size={40} />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold text-ink">{s.name}</p>
+              <p className="truncate text-[12px] text-ink-3">{s.role}</p>
+            </div>
+            <span className="inline-flex items-center gap-1 text-[12px] text-ink-2">
+              <Star className="h-3.5 w-3.5 fill-current text-[#e0a400]" />
+              {s.rating.toFixed(1)}
+            </span>
+          </div>
+
+          {!user ? (
+            <div className="mt-4 rounded-tile border border-line-2 p-4 text-center">
+              <p className="text-sm text-ink-2">{t("contact.loginRequired")}</p>
+              <Link
+                href="/login"
+                className="mt-3 inline-flex w-full items-center justify-center rounded-tile bg-ink px-4 py-2.5 text-sm font-bold text-on-dark hover:bg-ink/90"
+              >
+                {t("contact.loginCta")}
+              </Link>
+            </div>
+          ) : (
+            <>
+              <label className="mb-1.5 mt-4 block text-[12px] font-semibold text-ink-3">
+                {t("contact.messageLabel")}
+              </label>
+              <textarea
+                value={text}
+                onChange={(e) => {
+                  setText(e.target.value);
+                  if (err) setErr(false);
+                }}
+                rows={4}
+                placeholder={t("contact.messagePlaceholder")}
+                className={`w-full resize-y rounded-tile border bg-surface px-3 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-ink-4 ${
+                  err ? "border-[#e0a400]" : "border-line-2 focus:border-ink"
+                }`}
+              />
+              {err && <p className="mt-1 text-[12px] text-[#b07400]">{t("contact.errEmpty")}</p>}
+              <Button
+                variant="gradient"
+                onClick={send}
+                disabled={sending}
+                className="mt-3 w-full rounded-tile py-3 text-sm"
+              >
+                {sending ? t("contact.sending") : t("contact.send")}
+                {!sending && <span className="font-normal opacity-80">{t("contact.cost", { n: 3 })}</span>}
+              </Button>
+            </>
+          )}
+        </>
+      )}
+    </Dialog>
+  );
+}

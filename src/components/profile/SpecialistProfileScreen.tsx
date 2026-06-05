@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useSpecialist } from "@/hooks/useSpecialist";
 import { useI18n } from "@/i18n/I18nProvider";
+import { useContact } from "@/lib/ContactProvider";
 import type { SpecialistProfile } from "@/lib/types";
 
 const LANG_KEY: Record<string, string> = {
@@ -62,6 +63,7 @@ export function SpecialistProfileScreen({ id }: { id: string }) {
 }
 
 function Profile({ s, t }: { s: SpecialistProfile; t: (k: string, p?: Record<string, string | number>) => string }) {
+  const { open } = useContact();
   return (
     <>
       {/* Header card */}
@@ -107,7 +109,11 @@ function Profile({ s, t }: { s: SpecialistProfile; t: (k: string, p?: Record<str
         </div>
 
         <div className="flex gap-2 sm:flex-col">
-          <Button variant="dark" className="rounded-tile px-4 py-2.5 text-[13px]">
+          <Button
+            variant="dark"
+            onClick={() => open(s)}
+            className="rounded-tile px-4 py-2.5 text-[13px]"
+          >
             {t("results.contact")}
             <span className="font-normal opacity-70">{t("results.tok", { n: 3 })}</span>
           </Button>
@@ -189,7 +195,11 @@ function Profile({ s, t }: { s: SpecialistProfile; t: (k: string, p?: Record<str
         <aside className="lg:sticky lg:top-20 lg:self-start">
           <div className="rounded-panel border border-line-3 bg-surface p-5">
             <p className="text-[13px] text-ink-3">{t("profile.fromRate", { rate: s.rateFrom })}</p>
-            <Button variant="gradient" className="mt-3 w-full rounded-tile py-3 text-sm">
+            <Button
+              variant="gradient"
+              onClick={() => open(s)}
+              className="mt-3 w-full rounded-tile py-3 text-sm"
+            >
               {t("results.contact")}
               <span className="font-normal opacity-80">{t("results.tok", { n: 3 })}</span>
             </Button>

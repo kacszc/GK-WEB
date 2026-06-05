@@ -8,3 +8,4 @@ export { specialistsService, specialistFacets } from "./specialists.service";
 export type { SpecialistFilters, SpecialistSort } from "./specialists.service";
 export { jobsService } from "./jobs.service";
 export { authService } from "./auth.service";
+export { messagesService } from "./messages.service";

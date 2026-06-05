@@ -6,6 +6,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useI18n } from "@/i18n/I18nProvider";
+import { useContact } from "@/lib/ContactProvider";
 import { cn } from "@/lib/cn";
 import type { Specialist } from "@/lib/types";
 
@@ -97,6 +98,7 @@ export function SpecialistCard({
   href?: string;
 }) {
   const { t } = useI18n();
+  const { open } = useContact();
   const className = cn(
     "block rounded-panel border bg-surface p-4 text-left transition-shadow",
     active ? "border-ink shadow-search" : "border-line-3 hover:shadow-sm",
@@ -172,6 +174,7 @@ export function SpecialistCard({
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
+            open(s);
           }}
           className="rounded-tile px-3 py-2 text-[12px]"
         >
