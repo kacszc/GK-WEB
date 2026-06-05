@@ -236,18 +236,13 @@
   font-size: 14px;
 }
 
-/* Filters scroll area — hidden scrollbar + subtle bottom fade (desktop) */
-.filters-scroll {
+/* Hide the native scrollbar (we render a custom always-visible one). */
+.no-native-scrollbar {
   scrollbar-width: none;
+  overscroll-behavior: contain;
 }
-.filters-scroll::-webkit-scrollbar {
+.no-native-scrollbar::-webkit-scrollbar {
   display: none;
-}
-@media (min-width: 1024px) {
-  .filters-scroll {
-    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent 100%);
-    mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent 100%);
-  }
 }
 
 /* MapLibre popup — rounded, subtle shadow, room for the close button */

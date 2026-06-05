@@ -5,6 +5,7 @@ import { useI18n } from "@/i18n/I18nProvider";
 import { specialistFacets, type SpecialistFilters } from "@/services";
 import type { Availability, UserLocation } from "@/lib/types";
 import { LocationButton } from "./LocationButton";
+import { ScrollArea } from "@/components/ui/ScrollArea";
 import { cn } from "@/lib/cn";
 
 type Props = {
@@ -54,12 +55,11 @@ export function FilterSidebar({
   const visibleSpec = showAllSpec ? specEntries : specEntries.slice(0, 4);
 
   return (
-    <aside
-      className={cn(
-        "filters-scroll flex w-full flex-col gap-6 pb-12 text-sm",
-        variant === "full"
-          ? "self-start lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-2"
-          : "h-full overflow-y-auto pr-2",
+    <ScrollArea
+      className={cn(variant === "full" ? "self-start lg:sticky lg:top-20" : "h-full")}
+      contentClassName={cn(
+        "flex w-full flex-col gap-6 pb-12 pr-3 text-sm",
+        variant === "full" ? "lg:max-h-[calc(100vh-6rem)]" : "h-full",
       )}
     >
       <LocationButton value={userLocation} onLocate={onLocate} onClear={onClearLocation} />
@@ -175,7 +175,7 @@ export function FilterSidebar({
       >
         {t("results.clear")}
       </button>
-    </aside>
+    </ScrollArea>
   );
 }
 
