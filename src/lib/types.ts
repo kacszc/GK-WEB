@@ -75,6 +75,25 @@ export type UserLocation = {
   label: string;
 };
 
+/** A single review on a specialist profile. */
+export type Review = {
+  author: string;
+  rating: number;
+  date: string;
+  text: string;
+};
+
+/** Full specialist profile (search card data + detail). */
+export type SpecialistProfile = Specialist & {
+  bio: string;
+  completedJobs: number;
+  responseTimeMin: number;
+  memberSince: string;
+  repeatClientsPct: number;
+  certifications: string[];
+  reviewList: Review[];
+};
+
 /** Result of a specialist search (paginated + facet counts). */
 export type SpecialistSearch = {
   items: Specialist[];

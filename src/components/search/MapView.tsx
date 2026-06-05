@@ -32,7 +32,7 @@ function popupHtml(s: Specialist, t: TFunction): string {
       </div>
       <p class="mt-2 text-[12px] text-ink-2">${s.district} · ${t("results.km", { km: s.distanceKm })} · ${t("results.perHour", { rate: s.rateFrom })} · ★ ${s.rating.toFixed(1)} (${s.reviews})</p>
       <div class="mt-2.5 flex gap-2">
-        <button class="flex-1 rounded-tile border border-line-2 px-3 py-1.5 text-[12px] font-medium text-ink">${t("results.profile")}</button>
+        <a href="/specialist/${s.id}" class="flex-1 rounded-tile border border-line-2 px-3 py-1.5 text-center text-[12px] font-medium text-ink">${t("results.profile")}</a>
         <button class="flex-1 rounded-tile bg-ink px-3 py-1.5 text-[12px] font-semibold text-white">${t("results.contact")}</button>
       </div>
     </div>`;

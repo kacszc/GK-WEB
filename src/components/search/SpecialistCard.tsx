@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Star, ShieldCheck, Award, MapPin } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
@@ -39,7 +40,7 @@ function trustClasses(score: number): string {
   return "bg-[#e0a400] text-on-dark";
 }
 
-function TrustBadge({ score }: { score: number }) {
+export function TrustBadge({ score }: { score: number }) {
   return (
     <span
       className={cn(
@@ -53,7 +54,7 @@ function TrustBadge({ score }: { score: number }) {
   );
 }
 
-function AvailabilityTag({ s }: { s: Specialist }) {
+export function AvailabilityTag({ s }: { s: Specialist }) {
   const { t } = useI18n();
   if (s.availability === "now") {
     return (
@@ -87,23 +88,22 @@ export function SpecialistCard({
   compact = false,
   active = false,
   onSelect,
+  href,
 }: {
   s: Specialist;
   compact?: boolean;
   active?: boolean;
   onSelect?: (id: string) => void;
+  href?: string;
 }) {
   const { t } = useI18n();
-
-  return (
-    <div
-      onClick={onSelect ? () => onSelect(s.id) : undefined}
-      className={cn(
-        "rounded-panel border bg-surface p-4 transition-shadow",
-        active ? "border-ink shadow-search" : "border-line-3 hover:shadow-sm",
-        onSelect && "cursor-pointer",
-      )}
-    >
+  const className = cn(
+    "block rounded-panel border bg-surface p-4 text-left transition-shadow",
+    active ? "border-ink shadow-search" : "border-line-3 hover:shadow-sm",
+    (onSelect || href) && "cursor-pointer",
+  );
+  const content = (
+    <>
       {/* Header */}
       <div className="flex items-start gap-3">
         <Avatar name={s.name} index={s.avatarIndex} size={compact ? 40 : 48} />
@@ -167,11 +167,28 @@ export function SpecialistCard({
             </span>
           )}
         </div>
-        <Button variant="dark" className="rounded-tile px-3 py-2 text-[12px]">
+        <Button
+          variant="dark"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          className="rounded-tile px-3 py-2 text-[12px]"
+        >
           {t("results.contact")}
           <span className="font-normal opacity-70">{t("results.tok", { n: 3 })}</span>
         </Button>
       </div>
+    </>
+  );
+
+  return href ? (
+    <Link href={href} className={className}>
+      {content}
+    </Link>
+  ) : (
+    <div onClick={onSelect ? () => onSelect(s.id) : undefined} className={className}>
+      {content}
     </div>
   );
 }

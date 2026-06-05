@@ -129,7 +129,7 @@ export function SearchScreen({ initialQuery }: { initialQuery: string }) {
                 <>
                   <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                     {pageItems.map((s) => (
-                      <SpecialistCard key={s.id} s={s} />
+                      <SpecialistCard key={s.id} s={s} href={`/specialist/${s.id}`} />
                     ))}
                   </div>
                   <div className="mt-8">

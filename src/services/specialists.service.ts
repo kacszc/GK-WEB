@@ -1,4 +1,10 @@
-import type { Specialist, SpecialistSearch, Availability } from "@/lib/types";
+import type {
+  Specialist,
+  SpecialistSearch,
+  Availability,
+  SpecialistProfile,
+  Review,
+} from "@/lib/types";
 // import { apiGet } from "@/lib/api-client";
 import { specialists } from "./mock-specialists";
 import { mockDelay } from "./mock-data";
@@ -91,4 +97,44 @@ export const specialistsService = {
       availableWeek: items.filter((s) => s.availability === "week").length,
     };
   },
+
+  /** Full profile for a single specialist. */
+  async getById(id: string): Promise<SpecialistProfile | null> {
+    // TODO(backend): return apiGet(`/specialists/${id}`, { locale: filters.locale });
+    await mockDelay(500, 1000);
+    const s = specialists.find((x) => x.id === id);
+    if (!s) return null;
+    return { ...s, ...profileExtras(s) };
+  },
 };
+
+// --- Mock profile detail (deterministic per specialist) ---
+
+const REVIEW_AUTHORS = ["Marek W.", "Ewa S.", "Restauracja Vega", "Hotel Bristol", "Kamil R.", "Bar Tonic"];
+const REVIEW_TEXTS = [
+  "Świetny kontakt i pełen profesjonalizm. Zjawił się punktualnie i ogarnął temat bez problemu.",
+  "Bardzo dobra współpraca, na pewno skorzystamy ponownie. Polecam!",
+  "Doświadczenie widać od pierwszej minuty. Goście byli zachwyceni.",
+  "Solidnie, szybko i bez żadnych niespodzianek. Duży plus za komunikację.",
+  "Pomoc w ostatniej chwili — uratował nam event. Dziękujemy!",
+];
+const CERTS = ["Książeczka sanepidu", "Certyfikat baristy SCA", "Szkolenie BHP", "Kurs sommelierski", "HACCP"];
+
+function profileExtras(s: Specialist): Omit<SpecialistProfile, keyof Specialist> {
+  const i = s.avatarIndex;
+  const reviews: Review[] = Array.from({ length: 3 }, (_, k) => ({
+    author: REVIEW_AUTHORS[(i + k) % REVIEW_AUTHORS.length],
+    rating: Math.min(5, Math.round((s.rating + (k % 2 === 0 ? 0.1 : -0.2)) * 2) / 2),
+    date: ["2 tyg. temu", "1 mies. temu", "3 mies. temu"][k],
+    text: REVIEW_TEXTS[(i + k) % REVIEW_TEXTS.length],
+  }));
+  return {
+    bio: `${s.role}. ${s.experienceYears} lat doświadczenia w gastronomii i obsłudze eventów. Dyspozycyjność w okolicy: ${s.district}. Stawiam na punktualność, kulturę pracy i jakość.`,
+    completedJobs: 40 + ((i * 17) % 160),
+    responseTimeMin: [3, 5, 8, 12][i % 4],
+    memberSince: `${2019 + (i % 5)}`,
+    repeatClientsPct: 60 + ((i * 7) % 35),
+    certifications: CERTS.filter((_, idx) => (i + idx) % 2 === 0).slice(0, 3),
+    reviewList: reviews,
+  };
+}
