@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { Check, Download, FileClock, Bell } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { inputClass } from "@/components/ui/Input";
 import { Toggle as Switch } from "@/components/ui/Toggle";
 import { Dialog } from "@/components/ui/Dialog";
+import { cn } from "@/lib/cn";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { useAuth } from "@/lib/AuthProvider";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -19,8 +21,7 @@ export function AccountSettings() {
   const [saved, setSaved] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  const input =
-    "mt-1.5 w-full rounded-tile border border-line-2 bg-surface px-3 py-2.5 text-sm text-ink outline-none transition-colors focus:border-ink placeholder:text-ink-4";
+  const input = cn(inputClass(), "mt-1.5");
 
   function save() {
     setSaved(true);

@@ -19,9 +19,20 @@ const inter = Inter({
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
+  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "https://skill.com";
   return {
-    title: t("meta.title"),
+    metadataBase: new URL(base),
+    title: {
+      default: t("meta.title"),
+      template: "%s · skill.com",
+    },
     description: t("meta.description"),
+    openGraph: {
+      siteName: "skill.com",
+      type: "website",
+      title: t("meta.title"),
+      description: t("meta.description"),
+    },
   };
 }
 

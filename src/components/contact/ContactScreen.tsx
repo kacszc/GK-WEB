@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Mail, Phone, MessageCircle, ShieldAlert, Paperclip, Check } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { inputClass } from "@/components/ui/Input";
 import { supportService } from "@/services";
 import { useAuth } from "@/lib/AuthProvider";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -50,11 +51,7 @@ export function ContactScreen() {
     }
   }
 
-  const inputCls = (err: boolean) =>
-    cn(
-      "mt-1.5 w-full rounded-tile border bg-surface px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-ink-4",
-      err ? "border-[#e0a400]" : "border-line-2 focus:border-ink",
-    );
+  const inputCls = (err: boolean) => cn(inputClass(err), "mt-1.5");
 
   return (
     <main className="flex-1">

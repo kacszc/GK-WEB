@@ -6,6 +6,7 @@ import { Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
 import { Toggle } from "@/components/ui/Toggle";
+import { inputClass } from "@/components/ui/Input";
 import { availabilityService } from "@/services";
 import { useI18n } from "@/i18n/I18nProvider";
 import type { Locale } from "@/i18n/config";
@@ -200,7 +201,7 @@ function AddDayDialog({
   const [to, setTo] = useState("");
   const [state, setState] = useState<DayState>("free");
 
-  const input = "mt-1.5 w-full rounded-tile border border-line-2 bg-surface px-3 py-2.5 text-sm text-ink outline-none focus:border-ink";
+  const input = cn(inputClass(), "mt-1.5");
 
   function save() {
     if (!from) return;

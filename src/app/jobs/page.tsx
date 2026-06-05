@@ -1,4 +1,5 @@
 import { JobsScreen } from "@/components/jobs/JobsScreen";
+import { pageMetadata } from "@/i18n/metadata";
 import { Footer } from "@/components/layout/Footer";
 
 export default async function JobsPage({
@@ -14,3 +15,5 @@ export default async function JobsPage({
     </>
   );
 }
+
+export const generateMetadata = () => pageMetadata("meta.tJobs");

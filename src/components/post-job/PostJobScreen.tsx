@@ -10,6 +10,7 @@ import "react-day-picker/style.css";
 import { ArrowLeft, Minus, Plus, CalendarCheck, PartyPopper } from "lucide-react";
 import { SearchTopbar } from "@/components/search/SearchTopbar";
 import { Button } from "@/components/ui/Button";
+import { inputClass } from "@/components/ui/Input";
 import { LocationButton } from "@/components/search/LocationButton";
 import { presetDate } from "@/components/landing/WhenFilter";
 import { useCreateJob } from "@/hooks/useCreateJob";
@@ -350,11 +351,7 @@ export function PostJobScreen() {
   );
 }
 
-const inputCls = (error: boolean) =>
-  cn(
-    "mt-1.5 w-full rounded-tile border bg-surface px-3 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-ink-4",
-    error ? "border-[#e0a400]" : "border-line-2 focus:border-ink",
-  );
+const inputCls = (error: boolean) => cn(inputClass(error), "mt-1.5");
 
 function SectionCard({
   title,

@@ -1,4 +1,5 @@
 import { SearchScreen } from "@/components/search/SearchScreen";
+import { pageMetadata } from "@/i18n/metadata";
 import { Footer } from "@/components/layout/Footer";
 
 export default async function SearchPage({
@@ -14,3 +15,5 @@ export default async function SearchPage({
     </>
   );
 }
+
+export const generateMetadata = () => pageMetadata("meta.tSearch");
