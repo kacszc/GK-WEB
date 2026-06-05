@@ -159,6 +159,35 @@ export type JobPosting = {
   description: string;
 };
 
+/** A token package available for purchase. */
+export type TokenPackage = {
+  id: string;
+  tokens: number;
+  pricePerToken: number; // zł
+  popular?: boolean;
+};
+
+/** A wallet transaction (purchase / spend / bonus). */
+export type WalletTxType = "purchase" | "spend" | "bonus";
+export type WalletTx = {
+  id: string;
+  type: WalletTxType;
+  amount: number; // +/- tokens
+  label: string;
+  date: string;
+  invoice?: string;
+};
+
+/** A subscription / boost plan (cennik). */
+export type Plan = {
+  id: string;
+  name: string;
+  price: number; // zł / period
+  period: "mies." | "jednorazowo";
+  perks: string[];
+  highlight?: boolean;
+};
+
 /** Detected user location (from geolocation → district/city mapping). */
 export type UserLocation = {
   lng: number;

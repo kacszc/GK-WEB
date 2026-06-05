@@ -2,13 +2,16 @@
 
 import { createContext, useContext, useState } from "react";
 import Link from "next/link";
-import { Check, Star } from "lucide-react";
+import { Check, Star, Coins } from "lucide-react";
 import { Dialog } from "@/components/ui/Dialog";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useAuth } from "@/lib/AuthProvider";
+import { useWallet } from "@/lib/WalletProvider";
 import { messagesService } from "@/services";
+
+const CONTACT_COST = 3;
 import type { Specialist } from "@/lib/types";
 
 type ContactContextValue = { open: (s: Specialist) => void };
@@ -44,6 +47,7 @@ function ContactModal({
 }) {
   const { t } = useI18n();
   const { user } = useAuth();
+  const { balance, spend } = useWallet();
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
@@ -58,6 +62,7 @@ function ContactModal({
       setErr(true);
       return;
     }
+    if (!spend(CONTACT_COST)) return; // insufficient balance — gate is shown instead
     setSending(true);
     try {
       await messagesService.send(s.id, text);
@@ -107,6 +112,22 @@ function ContactModal({
                 {t("contact.loginCta")}
               </Link>
             </div>
+          ) : balance < CONTACT_COST ? (
+            <div className="mt-4 rounded-tile border border-brand-violet/30 bg-[#f6f3ff] p-4 text-center">
+              <span className="mx-auto grid h-10 w-10 place-items-center rounded-full bg-white">
+                <Coins className="h-5 w-5 text-[#e0a400]" />
+              </span>
+              <p className="mt-2 text-sm font-semibold text-ink">{t("tokens.gateTitle")}</p>
+              <p className="mt-1 text-[13px] text-ink-2">
+                {t("tokens.gateDesc", { cost: CONTACT_COST, balance })}
+              </p>
+              <Link
+                href="/account/tokens"
+                className="mt-3 inline-flex w-full items-center justify-center rounded-tile bg-ink px-4 py-2.5 text-sm font-bold text-on-dark hover:bg-ink/90"
+              >
+                {t("tokens.gateBuy")}
+              </Link>
+            </div>
           ) : (
             <>
               <label className="mb-1.5 mt-4 block text-[12px] font-semibold text-ink-3">
@@ -132,8 +153,13 @@ function ContactModal({
                 className="mt-3 w-full rounded-tile py-3 text-sm"
               >
                 {sending ? t("contact.sending") : t("contact.send")}
-                {!sending && <span className="font-normal opacity-80">{t("contact.cost", { n: 3 })}</span>}
+                {!sending && (
+                  <span className="font-normal opacity-80">{t("contact.cost", { n: CONTACT_COST })}</span>
+                )}
               </Button>
+              <p className="mt-2 text-center text-[12px] text-ink-3">
+                {t("tokens.balanceShort", { n: balance })}
+              </p>
             </>
           )}
         </>

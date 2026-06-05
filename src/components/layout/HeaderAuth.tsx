@@ -5,10 +5,12 @@ import { LogOut, Coins, Bell, Settings, Briefcase, User as UserIcon } from "luci
 import { Avatar } from "@/components/ui/Avatar";
 import { Popover } from "@/components/ui/Popover";
 import { useAuth } from "@/lib/AuthProvider";
+import { useWallet } from "@/lib/WalletProvider";
 import { useI18n } from "@/i18n/I18nProvider";
 
 export function HeaderAuth() {
   const { user, ready, signOut } = useAuth();
+  const { balance } = useWallet();
   const { t } = useI18n();
 
   // Logged in → tokens, notifications and an account menu.
@@ -20,10 +22,13 @@ export function HeaderAuth() {
 
     return (
       <div className="flex items-center gap-1.5 sm:gap-2">
-        <span className="hidden items-center gap-1.5 rounded-full bg-pill px-3 py-1.5 text-xs font-semibold text-ink sm:inline-flex">
+        <Link
+          href="/account/tokens"
+          className="hidden items-center gap-1.5 rounded-full bg-pill px-3 py-1.5 text-xs font-semibold text-ink transition-colors hover:bg-line-2 sm:inline-flex"
+        >
           <Coins className="h-3.5 w-3.5 text-[#e0a400]" />
-          {t("results.tokens", { n: 27 })}
-        </span>
+          {t("results.tokens", { n: balance })}
+        </Link>
 
         <button
           aria-label="Notifications"

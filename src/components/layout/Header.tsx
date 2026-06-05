@@ -16,7 +16,7 @@ export async function Header() {
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-4 md:flex">
-          <a href="#" className="text-sm font-medium text-ink-2 hover:text-ink">
+          <a href="/cennik" className="text-sm font-medium text-ink-2 hover:text-ink">
             {t("nav.pricing")}
           </a>
           <a href="#" className="text-sm font-medium text-ink-2 hover:text-ink">

@@ -5,11 +5,13 @@ import { useQuery } from "@tanstack/react-query";
 import { Briefcase, MessageSquare, Coins, Plus, Search } from "lucide-react";
 import { accountService } from "@/services";
 import { useAuth } from "@/lib/AuthProvider";
+import { useWallet } from "@/lib/WalletProvider";
 import { useI18n } from "@/i18n/I18nProvider";
 
 export function AccountOverview() {
   const { t } = useI18n();
   const { user } = useAuth();
+  const { balance } = useWallet();
   const { data: jobs = [] } = useQuery({ queryKey: ["myJobs"], queryFn: accountService.getMyJobs });
   const { data: convos = [] } = useQuery({
     queryKey: ["conversations"],
@@ -31,7 +33,7 @@ export function AccountOverview() {
       <div className="grid gap-3 sm:grid-cols-3">
         <Stat icon={<Briefcase className="h-4 w-4" />} value={activeJobs} label={t("account.statActiveJobs")} href="/account/jobs" />
         <Stat icon={<MessageSquare className="h-4 w-4" />} value={unread} label={t("account.statMessages")} href="/account/messages" />
-        <Stat icon={<Coins className="h-4 w-4 text-[#e0a400]" />} value={27} label={t("account.statTokens")} />
+        <Stat icon={<Coins className="h-4 w-4 text-[#e0a400]" />} value={balance} label={t("account.statTokens")} href="/account/tokens" />
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">

@@ -5,6 +5,7 @@ import { getI18n } from "@/i18n/server";
 import { I18nProvider } from "@/i18n/I18nProvider";
 import { QueryProvider } from "@/lib/QueryProvider";
 import { AuthProvider } from "@/lib/AuthProvider";
+import { WalletProvider } from "@/lib/WalletProvider";
 import { ContactProvider } from "@/lib/ContactProvider";
 
 const inter = Inter({
@@ -35,7 +36,9 @@ export default async function RootLayout({
         <I18nProvider locale={locale} dict={dict}>
           <QueryProvider>
             <AuthProvider>
-              <ContactProvider>{children}</ContactProvider>
+              <WalletProvider>
+                <ContactProvider>{children}</ContactProvider>
+              </WalletProvider>
             </AuthProvider>
           </QueryProvider>
         </I18nProvider>

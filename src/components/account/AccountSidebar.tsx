@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, Settings, Briefcase, MessageSquare, Bookmark, Clock } from "lucide-react";
+import { LayoutGrid, Settings, Briefcase, MessageSquare, Bookmark, Clock, Coins } from "lucide-react";
 import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
 
@@ -11,6 +11,7 @@ const items = [
   { href: "/account/jobs", key: "account.navJobs", icon: Briefcase },
   { href: "/account/messages", key: "account.navMessages", icon: MessageSquare },
   { href: "/account/contacts", key: "account.navContacts", icon: Bookmark },
+  { href: "/account/tokens", key: "tokens.walletTitle", icon: Coins },
   { href: "/account/history", key: "account.navHistory", icon: Clock },
   { href: "/account/settings", key: "account.navSettings", icon: Settings },
 ];
