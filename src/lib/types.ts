@@ -40,6 +40,49 @@ export type FooterColumn = {
 /** Search mode: hiring a worker vs looking for a job. */
 export type SearchMode = "worker" | "job";
 
+/** Availability of a specialist. */
+export type Availability = "now" | "week" | "date";
+
+/** A specialist shown on the search-results screen and the map. */
+export type Specialist = {
+  id: string;
+  name: string;
+  avatarIndex: number;
+  role: string; // e.g. "Barmanka, kelner"
+  trustScore: number; // 0–100
+  availability: Availability;
+  availableFrom?: string; // for availability === "date"
+  kyc: boolean;
+  topRated: boolean;
+  district: string; // Warsaw district name
+  distanceKm: number;
+  rateFrom: number; // zł/h
+  rating: number; // 0–5
+  reviews: number;
+  specialties: { label: string; count: number }[];
+  languages: string[]; // locale-ish codes: pl, en, uk, de, ru
+  experienceYears: number;
+  lng: number;
+  lat: number;
+};
+
+/** Detected user location (from geolocation → district/city mapping). */
+export type UserLocation = {
+  lng: number;
+  lat: number;
+  district?: string;
+  city?: string;
+  label: string;
+};
+
+/** Result of a specialist search (paginated + facet counts). */
+export type SpecialistSearch = {
+  items: Specialist[];
+  total: number;
+  availableNow: number;
+  availableWeek: number;
+};
+
 /** Search (autocomplete) response. */
 export type SearchSuggestions = {
   query: string;

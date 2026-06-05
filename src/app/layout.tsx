@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { getI18n } from "@/i18n/server";
 import { I18nProvider } from "@/i18n/I18nProvider";
+import { QueryProvider } from "@/lib/QueryProvider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -30,7 +31,7 @@ export default async function RootLayout({
     <html lang={locale} className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-page text-ink">
         <I18nProvider locale={locale} dict={dict}>
-          {children}
+          <QueryProvider>{children}</QueryProvider>
         </I18nProvider>
       </body>
     </html>

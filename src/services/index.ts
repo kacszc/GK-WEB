@@ -4,3 +4,5 @@
 export { searchService } from "./search.service";
 export { catalogService } from "./catalog.service";
 export { statsService } from "./stats.service";
+export { specialistsService, specialistFacets } from "./specialists.service";
+export type { SpecialistFilters, SpecialistSort } from "./specialists.service";
