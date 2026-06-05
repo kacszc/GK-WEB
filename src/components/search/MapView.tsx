@@ -107,9 +107,15 @@ export function MapView({
       // specialist pins
       markersRef.current.forEach((m) => m.remove());
       markersRef.current = specialists.map((s) => {
+        // Outer element keeps MapLibre's positioning transform untouched;
+        // the inner dot handles the hover scale (avoids the pin "jumping").
         const el = document.createElement("button");
-        el.className = "block h-4 w-4 cursor-pointer rounded-full border-2 border-white shadow-md transition-transform hover:scale-125";
-        el.style.background = AVAIL_COLOR[s.availability];
+        el.className = "block border-0 bg-transparent p-0 cursor-pointer leading-none";
+        const dot = document.createElement("span");
+        dot.className =
+          "block h-4 w-4 rounded-full border-2 border-white shadow-md transition-transform duration-150 hover:scale-125";
+        dot.style.background = AVAIL_COLOR[s.availability];
+        el.appendChild(dot);
         el.addEventListener("click", (ev) => {
           ev.stopPropagation();
           onSelectRef.current?.(s.id);
