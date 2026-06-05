@@ -308,6 +308,9 @@ const pl = {
     contactsEmpty: "Brak zapisanych kontaktów.",
     historyTitle: "Historia",
     historyEmpty: "Brak aktywności.",
+    chatPlaceholder: "Napisz wiadomość…",
+    chatBack: "Wiadomości",
+    chatSelect: "Wybierz rozmowę z listy.",
   },
   notFoundPage: {
     title: "Nie znaleziono strony",

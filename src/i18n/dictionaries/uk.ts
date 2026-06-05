@@ -309,6 +309,9 @@ const uk: Dictionary = {
     contactsEmpty: "Немає збережених контактів.",
     historyTitle: "Історія",
     historyEmpty: "Немає активності.",
+    chatPlaceholder: "Напишіть повідомлення…",
+    chatBack: "Повідомлення",
+    chatSelect: "Оберіть розмову зі списку.",
   },
   notFoundPage: {
     title: "Сторінку не знайдено",

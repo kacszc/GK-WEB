@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { accountService } from "@/services";
 import { Avatar } from "@/components/ui/Avatar";
@@ -27,8 +28,9 @@ export function MessagesList() {
       ) : (
         <div className="overflow-hidden rounded-panel border border-line-3 bg-surface">
           {convos.map((c, i) => (
-            <button
+            <Link
               key={c.id}
+              href={`/account/messages/${c.id}`}
               className={`flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted ${
                 i > 0 ? "border-t border-line" : ""
               }`}
@@ -48,7 +50,7 @@ export function MessagesList() {
                   {c.unread}
                 </span>
               )}
-            </button>
+            </Link>
           ))}
         </div>
       )}

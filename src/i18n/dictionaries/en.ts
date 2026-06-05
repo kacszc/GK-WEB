@@ -309,6 +309,9 @@ const en: Dictionary = {
     contactsEmpty: "No saved contacts.",
     historyTitle: "History",
     historyEmpty: "No activity.",
+    chatPlaceholder: "Type a message…",
+    chatBack: "Messages",
+    chatSelect: "Select a conversation from the list.",
   },
   notFoundPage: {
     title: "Page not found",

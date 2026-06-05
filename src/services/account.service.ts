@@ -1,6 +1,6 @@
-import type { MyJob, Conversation, SavedContact, ActivityItem } from "@/lib/types";
+import type { MyJob, Conversation, SavedContact, ActivityItem, ChatMessage } from "@/lib/types";
 // import { apiGet } from "@/lib/api-client";
-import { myJobs, conversations, savedContacts, activity } from "./mock-account";
+import { myJobs, conversations, savedContacts, activity, threads } from "./mock-account";
 import { mockDelay } from "./mock-data";
 
 export const accountService = {
@@ -23,5 +23,18 @@ export const accountService = {
     // TODO(backend): return apiGet("/me/activity");
     await mockDelay(400, 900);
     return activity;
+  },
+  async getThread(id: string): Promise<{ conversation: Conversation | null; messages: ChatMessage[] }> {
+    // TODO(backend): return apiGet(`/me/conversations/${id}`);
+    await mockDelay(300, 700);
+    return {
+      conversation: conversations.find((c) => c.id === id) ?? null,
+      messages: threads[id] ?? [],
+    };
+  },
+  async sendMessage(id: string, text: string): Promise<ChatMessage> {
+    // TODO(backend): return apiPost(`/me/conversations/${id}/messages`, { text });
+    await mockDelay(300, 600);
+    return { id: `m-${Date.now().toString(36)}`, fromMe: true, text, time: "teraz" };
   },
 };

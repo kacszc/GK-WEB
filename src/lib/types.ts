@@ -67,6 +67,14 @@ export type Conversation = {
   unread: number;
 };
 
+/** A single chat message in a conversation thread. */
+export type ChatMessage = {
+  id: string;
+  fromMe: boolean;
+  text: string;
+  time: string;
+};
+
 /** A saved specialist contact. */
 export type SavedContact = {
   id: string;
