@@ -14,6 +14,7 @@ type SearchBarProps = {
   resultCount: number;
   loading?: boolean;
   inputRef?: React.Ref<HTMLInputElement>;
+  onSubmit?: () => void;
   mode: SearchMode;
   when: WhenValue;
   onWhenChange: (v: WhenValue) => void;
@@ -29,6 +30,7 @@ export function SearchBar({
   resultCount,
   loading = false,
   inputRef,
+  onSubmit,
   mode,
   when,
   onWhenChange,
@@ -57,6 +59,9 @@ export function SearchBar({
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 onFocus={onFocus}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") onSubmit?.();
+                }}
                 aria-label={t("search.cta")}
                 className={cn(
                   "w-full bg-transparent text-2xl font-bold tracking-[-0.5px] text-ink outline-none",
@@ -100,6 +105,7 @@ export function SearchBar({
           </div>
           <Button
             variant="gradient"
+            onClick={onSubmit}
             className="flex-1 rounded-field px-6 py-4 text-[15px] sm:flex-none"
           >
             {t("search.cta")}

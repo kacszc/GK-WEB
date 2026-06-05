@@ -1,4 +1,4 @@
-import { Pill } from "@/components/ui/Pill";
+import Link from "next/link";
 import { CountChip } from "@/components/ui/CountChip";
 import { catalogService } from "@/services";
 import { getI18n } from "@/i18n/server";
@@ -14,18 +14,18 @@ export async function ProfessionChips() {
       </p>
       <div className="flex flex-wrap justify-center gap-2">
         {professions.map((p, i) => (
-          <Pill
+          <Link
             key={p.label}
-            as="button"
+            href={`/search?q=${encodeURIComponent(p.label)}`}
             style={{ animationDelay: `${i * 25}ms` }}
-            className="animate-fade-in border border-line-2 bg-surface px-3.5 py-2.5 transition-all duration-200 hover:-translate-y-0.5 hover:border-ink/20 hover:shadow-sm"
+            className="animate-fade-in inline-flex items-center gap-2 rounded-full border border-line-2 bg-surface px-3.5 py-2.5 transition-all duration-200 hover:-translate-y-0.5 hover:border-ink/20 hover:shadow-sm"
           >
             <span className="text-[13px] font-semibold text-ink">{p.label}</span>
             <CountChip live={p.live}>
               {p.count}
               {p.live ? ` ${t("chips.now")}` : ""}
             </CountChip>
-          </Pill>
+          </Link>
         ))}
       </div>
     </section>

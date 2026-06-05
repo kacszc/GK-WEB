@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { SearchBar } from "./SearchBar";
 import { AutocompleteDropdown } from "./AutocompleteDropdown";
 import { presetDate } from "./WhenFilter";
@@ -31,6 +32,12 @@ export function HeroSearch({ mode }: { mode: SearchMode }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const firstRun = useRef(true);
+  const router = useRouter();
+
+  function goToResults(value: string) {
+    const q = value.trim();
+    router.push(`/search${q ? `?q=${encodeURIComponent(q)}` : ""}`);
+  }
 
   // Fetch suggestions from the service (debounce + random mock delay).
   useEffect(() => {
@@ -75,9 +82,9 @@ export function HeroSearch({ mode }: { mode: SearchMode }) {
   }, []);
 
   function handlePick(value: string) {
-    setQuery(value);
     setOpen(false);
     inputRef.current?.blur();
+    goToResults(value);
   }
 
   return (
@@ -92,6 +99,7 @@ export function HeroSearch({ mode }: { mode: SearchMode }) {
         resultCount={results.totalCount}
         loading={loading}
         inputRef={inputRef}
+        onSubmit={() => goToResults(query)}
         mode={mode}
         when={when}
         onWhenChange={setWhen}

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Search, MapPinned, Plus, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { getI18n } from "@/i18n/server";
@@ -23,6 +24,7 @@ export async function ActionCards() {
       <div className="grid gap-4 md:grid-cols-3">
         <ActionCard
           theme="light"
+          href="/search"
           icon={<Search className="h-7 w-7 text-ink" />}
           title={t("actions.searchTitle")}
           desc={t("actions.searchDesc")}
@@ -30,6 +32,7 @@ export async function ActionCards() {
         />
         <ActionCard
           theme="gradient"
+          href="/search?view=map"
           icon={<MapPinned className="h-7 w-7 text-on-dark" />}
           title={t("actions.mapTitle")}
           desc={t("actions.mapDesc")}
@@ -53,12 +56,14 @@ function ActionCard({
   title,
   desc,
   cta,
+  href,
 }: {
   theme: CardTheme;
   icon: React.ReactNode;
   title: string;
   desc: string;
   cta: string;
+  href?: string;
 }) {
   const container = cn(
     "flex flex-col gap-5 rounded-card p-7 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl",
@@ -82,13 +87,26 @@ function ActionCard({
         </h3>
         <p className={cn("text-[13px] leading-[1.5]", descColor)}>{desc}</p>
       </div>
-      <Button
-        variant={theme === "light" ? "dark" : "white"}
-        className="mt-auto w-full rounded-cta px-4 py-3 text-[13px]"
-      >
-        {cta}
-        <ArrowRight className="h-4 w-4" />
-      </Button>
+      {href ? (
+        <Link
+          href={href}
+          className={cn(
+            "mt-auto inline-flex w-full items-center justify-center gap-2 rounded-cta px-4 py-3 text-[13px] font-bold transition-colors",
+            theme === "light" ? "bg-ink text-on-dark hover:bg-ink/90" : "bg-surface text-ink hover:bg-surface/90",
+          )}
+        >
+          {cta}
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+      ) : (
+        <Button
+          variant={theme === "light" ? "dark" : "white"}
+          className="mt-auto w-full rounded-cta px-4 py-3 text-[13px]"
+        >
+          {cta}
+          <ArrowRight className="h-4 w-4" />
+        </Button>
+      )}
     </div>
   );
 }

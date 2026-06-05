@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Flame, TrendingUp } from "lucide-react";
 import { catalogService, statsService } from "@/services";
 import { getI18n } from "@/i18n/server";
@@ -28,20 +29,19 @@ export async function PopularSection() {
           </div>
           <ul>
             {trending.map((row, i) => (
-              <li
-                key={row.rank}
-                className={cn(
-                  "flex items-center gap-3 px-6 py-3 transition-colors hover:bg-muted",
-                  i < trending.length - 1 && "border-b border-line-soft",
-                )}
-              >
-                <span className="w-6 text-sm font-bold text-ink-4">{row.rank}</span>
-                <span className="flex-1 text-sm font-medium text-ink">{row.label}</span>
-                <span className="inline-flex items-center gap-0.5 text-xs font-medium text-success">
-                  <TrendingUp className="h-3 w-3" />
-                  {row.delta}%
-                </span>
-                <span className="w-12 text-right text-xs text-ink-4">+{row.added}</span>
+              <li key={row.rank} className={cn(i < trending.length - 1 && "border-b border-line-soft")}>
+                <Link
+                  href={`/search?q=${encodeURIComponent(row.label)}`}
+                  className="flex items-center gap-3 px-6 py-3 transition-colors hover:bg-muted"
+                >
+                  <span className="w-6 text-sm font-bold text-ink-4">{row.rank}</span>
+                  <span className="flex-1 text-sm font-medium text-ink">{row.label}</span>
+                  <span className="inline-flex items-center gap-0.5 text-xs font-medium text-success">
+                    <TrendingUp className="h-3 w-3" />
+                    {row.delta}%
+                  </span>
+                  <span className="w-12 text-right text-xs text-ink-4">+{row.added}</span>
+                </Link>
               </li>
             ))}
           </ul>
