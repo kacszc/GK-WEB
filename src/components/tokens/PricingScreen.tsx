@@ -8,7 +8,7 @@ import { walletService } from "@/services";
 import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
 
-export function CennikScreen() {
+export function PricingScreen() {
   const { t } = useI18n();
   const { data: plans = [] } = useQuery({ queryKey: ["plans"], queryFn: walletService.getPlans });
 
@@ -16,9 +16,9 @@ export function CennikScreen() {
     <main className="mx-auto flex w-full max-w-[1100px] flex-1 flex-col gap-10 px-4 pt-12 pb-20 sm:px-8">
       <div className="text-center">
         <h1 className="text-3xl font-bold tracking-[-1px] text-ink sm:text-4xl">
-          {t("tokens.cennikTitle")}
+          {t("tokens.pricingTitle")}
         </h1>
-        <p className="mx-auto mt-2 max-w-xl text-sm text-ink-2">{t("tokens.cennikSubtitle")}</p>
+        <p className="mx-auto mt-2 max-w-xl text-sm text-ink-2">{t("tokens.pricingSubtitle")}</p>
         <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
           {["tokens.free1", "tokens.free2", "tokens.free3"].map((k) => (
             <span

@@ -662,8 +662,8 @@ const en: Dictionary = {
     applySuccessDesc: "The employer will receive your application. We'll notify you about the reply.",
   },
   tokens: {
-    cennikTitle: "Pricing",
-    cennikSubtitle: "Pay only for contact. No commission on jobs, no hidden fees.",
+    pricingTitle: "Pricing",
+    pricingSubtitle: "Pay only for contact. No commission on jobs, no hidden fees.",
     free1: "Free account",
     free2: "No commission on jobs",
     free3: "Pay only for contact",

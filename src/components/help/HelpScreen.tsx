@@ -59,7 +59,7 @@ export function HelpScreen() {
           {categories.map((c) => (
             <Link
               key={c.id}
-              href="/kontakt"
+              href="/contact"
               className="rounded-panel border border-line-3 bg-surface p-5 transition-shadow hover:shadow-sm"
             >
               <span className="grid h-11 w-11 place-items-center rounded-tile" style={{ background: c.color }}>
@@ -92,7 +92,7 @@ export function HelpScreen() {
             <p className="mt-0.5 text-[13px] text-on-dark/70">{t("help.ctaDesc")}</p>
           </div>
           <Link
-            href="/kontakt"
+            href="/contact"
             className="inline-flex shrink-0 items-center gap-2 rounded-tile bg-surface px-5 py-2.5 text-sm font-bold text-ink hover:bg-surface/90"
           >
             {t("help.ctaButton")}

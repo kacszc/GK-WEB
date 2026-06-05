@@ -4,15 +4,15 @@ import { getI18n } from "@/i18n/server";
 
 // Link targets keyed by column/link position — identical order across locales.
 const columnHrefs: Record<string, string> = {
-  "0:1": "/cennik", // PLATFORMA · Cennik
+  "0:1": "/pricing", // PLATFORMA · Cennik
   "1:0": "/post-job", // DLA PRACODAWCÓW · Dodaj zlecenie
   "1:1": "/search", // DLA PRACODAWCÓW · Szukaj specjalisty
   "2:0": "/register", // DLA SPECJALISTÓW · Załóż profil
-  "3:0": "/o-nas", // FIRMA · O nas
-  "3:1": "/kontakt", // FIRMA · Kontakt
-  "3:4": "/pomoc", // FIRMA · Pomoc
+  "3:0": "/about", // FIRMA · O nas
+  "3:1": "/contact", // FIRMA · Kontakt
+  "3:4": "/help", // FIRMA · Pomoc
 };
-const legalHrefs = ["/regulamin", "/polityka-prywatnosci", "/polityka-cookies", "/polityka-prywatnosci"];
+const legalHrefs = ["/terms", "/privacy", "/cookies", "/privacy"];
 
 export async function Footer() {
   const { t, dict } = await getI18n();

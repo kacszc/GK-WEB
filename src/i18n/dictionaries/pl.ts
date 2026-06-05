@@ -661,8 +661,8 @@ const pl = {
     applySuccessDesc: "Pracodawca otrzyma Twoją aplikację. Powiadomimy Cię o odpowiedzi.",
   },
   tokens: {
-    cennikTitle: "Cennik",
-    cennikSubtitle: "Płać tylko za kontakt. Bez prowizji od zleceń, bez ukrytych opłat.",
+    pricingTitle: "Cennik",
+    pricingSubtitle: "Płać tylko za kontakt. Bez prowizji od zleceń, bez ukrytych opłat.",
     free1: "Konto za darmo",
     free2: "Bez prowizji od zleceń",
     free3: "Płacisz tylko za kontakt",

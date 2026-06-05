@@ -6,7 +6,7 @@ import { mockDelay } from "./mock-data";
 // the Accept-Language header. Mocks below are the Polish source of truth.
 
 const terms: LegalDoc = {
-  slug: "regulamin",
+  slug: "terms",
   title: "Regulamin platformy skill.com",
   effectiveFrom: "13.05.2026",
   version: "1.0",
@@ -99,7 +99,7 @@ const terms: LegalDoc = {
 };
 
 const privacy: LegalDoc = {
-  slug: "polityka-prywatnosci",
+  slug: "privacy",
   title: "Polityka prywatności",
   effectiveFrom: "13.05.2026",
   version: "1.0",
@@ -156,7 +156,7 @@ const privacy: LegalDoc = {
 };
 
 const cookiesDoc: LegalDoc = {
-  slug: "polityka-cookies",
+  slug: "cookies",
   title: "Polityka cookies",
   effectiveFrom: "13.05.2026",
   version: "1.0",
@@ -184,7 +184,7 @@ const cookiesDoc: LegalDoc = {
 };
 
 const community: LegalDoc = {
-  slug: "zasady-spolecznosci",
+  slug: "community",
   title: "Zasady społeczności",
   effectiveFrom: "13.05.2026",
   version: "1.0",
@@ -231,10 +231,10 @@ const community: LegalDoc = {
 };
 
 const docs: Record<string, LegalDoc> = {
-  regulamin: terms,
-  "polityka-prywatnosci": privacy,
-  "polityka-cookies": cookiesDoc,
-  "zasady-spolecznosci": community,
+  terms: terms,
+  privacy: privacy,
+  cookies: cookiesDoc,
+  community: community,
 };
 
 const cookieCategories: CookieCategory[] = [

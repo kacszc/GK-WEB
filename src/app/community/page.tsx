@@ -1,12 +1,12 @@
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { CennikScreen } from "@/components/tokens/CennikScreen";
+import { LegalDocPage } from "@/components/legal/LegalDocPage";
 
-export default function CennikPage() {
+export default function Page() {
   return (
     <>
       <Header />
-      <CennikScreen />
+      <LegalDocPage slug="community" />
       <Footer />
     </>
   );

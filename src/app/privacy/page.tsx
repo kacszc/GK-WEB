@@ -6,7 +6,7 @@ export default function Page() {
   return (
     <>
       <Header />
-      <LegalDocPage slug="regulamin" />
+      <LegalDocPage slug="privacy" />
       <Footer />
     </>
   );

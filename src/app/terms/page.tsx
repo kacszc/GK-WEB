@@ -6,7 +6,7 @@ export default function Page() {
   return (
     <>
       <Header />
-      <LegalDocPage slug="polityka-prywatnosci" />
+      <LegalDocPage slug="terms" />
       <Footer />
     </>
   );

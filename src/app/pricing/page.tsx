@@ -1,12 +1,12 @@
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { LegalDocPage } from "@/components/legal/LegalDocPage";
+import { PricingScreen } from "@/components/tokens/PricingScreen";
 
-export default function Page() {
+export default function CennikPage() {
   return (
     <>
       <Header />
-      <LegalDocPage slug="zasady-spolecznosci" />
+      <PricingScreen />
       <Footer />
     </>
   );
