@@ -98,6 +98,23 @@ export type JobResult = {
   notifiedCount: number;
 };
 
+/** A public job posting (job-seeker side). */
+export type JobPosting = {
+  id: string;
+  title: string;
+  profession: string;
+  district: string;
+  distanceKm: number;
+  rate: number; // zł/h
+  hours: number;
+  when: Availability;
+  whenDate?: string;
+  employer: string;
+  employerVerified: boolean;
+  postedAgo: string;
+  description: string;
+};
+
 /** Detected user location (from geolocation → district/city mapping). */
 export type UserLocation = {
   lng: number;

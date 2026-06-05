@@ -36,7 +36,8 @@ export function HeroSearch({ mode }: { mode: SearchMode }) {
 
   function goToResults(value: string) {
     const q = value.trim();
-    router.push(`/search${q ? `?q=${encodeURIComponent(q)}` : ""}`);
+    const base = mode === "job" ? "/jobs" : "/search";
+    router.push(`${base}${q ? `?q=${encodeURIComponent(q)}` : ""}`);
   }
 
   // Fetch suggestions from the service (debounce + random mock delay).
