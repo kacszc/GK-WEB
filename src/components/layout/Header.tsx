@@ -23,7 +23,8 @@ export async function Header() {
             {t("nav.howItWorks")}
           </a>
           <Pill
-            as="button"
+            as="a"
+            href="/post-job"
             className="border border-line-2 bg-pill text-ink hover:bg-line-2"
           >
             <Plus className="h-4 w-4" />

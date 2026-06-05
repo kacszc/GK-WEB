@@ -40,6 +40,7 @@ export async function ActionCards() {
         />
         <ActionCard
           theme="dark"
+          href="/post-job"
           icon={<Plus className="h-7 w-7 text-on-dark" />}
           title={t("actions.jobTitle")}
           desc={t("actions.jobDesc")}

@@ -66,6 +66,28 @@ export type Specialist = {
   lat: number;
 };
 
+/** A job posting draft (employer side). */
+export type JobDraft = {
+  profession: string;
+  title: string;
+  description: string;
+  date: Date | null;
+  preset: WhenPreset | null;
+  district: string;
+  radiusKm: number;
+  people: number;
+  rate: number | null;
+  hours: number | null;
+  contactMethod: "app" | "phone";
+  phone: string;
+};
+
+/** Result of publishing a job. */
+export type JobResult = {
+  id: string;
+  notifiedCount: number;
+};
+
 /** Detected user location (from geolocation → district/city mapping). */
 export type UserLocation = {
   lng: number;

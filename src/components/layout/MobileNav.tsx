@@ -25,7 +25,7 @@ export function MobileNav() {
         <nav className="flex flex-col gap-0.5">
           <MenuLink onClick={close}>{t("nav.pricing")}</MenuLink>
           <MenuLink onClick={close}>{t("nav.howItWorks")}</MenuLink>
-          <MenuLink onClick={close}>
+          <MenuLink href="/post-job" onClick={close}>
             <Plus className="h-4 w-4" />
             {t("nav.addJob")}
           </MenuLink>
@@ -47,13 +47,15 @@ export function MobileNav() {
 function MenuLink({
   children,
   onClick,
+  href = "#",
 }: {
   children: React.ReactNode;
   onClick: () => void;
+  href?: string;
 }) {
   return (
     <a
-      href="#"
+      href={href}
       onClick={onClick}
       className="flex items-center gap-2 rounded-tile px-3 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-muted"
     >
