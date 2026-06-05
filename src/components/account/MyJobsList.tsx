@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { MapPin, Users } from "lucide-react";
 import { accountService } from "@/services";
-import { Button } from "@/components/ui/Button";
 import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
 import type { MyJobStatus } from "@/lib/types";
@@ -70,9 +69,12 @@ export function MyJobsList() {
                   <span className="text-ink-4">· {j.postedAgo}</span>
                 </div>
               </div>
-              <Button variant="outline" className="shrink-0 rounded-tile px-4 py-2 text-[13px]">
+              <Link
+                href={`/account/jobs/${j.id}`}
+                className="inline-flex shrink-0 items-center justify-center rounded-tile border border-line-2 bg-surface px-4 py-2 text-[13px] font-medium text-ink hover:bg-muted"
+              >
                 {t("account.viewApplicants")}
-              </Button>
+              </Link>
             </div>
           ))}
         </div>

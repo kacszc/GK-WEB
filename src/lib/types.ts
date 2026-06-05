@@ -86,6 +86,22 @@ export type SavedContact = {
   trustScore: number;
 };
 
+/** An applicant for a posted job. */
+export type Applicant = {
+  id: string;
+  name: string;
+  avatarIndex: number;
+  role: string;
+  trustScore: number;
+  rating: number;
+  reviews: number;
+  rate: number;
+  district: string;
+  distanceKm: number;
+  appliedAgo: string;
+  message: string;
+};
+
 /** An activity-history entry. */
 export type ActivityType = "job_posted" | "contacted" | "hired" | "applied" | "review";
 export type ActivityItem = {

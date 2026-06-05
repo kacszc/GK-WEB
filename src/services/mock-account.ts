@@ -1,5 +1,5 @@
 // Mock data for the account dashboard. Replaced by the backend later.
-import type { MyJob, Conversation, SavedContact, ActivityItem, ChatMessage } from "@/lib/types";
+import type { MyJob, Conversation, SavedContact, ActivityItem, ChatMessage, Applicant } from "@/lib/types";
 
 export const myJobs: MyJob[] = [
   { id: "mj1", title: "Barman na wesele", profession: "Barman", district: "Mokotów", status: "active", applicants: 7, rate: 50, postedAgo: "2 godz. temu" },
@@ -40,6 +40,12 @@ export const threads: Record<string, ChatMessage[]> = {
     { id: "m2", fromMe: false, text: "Super, do zobaczenia!", time: "2 dni" },
   ],
 };
+
+export const applicants: Applicant[] = [
+  { id: "s1", name: "Anna K.", avatarIndex: 0, role: "Barmanka, kelner", trustScore: 92, rating: 4.9, reviews: 47, rate: 50, district: "Mokotów", distanceKm: 2, appliedAgo: "1 godz. temu", message: "Mam 6 lat doświadczenia w obsłudze wesel, dyspozycyjna w sobotę." },
+  { id: "s10", name: "Michał B.", avatarIndex: 9, role: "Barman", trustScore: 90, rating: 4.9, reviews: 71, rate: 50, district: "Śródmieście", distanceKm: 1, appliedAgo: "2 godz. temu", message: "Specjalizuję się w koktajlach klasycznych i mixologii. Załączam portfolio." },
+  { id: "s6", name: "Krzysztof W.", avatarIndex: 5, role: "Barman, mixolog", trustScore: 87, rating: 4.8, reviews: 53, rate: 55, district: "Pruszków", distanceKm: 14, appliedAgo: "3 godz. temu", message: "Chętnie pomogę, mam własny sprzęt barmański." },
+];
 
 export const activity: ActivityItem[] = [
   { id: "a1", type: "job_posted", text: "Dodałeś zlecenie „Barman na wesele”", time: "2 godz. temu" },
