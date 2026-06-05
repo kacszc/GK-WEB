@@ -1,6 +1,7 @@
 "use client";
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useState } from "react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 import type { DayState } from "@/lib/types";
 
@@ -9,6 +10,12 @@ const stateStyle: Record<DayState, string> = {
   booked: "bg-[#efeaff] text-[#6b3df0]",
   blocked: "bg-[#fdecec] text-[#d14343]",
 };
+const dotStyle: Record<DayState, string> = {
+  free: "bg-[#1b8a3a]",
+  booked: "bg-[#6b3df0]",
+  blocked: "bg-[#d14343]",
+};
+const STATES: DayState[] = ["free", "booked", "blocked"];
 
 function iso(d: Date): string {
   const m = d.getMonth() + 1;
@@ -21,20 +28,19 @@ function buildGrid(month: Date): { date: Date; inMonth: boolean }[] {
   const year = month.getFullYear();
   const m = month.getMonth();
   const first = new Date(year, m, 1);
-  const lead = (first.getDay() + 6) % 7; // days before the 1st (Mon-first)
+  const lead = (first.getDay() + 6) % 7;
   const start = new Date(year, m, 1 - lead);
   const cells: { date: Date; inMonth: boolean }[] = [];
   for (let i = 0; i < 42; i++) {
     const date = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
     cells.push({ date, inMonth: date.getMonth() === m });
   }
-  // Trim the last week if it's entirely in the next month.
-  return cells.slice(0, cells[35].inMonth || cells.slice(35).some((c) => c.inMonth) ? 42 : 35);
+  return cells.slice(0, cells.slice(35).some((c) => c.inMonth) ? 42 : 35);
 }
 
 /**
  * Reusable availability calendar (month grid).
- * - Read-only by default; pass `editable` + `onDayClick` to cycle a day's state.
+ * - Read-only by default; pass `editable` + `onDayStateChange` to edit a day via a small popover menu.
  * - State lookup via the `days` map (ISO date → DayState); unknown days render empty.
  */
 export function AvailabilityCalendar({
@@ -45,7 +51,9 @@ export function AvailabilityCalendar({
   labels,
   monthFormatter,
   editable = false,
-  onDayClick,
+  onDayStateChange,
+  menuLabels,
+  clearLabel,
 }: {
   month: Date;
   onMonthChange: (d: Date) => void;
@@ -54,12 +62,20 @@ export function AvailabilityCalendar({
   labels: Record<DayState, string>;
   monthFormatter: (d: Date) => string;
   editable?: boolean;
-  onDayClick?: (dateIso: string, current: DayState | undefined) => void;
+  onDayStateChange?: (dateIso: string, state: DayState | null) => void;
+  menuLabels?: Record<DayState, string>;
+  clearLabel?: string;
 }) {
   const cells = buildGrid(month);
+  const [openDay, setOpenDay] = useState<string | null>(null);
+
+  function choose(dateIso: string, state: DayState | null) {
+    onDayStateChange?.(dateIso, state);
+    setOpenDay(null);
+  }
 
   return (
-    <div className="rounded-panel border border-line-3 bg-surface p-4 sm:p-5">
+    <div className="relative rounded-panel border border-line-3 bg-surface p-4 sm:p-5">
       {/* Month nav */}
       <div className="mb-4 flex items-center gap-3">
         <button
@@ -86,6 +102,9 @@ export function AvailabilityCalendar({
         ))}
       </div>
 
+      {/* Backdrop to dismiss the day menu */}
+      {openDay && <div className="fixed inset-0 z-20" onClick={() => setOpenDay(null)} />}
+
       {/* Day cells */}
       <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
         {cells.map(({ date, inMonth }, i) => {
@@ -98,21 +117,62 @@ export function AvailabilityCalendar({
           }
           const key = iso(date);
           const state = days[key];
-          const interactive = editable && !!onDayClick;
+          const interactive = editable && !!onDayStateChange;
+          const isOpen = openDay === key;
+          const lastCols = i % 7 >= 5; // anchor menu to the right edge for Sat/Sun
           return (
-            <button
-              key={i}
-              disabled={!interactive}
-              onClick={() => onDayClick?.(key, state)}
-              className={cn(
-                "min-h-[52px] rounded-tile px-2 py-1.5 text-left transition-transform",
-                state ? stateStyle[state] : "bg-muted/50 text-ink",
-                interactive && "cursor-pointer hover:scale-[1.03]",
+            <div key={i} className="relative">
+              <button
+                disabled={!interactive}
+                onClick={() => setOpenDay(isOpen ? null : key)}
+                className={cn(
+                  "min-h-[52px] w-full rounded-tile px-2 py-1.5 text-left transition-transform",
+                  state ? stateStyle[state] : "bg-muted/50 text-ink",
+                  interactive && "cursor-pointer hover:scale-[1.03]",
+                  isOpen && "ring-2 ring-ink/40",
+                )}
+              >
+                <span className="block text-[13px] font-semibold">{date.getDate()}</span>
+                {state && <span className="block text-[9px] font-bold tracking-[0.5px]">{labels[state]}</span>}
+              </button>
+
+              {/* Per-day menu */}
+              {interactive && isOpen && menuLabels && (
+                <div
+                  className={cn(
+                    "absolute top-full z-30 mt-1 w-40 animate-pop-in rounded-tile border border-line-2 bg-surface p-1 shadow-dropdown",
+                    lastCols ? "right-0" : "left-0",
+                  )}
+                >
+                  {STATES.map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => choose(key, s)}
+                      className={cn(
+                        "flex w-full items-center gap-2 rounded-soft px-2.5 py-2 text-left text-[12px] font-medium hover:bg-muted",
+                        state === s ? "text-ink" : "text-ink-2",
+                      )}
+                    >
+                      <span className={cn("h-2.5 w-2.5 rounded-full", dotStyle[s])} />
+                      {menuLabels[s]}
+                      {state === s && <span className="ml-auto text-ink-4">✓</span>}
+                    </button>
+                  ))}
+                  {state && clearLabel && (
+                    <>
+                      <span className="my-1 block h-px bg-line" />
+                      <button
+                        onClick={() => choose(key, null)}
+                        className="flex w-full items-center gap-2 rounded-soft px-2.5 py-2 text-left text-[12px] font-medium text-ink-3 hover:bg-muted"
+                      >
+                        <X className="h-3 w-3" />
+                        {clearLabel}
+                      </button>
+                    </>
+                  )}
+                </div>
               )}
-            >
-              <span className="block text-[13px] font-semibold">{date.getDate()}</span>
-              {state && <span className="block text-[9px] font-bold tracking-[0.5px]">{labels[state]}</span>}
-            </button>
+            </div>
           );
         })}
       </div>
