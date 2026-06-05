@@ -1,18 +1,23 @@
 "use client";
 
-import { useState } from "react";
 import { cn } from "@/lib/cn";
 import { useI18n } from "@/i18n/I18nProvider";
+import type { SearchMode } from "@/lib/types";
 
-const modes = [
+const modes: { id: SearchMode; tKey: string }[] = [
   { id: "worker", tKey: "hero.toggleWorker" },
   { id: "job", tKey: "hero.toggleJob" },
-] as const;
+];
 
-export function SearchToggle() {
+export function SearchToggle({
+  mode,
+  onChange,
+}: {
+  mode: SearchMode;
+  onChange: (mode: SearchMode) => void;
+}) {
   const { t } = useI18n();
-  const [active, setActive] = useState<(typeof modes)[number]["id"]>("worker");
-  const activeIndex = modes.findIndex((m) => m.id === active);
+  const activeIndex = modes.findIndex((m) => m.id === mode);
 
   return (
     <div
@@ -29,20 +34,20 @@ export function SearchToggle() {
           transform: `translateX(${activeIndex * 100}%)`,
         }}
       />
-      {modes.map((mode) => {
-        const selected = active === mode.id;
+      {modes.map((m) => {
+        const selected = mode === m.id;
         return (
           <button
-            key={mode.id}
+            key={m.id}
             role="tab"
             aria-selected={selected}
-            onClick={() => setActive(mode.id)}
+            onClick={() => onChange(m.id)}
             className={cn(
               "relative z-10 rounded-full px-5 py-2 text-sm font-semibold transition-colors duration-200 cursor-pointer",
               selected ? "text-on-dark" : "text-ink-3 hover:text-ink",
             )}
           >
-            {t(mode.tKey)}
+            {t(m.tKey)}
           </button>
         );
       })}

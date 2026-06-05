@@ -1,18 +1,14 @@
 import { useEffect, useState } from "react";
 
-const CARET = "▏";
-const GAP = " "; // hair space so width barely shifts when caret blinks off
-
 /**
- * Typewriter effect for placeholders: types a word, pauses, deletes it,
- * then moves to the next — with a blinking caret. Returns "" when inactive.
- * Respects prefers-reduced-motion.
+ * Typewriter effect: types a word, pauses, deletes it, then moves to the next.
+ * Returns only the currently visible text (the blinking caret is rendered
+ * separately by the caller). Returns "" when inactive. Respects
+ * prefers-reduced-motion.
  */
 export function useTypewriter(words: string[], active: boolean): string {
   const [typed, setTyped] = useState("");
-  const [caretOn, setCaretOn] = useState(true);
 
-  // Typing / deleting loop.
   useEffect(() => {
     if (!active || words.length === 0) return;
 
@@ -37,7 +33,7 @@ export function useTypewriter(words: string[], active: boolean): string {
         setTyped(word.slice(0, charIndex));
         if (charIndex >= word.length) {
           deleting = true;
-          timer = setTimeout(run, 1600); // pause on the full word
+          timer = setTimeout(run, 2600); // longer pause on the full word before deleting
           return;
         }
         timer = setTimeout(run, 85);
@@ -54,17 +50,9 @@ export function useTypewriter(words: string[], active: boolean): string {
       }
     };
 
-    timer = setTimeout(run, 600);
+    timer = setTimeout(run, 2400); // let the caret blink a few times before typing starts
     return () => clearTimeout(timer);
   }, [active, words]);
 
-  // Blinking caret.
-  useEffect(() => {
-    if (!active) return;
-    const id = setInterval(() => setCaretOn((v) => !v), 520);
-    return () => clearInterval(id);
-  }, [active]);
-
-  if (!active) return "";
-  return `${typed}${caretOn ? CARET : GAP}`;
+  return active ? typed : "";
 }

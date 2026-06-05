@@ -5,7 +5,7 @@ import { SearchBar } from "./SearchBar";
 import { AutocompleteDropdown } from "./AutocompleteDropdown";
 import { presetDate } from "./WhenFilter";
 import { searchService } from "@/services";
-import type { SearchSuggestions, WhenValue, WhereValue } from "@/lib/types";
+import type { SearchSuggestions, WhenValue, WhereValue, SearchMode } from "@/lib/types";
 
 const EMPTY: SearchSuggestions = {
   query: "",
@@ -14,7 +14,7 @@ const EMPTY: SearchSuggestions = {
   totalCount: 0,
 };
 
-export function HeroSearch() {
+export function HeroSearch({ mode }: { mode: SearchMode }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -92,6 +92,7 @@ export function HeroSearch() {
         resultCount={results.totalCount}
         loading={loading}
         inputRef={inputRef}
+        mode={mode}
         when={when}
         onWhenChange={setWhen}
         where={where}
@@ -105,6 +106,7 @@ export function HeroSearch() {
             people={results.people}
             totalCount={results.totalCount}
             loading={loading}
+            mode={mode}
             onPick={handlePick}
           />
         </div>

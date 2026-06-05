@@ -1,11 +1,11 @@
 import { Search, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { Kbd } from "@/components/ui/Kbd";
 import { WhenFilter } from "./WhenFilter";
 import { WhereFilter } from "./WhereFilter";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useTypewriter } from "@/lib/useTypewriter";
-import type { WhenValue, WhereValue } from "@/lib/types";
+import { cn } from "@/lib/cn";
+import type { WhenValue, WhereValue, SearchMode } from "@/lib/types";
 
 type SearchBarProps = {
   value: string;
@@ -14,6 +14,7 @@ type SearchBarProps = {
   resultCount: number;
   loading?: boolean;
   inputRef?: React.Ref<HTMLInputElement>;
+  mode: SearchMode;
   when: WhenValue;
   onWhenChange: (v: WhenValue) => void;
   where: WhereValue;
@@ -28,6 +29,7 @@ export function SearchBar({
   resultCount,
   loading = false,
   inputRef,
+  mode,
   when,
   onWhenChange,
   where,
@@ -48,24 +50,44 @@ export function SearchBar({
             <Search className="h-6 w-6 shrink-0 text-ink-3" />
           )}
           <div className="min-w-0 flex-1">
-            <input
-              ref={inputRef}
-              type="text"
-              value={value}
-              onChange={(e) => onChange(e.target.value)}
-              onFocus={onFocus}
-              placeholder={isEmpty ? animatedPlaceholder || t("search.placeholder") : t("search.placeholder")}
-              aria-label={t("search.cta")}
-              className="w-full bg-transparent text-2xl font-bold tracking-[-0.5px] text-ink caret-brand-violet outline-none placeholder:text-ink-3 placeholder:font-normal placeholder:tracking-normal placeholder:text-base"
-            />
-            <p className="truncate text-xs text-ink-3">
+            <div className="relative">
+              <input
+                ref={inputRef}
+                type="text"
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                onFocus={onFocus}
+                aria-label={t("search.cta")}
+                className={cn(
+                  "w-full bg-transparent text-2xl font-bold tracking-[-0.5px] text-ink outline-none",
+                  isEmpty ? "caret-transparent" : "caret-brand-violet",
+                )}
+              />
+              {/* Typewriter overlay — matches the real input text size */}
+              {isEmpty && (
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute inset-y-0 left-0 flex items-center text-2xl font-bold tracking-[-0.5px] text-ink-3"
+                >
+                  {animatedPlaceholder}
+                  <span className="ml-0.5 inline-block h-7 w-[2px] animate-caret rounded-[1px] bg-ink-3" />
+                </span>
+              )}
+            </div>
+            <p
+              key={mode}
+              className={cn(
+                "truncate text-xs text-ink-3",
+                mode === "job" ? "animate-swap-right" : "animate-swap-left",
+              )}
+            >
               {isEmpty
-                ? t("search.subtitleEmpty")
+                ? t(`mode.${mode}.subtitleEmpty`)
                 : loading
-                  ? t("search.subtitleLoading")
+                  ? t(`mode.${mode}.subtitleLoading`)
                   : resultCount > 0
-                    ? t("search.subtitleResults", { count: resultCount })
-                    : t("search.subtitleEmpty")}
+                    ? t(`mode.${mode}.subtitleResults`, { count: resultCount })
+                    : t(`mode.${mode}.subtitleEmpty`)}
             </p>
           </div>
         </div>
@@ -84,14 +106,6 @@ export function SearchBar({
           </Button>
         </div>
       </div>
-
-      {/* Hint below the bar */}
-      <p className="mt-3 flex flex-wrap items-center justify-center gap-1.5 text-xs text-ink-3 sm:justify-start">
-        {t("search.quickSearch")}
-        <Kbd>⌘</Kbd>
-        <Kbd>K</Kbd>
-        {t("search.fromAnywhere")}
-      </p>
     </div>
   );
 }

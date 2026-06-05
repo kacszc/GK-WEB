@@ -1,19 +1,31 @@
+"use client";
+
+import { useState } from "react";
 import { SearchToggle } from "./SearchToggle";
 import { HeroSearch } from "./HeroSearch";
-import { getI18n } from "@/i18n/server";
+import { useI18n } from "@/i18n/I18nProvider";
+import { cn } from "@/lib/cn";
+import type { SearchMode } from "@/lib/types";
 
-export async function Hero() {
-  const { t } = await getI18n();
+export function Hero() {
+  const { t } = useI18n();
+  const [mode, setMode] = useState<SearchMode>("worker");
 
   return (
     <section className="mx-auto flex w-full max-w-[1280px] flex-col items-center gap-8 px-4 pb-8 pt-12 sm:px-8 sm:pt-16">
-      <SearchToggle />
+      <SearchToggle mode={mode} onChange={setMode} />
 
-      <h1 className="animate-fade-up text-center text-4xl font-bold leading-[1.05] tracking-[-1.5px] text-ink sm:text-5xl">
-        {t("hero.title")}
+      <h1
+        key={mode}
+        className={cn(
+          "text-center text-4xl font-bold leading-[1.05] tracking-[-1.5px] text-ink sm:text-5xl",
+          mode === "job" ? "animate-swap-right" : "animate-swap-left",
+        )}
+      >
+        {t(`mode.${mode}.title`)}
       </h1>
 
-      <HeroSearch />
+      <HeroSearch mode={mode} />
     </section>
   );
 }

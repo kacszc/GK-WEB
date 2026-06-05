@@ -37,6 +37,9 @@ export type FooterColumn = {
   links: string[];
 };
 
+/** Search mode: hiring a worker vs looking for a job. */
+export type SearchMode = "worker" | "job";
+
 /** Search (autocomplete) response. */
 export type SearchSuggestions = {
   query: string;

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { SuggestionSkeleton } from "@/components/ui/Skeleton";
 import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
-import type { Specialization, Person } from "@/lib/types";
+import type { Specialization, Person, SearchMode } from "@/lib/types";
 
 type Props = {
   query: string;
@@ -13,6 +13,7 @@ type Props = {
   people: Person[];
   totalCount: number;
   loading?: boolean;
+  mode: SearchMode;
   onPick: (value: string) => void;
 };
 
@@ -22,6 +23,7 @@ export function AutocompleteDropdown({
   people,
   totalCount,
   loading = false,
+  mode,
   onPick,
 }: Props) {
   const { t } = useI18n();
@@ -51,7 +53,7 @@ export function AutocompleteDropdown({
             <>
               <SectionLabel
                 left={`${t("dropdown.suggested")}${label ? ` · ${label}` : ""}`}
-                right={t("dropdown.availableNow", { count: totalCount })}
+                right={t(`mode.${mode}.availableNow`, { count: totalCount })}
               />
               <ul>
                 {specializations.map((s, i) => (
@@ -75,7 +77,7 @@ export function AutocompleteDropdown({
                           {s.title}
                         </span>
                         <span className="block text-[11px] text-ink-3">
-                          {t("dropdown.specialistsCount", { count: s.count })}
+                          {t(`mode.${mode}.itemsCount`, { count: s.count })}
                         </span>
                       </span>
                       <Kbd>{s.hint === "enter" ? "↵" : "→"}</Kbd>
@@ -93,7 +95,7 @@ export function AutocompleteDropdown({
           {people.length > 0 && (
             <>
               <SectionLabel
-                left={t("dropdown.nearby")}
+                left={t(`mode.${mode}.nearby`)}
                 right={t("filters.upTo", { km: 25 })}
               />
               <ul>
@@ -130,7 +132,7 @@ export function AutocompleteDropdown({
 
           <div className="mt-1 flex items-center justify-between gap-3 bg-muted px-5 py-3">
             <span className="flex items-center gap-2 text-[13px] font-medium text-ink-2">
-              {t("dropdown.showAll", { count: totalCount })} <Kbd>↵</Kbd>
+              {t(`mode.${mode}.showAll`, { count: totalCount })} <Kbd>↵</Kbd>
             </span>
             <Button variant="outline" className="rounded-soft px-3 py-1.5 text-xs font-medium">
               <MapIcon className="h-3.5 w-3.5" />
