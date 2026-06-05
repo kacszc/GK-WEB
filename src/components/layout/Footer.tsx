@@ -5,7 +5,7 @@ export async function Footer() {
   const { t, dict } = await getI18n();
 
   return (
-    <footer className="bg-ink text-on-dark">
+    <footer className="mt-auto bg-ink text-on-dark">
       <div className="mx-auto w-full max-w-[1280px] px-4 pb-8 pt-12 sm:px-8 lg:px-24">
         {/* Top */}
         <div className="flex flex-col gap-10 lg:flex-row lg:gap-16">

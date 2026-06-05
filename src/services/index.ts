@@ -12,3 +12,6 @@ export { authService } from "./auth.service";
 export { messagesService } from "./messages.service";
 export { accountService } from "./account.service";
 export { walletService } from "./wallet.service";
+export { onboardingService } from "./onboarding.service";
+export { portfolioService } from "./portfolio.service";
+export type { PortfolioDraft } from "./portfolio.service";

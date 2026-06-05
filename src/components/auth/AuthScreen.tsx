@@ -43,10 +43,14 @@ export function AuthScreen({ mode }: { mode: "login" | "register" }) {
     }
     setSubmitting(true);
     try {
-      const user =
-        mode === "login"
-          ? await authService.login(email, password)
-          : await authService.register({ name, email, role });
+      if (mode === "register") {
+        // New accounts go straight into role-specific onboarding (they sign in there).
+        const base = role === "specialist" ? "/onboarding/specialist" : "/onboarding/employer";
+        const qs = new URLSearchParams({ name, email }).toString();
+        router.push(`${base}?${qs}`);
+        return;
+      }
+      const user = await authService.login(email, password);
       signIn(user);
       router.push("/");
     } finally {

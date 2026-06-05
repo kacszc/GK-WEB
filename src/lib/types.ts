@@ -268,3 +268,81 @@ export type WhereValue = {
   location: string;
   distanceKm: number;
 };
+
+// --- Onboarding -----------------------------------------------------------
+
+/** An industry option used in onboarding (branża). */
+export type IndustryOption = {
+  id: string;
+  label: string;
+};
+
+/** Company data resolved from the GUS registry by NIP. */
+export type GusCompany = {
+  name: string;
+  nip: string;
+  regon: string;
+  address: string;
+  status: string; // e.g. "Aktywna · od 1989"
+};
+
+/** Payload collected by the specialist onboarding wizard. */
+export type WorkerOnboardingData = {
+  name: string;
+  email: string;
+  phone: string;
+  industry: string;
+  baseLocation: string;
+  radiusKm: number;
+  specializations: string[];
+  languages: string[];
+};
+
+/** Result of completing specialist onboarding. */
+export type WorkerOnboardingResult = {
+  trustScore: number;
+  firstName: string;
+};
+
+/** Payload collected by the employer onboarding wizard. */
+export type EmployerOnboardingData = {
+  company: GusCompany;
+  email: string;
+  industries: string[];
+  teamSize: string;
+  location: string;
+};
+
+/** Result of completing employer onboarding. */
+export type EmployerOnboardingResult = {
+  bonusTokens: number;
+  companyName: string;
+};
+
+// --- Portfolio ------------------------------------------------------------
+
+/** Verification status of a portfolio item. */
+export type PortfolioStatus = "pending" | "verified";
+
+/** A portfolio entry (gallery of a completed job). */
+export type PortfolioItem = {
+  id: string;
+  title: string;
+  description: string;
+  location: string;
+  date: string;
+  status: PortfolioStatus;
+  photoCount: number;
+  /** Background colors used for placeholder thumbnails. */
+  colors: string[];
+  /** Employer who can confirm this realisation (when linked to a job). */
+  linkedJob?: string;
+};
+
+/** A completed job a worker can attach a portfolio entry to. */
+export type LinkableJob = {
+  id: string;
+  title: string;
+  employer: string;
+  date: string;
+};

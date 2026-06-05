@@ -5,15 +5,22 @@ import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 
 /** Centered modal dialog with backdrop, Escape-to-close and scroll lock. */
+const sizes = {
+  md: "sm:max-w-[440px]",
+  lg: "sm:max-w-[640px]",
+} as const;
+
 export function Dialog({
   open,
   onClose,
   title,
+  size = "md",
   children,
 }: {
   open: boolean;
   onClose: () => void;
   title?: string;
+  size?: keyof typeof sizes;
   children: React.ReactNode;
 }) {
   useEffect(() => {
@@ -33,7 +40,9 @@ export function Dialog({
   return createPortal(
     <div className="fixed inset-0 z-[70] flex items-end justify-center sm:items-center">
       <div className="absolute inset-0 animate-fade-in bg-ink/40" onClick={onClose} />
-      <div className="relative z-10 w-full animate-dialog-in rounded-t-card border border-line bg-surface p-6 shadow-dropdown sm:max-w-[440px] sm:rounded-card">
+      <div
+        className={`relative z-10 max-h-[92dvh] w-full animate-dialog-in overflow-y-auto rounded-t-card border border-line bg-surface p-6 shadow-dropdown sm:rounded-card ${sizes[size]}`}
+      >
         {title && (
           <div className="mb-4 flex items-center justify-between gap-3">
             <h2 className="text-lg font-bold text-ink">{title}</h2>

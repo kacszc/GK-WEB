@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, Settings, Briefcase, MessageSquare, Bookmark, Clock, Coins } from "lucide-react";
+import { LayoutGrid, Settings, Briefcase, MessageSquare, Bookmark, Clock, Coins, ImageIcon } from "lucide-react";
+import { useAuth } from "@/lib/AuthProvider";
 import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
 
@@ -11,6 +12,7 @@ const items = [
   { href: "/account/jobs", key: "account.navJobs", icon: Briefcase },
   { href: "/account/messages", key: "account.navMessages", icon: MessageSquare },
   { href: "/account/contacts", key: "account.navContacts", icon: Bookmark },
+  { href: "/account/portfolio", key: "portfolio.title", icon: ImageIcon, role: "specialist" as const },
   { href: "/account/tokens", key: "tokens.walletTitle", icon: Coins },
   { href: "/account/history", key: "account.navHistory", icon: Clock },
   { href: "/account/settings", key: "account.navSettings", icon: Settings },
@@ -18,11 +20,13 @@ const items = [
 
 export function AccountSidebar() {
   const { t } = useI18n();
+  const { user } = useAuth();
   const pathname = usePathname();
+  const visible = items.filter((it) => !it.role || it.role === user?.role);
 
   return (
     <nav className="flex gap-1 overflow-x-auto lg:flex-col lg:gap-0.5">
-      {items.map(({ href, key, icon: Icon }) => {
+      {visible.map(({ href, key, icon: Icon }) => {
         const active = href === "/account" ? pathname === "/account" : pathname.startsWith(href);
         return (
           <Link

@@ -1,5 +1,5 @@
 // Mock data for the account dashboard. Replaced by the backend later.
-import type { MyJob, Conversation, SavedContact, ActivityItem, ChatMessage, Applicant } from "@/lib/types";
+import type { MyJob, Conversation, SavedContact, ActivityItem, ChatMessage, Applicant, PortfolioItem, LinkableJob } from "@/lib/types";
 
 export const myJobs: MyJob[] = [
   { id: "mj1", title: "Barman na wesele", profession: "Barman", district: "Mokotów", status: "active", applicants: 7, rate: 50, postedAgo: "2 godz. temu" },
@@ -53,4 +53,44 @@ export const activity: ActivityItem[] = [
   { id: "a3", type: "hired", text: "Zatrudniłeś Tomasz P. do „Kucharz na sezon”", time: "5 dni temu" },
   { id: "a4", type: "review", text: "Wystawiłeś opinię (★ 5.0) dla Karolina N.", time: "1 tydz. temu" },
   { id: "a5", type: "job_posted", text: "Dodałeś zlecenie „Kelner — event firmowy”", time: "wczoraj" },
+];
+
+export const portfolioItems: PortfolioItem[] = [
+  {
+    id: "pf1",
+    title: "Event firmowy 150 osób",
+    description: "Bar z koktajlami klasycznymi i sekcją wina. Praca w 2-osobowym zespole.",
+    location: "Warszawa Wola",
+    date: "12.04.2026",
+    status: "verified",
+    photoCount: 4,
+    colors: ["#5b4636", "#c47b35", "#4f6b58", "#7a5a3a"],
+    linkedJob: "Hotel Marriott Warszawa",
+  },
+  {
+    id: "pf2",
+    title: "Wesele w plenerze",
+    description: "Obsługa barowa wesela na 120 gości, drinki autorskie.",
+    location: "Konstancin-Jeziorna",
+    date: "28.03.2026",
+    status: "verified",
+    photoCount: 3,
+    colors: ["#3f5b6b", "#8a6d3b", "#5a4a6b"],
+    linkedJob: "Sala Weselna Pałacyk",
+  },
+  {
+    id: "pf3",
+    title: "Bar weekend",
+    description: "Stała obsługa baru w restauracji przez weekend.",
+    location: "Warszawa Śródmieście",
+    date: "06.04.2026",
+    status: "pending",
+    photoCount: 2,
+    colors: ["#4f6b58", "#6b4f5a"],
+  },
+];
+
+export const linkableJobs: LinkableJob[] = [
+  { id: "lj1", title: "Event firmowy 150 osób", employer: "Hotel Marriott Warszawa", date: "12.04.2026" },
+  { id: "lj2", title: "Bar weekend", employer: "Restauracja Bok Bok", date: "06.04.2026" },
 ];
