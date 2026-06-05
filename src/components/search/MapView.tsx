@@ -19,8 +19,8 @@ const AVAIL_COLOR: Record<Availability, string> = {
 function popupHtml(s: Specialist, t: TFunction): string {
   const color = avatarColors[s.avatarIndex % avatarColors.length];
   return `
-    <div class="w-[240px] p-1">
-      <div class="flex items-start gap-2.5">
+    <div class="w-[240px]">
+      <div class="flex items-start gap-2.5 pr-5">
         <span class="grid h-9 w-9 shrink-0 place-items-center rounded-full text-[12px] font-semibold text-ink/80" style="background:${color}">${initials(s.name)}</span>
         <div class="min-w-0 flex-1">
           <div class="flex items-center justify-between gap-2">
