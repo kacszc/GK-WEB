@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
 import { Toggle } from "@/components/ui/Toggle";
 import { inputClass } from "@/components/ui/Input";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { availabilityService } from "@/services";
 import { useI18n } from "@/i18n/I18nProvider";
 import type { Locale } from "@/i18n/config";
@@ -107,6 +108,9 @@ export function AvailabilityScreen() {
         </Button>
       </div>
 
+      {!data ? (
+        <AvailabilitySkeleton />
+      ) : (
       <div className="grid gap-5 lg:grid-cols-[1fr_300px]">
         <AvailabilityCalendar
           month={month}
@@ -178,6 +182,7 @@ export function AvailabilityScreen() {
           )}
         </div>
       </div>
+      )}
 
       <AddDayDialog open={addDayOpen} onClose={() => setAddDayOpen(false)} onSave={addRange} menuLabels={menuLabels} />
       <AddRuleDialog open={addRuleOpen} onClose={() => setAddRuleOpen(false)} onSave={addRule} />
@@ -294,6 +299,37 @@ function AddRuleDialog({
         <Button variant="dark" onClick={save} disabled={!label.trim()} className="rounded-tile px-5 py-2.5 text-sm disabled:opacity-40">{t("availability.saveBtn")}</Button>
       </div>
     </Dialog>
+  );
+}
+
+function AvailabilitySkeleton() {
+  return (
+    <div className="grid gap-5 lg:grid-cols-[1fr_300px]">
+      {/* Calendar */}
+      <div className="rounded-panel border border-line-3 bg-surface p-4 sm:p-5">
+        <div className="mb-4 flex items-center justify-between">
+          <Skeleton className="h-8 w-8 rounded-tile" />
+          <Skeleton className="h-5 w-32" />
+          <Skeleton className="h-8 w-8 rounded-tile" />
+        </div>
+        <div className="mb-1.5 grid grid-cols-7 gap-1.5 sm:gap-2">
+          {Array.from({ length: 7 }).map((_, i) => (
+            <Skeleton key={i} className="h-3 w-8" />
+          ))}
+        </div>
+        <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
+          {Array.from({ length: 35 }).map((_, i) => (
+            <Skeleton key={i} className="h-[52px] rounded-tile" />
+          ))}
+        </div>
+      </div>
+      {/* Side panels */}
+      <div className="flex flex-col gap-4">
+        <Skeleton className="h-32 rounded-panel" />
+        <Skeleton className="h-44 rounded-panel" />
+        <Skeleton className="h-40 rounded-panel" />
+      </div>
+    </div>
   );
 }
 
