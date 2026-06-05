@@ -17,3 +17,8 @@ export { portfolioService } from "./portfolio.service";
 export type { PortfolioDraft } from "./portfolio.service";
 export { legalService } from "./legal.service";
 export { supportService } from "./support.service";
+export { availabilityService } from "./availability.service";
+export { employersService } from "./employers.service";
+export { reportsService } from "./reports.service";
+export { disputesService } from "./disputes.service";
+export type { OpenDisputeDraft } from "./disputes.service";

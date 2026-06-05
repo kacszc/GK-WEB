@@ -8,9 +8,11 @@ import { accountService } from "@/services";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
+import { OpenDisputeDialog } from "@/components/dispute/OpenDisputeDialog";
+import { MediationView } from "@/components/dispute/MediationView";
 import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
-import type { Applicant } from "@/lib/types";
+import type { Applicant, Dispute } from "@/lib/types";
 
 type Phase = "applicants" | "inProgress" | "completed";
 
@@ -27,6 +29,8 @@ export function JobDetailScreen({ id }: { id: string }) {
   const [confirming, setConfirming] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [reviewed, setReviewed] = useState(false);
+  const [disputeOpen, setDisputeOpen] = useState(false);
+  const [dispute, setDispute] = useState<Dispute | null>(null);
 
   async function confirm() {
     setConfirming(true);
@@ -175,7 +179,31 @@ export function JobDetailScreen({ id }: { id: string }) {
               {t("jobDetail.leaveReview")}
             </Button>
           )}
+          {!dispute && (
+            <button
+              onClick={() => setDisputeOpen(true)}
+              className="mt-3 block w-full text-center text-[12px] font-medium text-ink-4 hover:text-danger"
+            >
+              {t("dispute.openButton")}
+            </button>
+          )}
         </section>
+      )}
+
+      {/* Active mediation */}
+      {dispute && <MediationView dispute={dispute} />}
+
+      {worker && (
+        <OpenDisputeDialog
+          open={disputeOpen}
+          onClose={() => setDisputeOpen(false)}
+          jobId={id}
+          counterparty={worker.name}
+          onOpened={(d) => {
+            setDispute(d);
+            setDisputeOpen(false);
+          }}
+        />
       )}
 
       <ReviewDialog

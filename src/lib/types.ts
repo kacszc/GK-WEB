@@ -430,3 +430,128 @@ export type MaintenanceStatus = {
   state: string;
   log: { time: string; text: string; done: boolean }[];
 };
+
+// --- Availability calendar -----------------------------------------------
+
+/** State of a single day in the availability calendar. */
+export type DayState = "free" | "booked" | "blocked";
+
+/** Availability of one calendar day (date is ISO yyyy-mm-dd). */
+export type AvailabilityDay = {
+  date: string;
+  state: DayState;
+};
+
+/** A recurring availability rule (e.g. "Mon–Fri 16:00–23:00"). */
+export type RecurringRule = {
+  id: string;
+  label: string;
+  detail: string;
+  available: boolean;
+};
+
+/** Month summary shown alongside the calendar. */
+export type AvailabilitySummary = {
+  free: number;
+  booked: number;
+  blocked: number;
+  jobsDone: number;
+  estimatedEarnings: number;
+};
+
+/** Full month of availability data. */
+export type AvailabilityMonth = {
+  days: AvailabilityDay[];
+  rules: RecurringRule[];
+  summary: AvailabilitySummary;
+};
+
+// --- Public employer profile ---------------------------------------------
+
+/** Reverse-trust rating dimension on the employer profile. */
+export type EmployerRating = { label: string; score: number };
+
+/** A worker's review of an employer (reverse trust). */
+export type EmployerReview = {
+  id: string;
+  author: string;
+  avatarIndex: number;
+  rating: number;
+  trustScore: number;
+  role: string;
+  text: string;
+  time: string;
+};
+
+/** A public employer profile (Screen I). */
+export type EmployerProfile = {
+  id: string;
+  name: string;
+  initial: string;
+  verified: boolean;
+  industries: string[];
+  location: string;
+  website: string;
+  email: string;
+  rating: number;
+  completedJobs: number;
+  memberSince: string;
+  description: string;
+  avgHireDays: number;
+  onTimePayment: number;
+  hiredRoles: { role: string; count: number }[];
+  ratings: EmployerRating[];
+  flags: number;
+  reviews: EmployerReview[];
+  activeJobs: { id: string; title: string; meta: string }[];
+  eventColors: string[];
+  seekingCount: number;
+  seekingRoles: string;
+};
+
+// --- Reports & analytics --------------------------------------------------
+
+export type ReportKpi = { id: string; value: string; label: string; delta?: string };
+export type HireBar = { label: string; value: number };
+export type FunnelStep = { label: string; value: number; pct: number };
+export type HireRow = {
+  id: string;
+  name: string;
+  avatarIndex: number;
+  trustScore: number;
+  job: string;
+  date: string;
+  rate: number;
+  rating: number;
+};
+export type ReportsData = {
+  kpis: ReportKpi[];
+  hiresOverTime: HireBar[];
+  history: HireRow[];
+  funnel: FunnelStep[];
+  repeatHireRate: number;
+  disputesOpened: number;
+};
+
+// --- Disputes -------------------------------------------------------------
+
+export type DisputeReason = "no_payment" | "conditions" | "other";
+
+export type DisputeEventType = "opened" | "mediator" | "response" | "system" | "closed";
+export type DisputeEvent = {
+  id: string;
+  type: DisputeEventType;
+  title: string;
+  text: string;
+  time: string;
+};
+
+export type Dispute = {
+  id: string;
+  counterparty: string;
+  reasonLabel: string;
+  openedAt: string;
+  mediator: string;
+  remaining: string;
+  events: DisputeEvent[];
+};
