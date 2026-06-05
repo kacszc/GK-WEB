@@ -43,6 +43,50 @@ export type SearchMode = "worker" | "job";
 /** Account role. */
 export type UserRole = "employer" | "specialist";
 
+/** A job the user posted (employer dashboard). */
+export type MyJobStatus = "active" | "filled" | "expired";
+export type MyJob = {
+  id: string;
+  title: string;
+  profession: string;
+  district: string;
+  status: MyJobStatus;
+  applicants: number;
+  rate: number;
+  postedAgo: string;
+};
+
+/** A conversation in the messages inbox. */
+export type Conversation = {
+  id: string;
+  name: string;
+  avatarIndex: number;
+  role: string;
+  lastMessage: string;
+  time: string;
+  unread: number;
+};
+
+/** A saved specialist contact. */
+export type SavedContact = {
+  id: string;
+  name: string;
+  avatarIndex: number;
+  role: string;
+  district: string;
+  rating: number;
+  trustScore: number;
+};
+
+/** An activity-history entry. */
+export type ActivityType = "job_posted" | "contacted" | "hired" | "applied" | "review";
+export type ActivityItem = {
+  id: string;
+  type: ActivityType;
+  text: string;
+  time: string;
+};
+
 /** Authenticated user (mock). */
 export type AuthUser = {
   name: string;

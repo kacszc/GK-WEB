@@ -10,3 +10,4 @@ export { jobsService } from "./jobs.service";
 export type { JobFilters } from "./jobs.service";
 export { authService } from "./auth.service";
 export { messagesService } from "./messages.service";
+export { accountService } from "./account.service";

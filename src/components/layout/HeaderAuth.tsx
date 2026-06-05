@@ -15,8 +15,8 @@ export function HeaderAuth() {
   if (ready && user) {
     const roleItem =
       user.role === "employer"
-        ? { icon: <Briefcase className="h-4 w-4 text-ink-3" />, label: t("auth.myJobs"), href: "/post-job" }
-        : { icon: <UserIcon className="h-4 w-4 text-ink-3" />, label: t("auth.myProfile"), href: "#" };
+        ? { icon: <Briefcase className="h-4 w-4 text-ink-3" />, label: t("auth.myJobs"), href: "/account/jobs" }
+        : { icon: <UserIcon className="h-4 w-4 text-ink-3" />, label: t("auth.myProfile"), href: "/account" };
 
     return (
       <div className="flex items-center gap-1.5 sm:gap-2">
@@ -59,7 +59,7 @@ export function HeaderAuth() {
               <MenuItem href={roleItem.href} onClick={close} icon={roleItem.icon}>
                 {roleItem.label}
               </MenuItem>
-              <MenuItem href="#" onClick={close} icon={<Settings className="h-4 w-4 text-ink-3" />}>
+              <MenuItem href="/account/settings" onClick={close} icon={<Settings className="h-4 w-4 text-ink-3" />}>
                 {t("auth.settings")}
               </MenuItem>
               <hr className="my-1 border-line" />
