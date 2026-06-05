@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 
 /** Centered modal dialog with backdrop, Escape-to-close and scroll lock. */
@@ -27,9 +28,9 @@ export function Dialog({
     };
   }, [open, onClose]);
 
-  if (!open) return null;
+  if (!open || typeof document === "undefined") return null;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[70] flex items-end justify-center sm:items-center">
       <div className="absolute inset-0 animate-fade-in bg-ink/40" onClick={onClose} />
       <div className="relative z-10 w-full animate-dialog-in rounded-t-card border border-line bg-surface p-6 shadow-dropdown sm:max-w-[440px] sm:rounded-card">
@@ -47,6 +48,7 @@ export function Dialog({
         )}
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -54,9 +55,9 @@ export function FiltersModal({
     };
   }, [render]);
 
-  if (!render) return null;
+  if (!render || typeof document === "undefined") return null;
 
-  return (
+  return createPortal(
     <div
       className={cn(
         "fixed inset-0 z-[60] flex flex-col bg-surface lg:hidden",
@@ -81,6 +82,7 @@ export function FiltersModal({
           {t("results.showResults")}
         </Button>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
