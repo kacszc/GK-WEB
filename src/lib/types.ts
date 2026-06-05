@@ -40,6 +40,16 @@ export type FooterColumn = {
 /** Search mode: hiring a worker vs looking for a job. */
 export type SearchMode = "worker" | "job";
 
+/** Account role. */
+export type UserRole = "employer" | "specialist";
+
+/** Authenticated user (mock). */
+export type AuthUser = {
+  name: string;
+  email: string;
+  role: UserRole;
+};
+
 /** Availability of a specialist. */
 export type Availability = "now" | "week" | "date";
 

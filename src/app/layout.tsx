@@ -4,6 +4,7 @@ import "./globals.css";
 import { getI18n } from "@/i18n/server";
 import { I18nProvider } from "@/i18n/I18nProvider";
 import { QueryProvider } from "@/lib/QueryProvider";
+import { AuthProvider } from "@/lib/AuthProvider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -31,7 +32,9 @@ export default async function RootLayout({
     <html lang={locale} className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-page text-ink">
         <I18nProvider locale={locale} dict={dict}>
-          <QueryProvider>{children}</QueryProvider>
+          <QueryProvider>
+            <AuthProvider>{children}</AuthProvider>
+          </QueryProvider>
         </I18nProvider>
       </body>
     </html>

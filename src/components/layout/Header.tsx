@@ -1,9 +1,9 @@
 import { Plus } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
 import { Pill } from "@/components/ui/Pill";
-import { Button } from "@/components/ui/Button";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { MobileNav } from "./MobileNav";
+import { HeaderAuth } from "./HeaderAuth";
 import { getI18n } from "@/i18n/server";
 
 export async function Header() {
@@ -31,12 +31,7 @@ export async function Header() {
             {t("nav.addJob")}
           </Pill>
           <LanguageSwitcher />
-          <a href="#" className="text-sm font-medium text-ink-2 hover:text-ink">
-            {t("nav.login")}
-          </a>
-          <Button variant="dark" className="rounded-full px-4 py-2 text-sm">
-            {t("nav.register")}
-          </Button>
+          <HeaderAuth />
         </nav>
 
         {/* Mobile */}
