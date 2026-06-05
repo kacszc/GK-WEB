@@ -265,6 +265,9 @@ const en: Dictionary = {
     errName: "Enter your full name",
     errTerms: "Please accept the terms",
     logout: "Log out",
+    myJobs: "My jobs",
+    myProfile: "My profile",
+    settings: "Settings",
   },
   trust: {
     using: "Already using us:",

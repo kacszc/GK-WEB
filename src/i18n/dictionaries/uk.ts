@@ -265,6 +265,9 @@ const uk: Dictionary = {
     errName: "Вкажіть ім'я та прізвище",
     errTerms: "Прийміть правила",
     logout: "Вийти",
+    myJobs: "Мої замовлення",
+    myProfile: "Мій профіль",
+    settings: "Налаштування",
   },
   trust: {
     using: "Вже користуються:",

@@ -264,6 +264,9 @@ const pl = {
     errName: "Podaj imię i nazwisko",
     errTerms: "Zaakceptuj regulamin",
     logout: "Wyloguj się",
+    myJobs: "Moje zlecenia",
+    myProfile: "Mój profil",
+    settings: "Ustawienia",
   },
   trust: {
     using: "Korzystają już:",
