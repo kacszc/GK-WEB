@@ -7,6 +7,8 @@ import { QueryProvider } from "@/lib/QueryProvider";
 import { AuthProvider } from "@/lib/AuthProvider";
 import { WalletProvider } from "@/lib/WalletProvider";
 import { ContactProvider } from "@/lib/ContactProvider";
+import { CookieConsentProvider } from "@/lib/CookieConsentProvider";
+import { CookieConsent } from "@/components/legal/CookieConsent";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -37,7 +39,12 @@ export default async function RootLayout({
           <QueryProvider>
             <AuthProvider>
               <WalletProvider>
-                <ContactProvider>{children}</ContactProvider>
+                <ContactProvider>
+                  <CookieConsentProvider>
+                    {children}
+                    <CookieConsent />
+                  </CookieConsentProvider>
+                </ContactProvider>
               </WalletProvider>
             </AuthProvider>
           </QueryProvider>

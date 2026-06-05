@@ -346,3 +346,87 @@ export type LinkableJob = {
   employer: string;
   date: string;
 };
+
+// --- Legal & support ------------------------------------------------------
+
+/** A numbered section inside a legal document. */
+export type LegalSection = {
+  id: string;
+  number: string; // "§1", "§2", …
+  title: string;
+  paragraphs: string[];
+};
+
+/** A full legal document (terms, privacy, cookies, community). */
+export type LegalDoc = {
+  slug: string;
+  title: string;
+  effectiveFrom: string;
+  version: string;
+  updated: string;
+  sections: LegalSection[];
+};
+
+/** Cookie category shown in the consent UI. */
+export type CookieCategory = {
+  id: "essential" | "performance" | "functional" | "marketing";
+  name: string;
+  description: string;
+  duration: string;
+  examples: string;
+  required: boolean;
+};
+
+/** A help-center category card. */
+export type HelpCategory = {
+  id: string;
+  name: string;
+  articleCount: number;
+  color: string;
+};
+
+/** A popular help article. */
+export type HelpArticle = {
+  id: string;
+  question: string;
+  answer: string;
+  views: number;
+};
+
+/** A way to reach support. */
+export type ContactMethod = {
+  id: string;
+  label: string;
+  value: string;
+  hint: string;
+  color: string;
+};
+
+/** Company registry data shown in the contact footer card. */
+export type CompanyInfo = {
+  legalName: string;
+  address: string[];
+  registry: string;
+};
+
+/** A headline metric on the About page. */
+export type AboutStat = {
+  value: string;
+  label: string;
+  sub: string;
+};
+
+/** A team member on the About page. */
+export type TeamMember = {
+  name: string;
+  role: string;
+  avatarIndex: number;
+};
+
+/** Live maintenance status for the maintenance screen. */
+export type MaintenanceStatus = {
+  etaTime: string;
+  remaining: string;
+  state: string;
+  log: { time: string; text: string; done: boolean }[];
+};

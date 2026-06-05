@@ -15,3 +15,5 @@ export { walletService } from "./wallet.service";
 export { onboardingService } from "./onboarding.service";
 export { portfolioService } from "./portfolio.service";
 export type { PortfolioDraft } from "./portfolio.service";
+export { legalService } from "./legal.service";
+export { supportService } from "./support.service";
