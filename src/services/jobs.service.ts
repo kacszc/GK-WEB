@@ -23,6 +23,18 @@ type JobDto = {
   employerVerified?: boolean;
 };
 
+/** Backend sends an ISO timestamp; mock data already uses display strings. Render a relative label. */
+function formatPosted(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value; // already a display string (mock)
+  const hours = Math.floor((Date.now() - date.getTime()) / 3_600_000);
+  if (hours < 1) return "przed chwilą";
+  if (hours < 24) return `${hours} godz. temu`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days} dni temu`;
+  return date.toLocaleDateString("pl-PL", { day: "numeric", month: "short" });
+}
+
 /** Adapt a backend job DTO to the frontend JobPosting. */
 function toJobPosting(d: JobDto): JobPosting {
   return {
@@ -36,7 +48,7 @@ function toJobPosting(d: JobDto): JobPosting {
     when: "now",
     employer: d.employer ?? "",
     employerVerified: d.employerVerified ?? false,
-    postedAgo: d.createdAt,
+    postedAgo: formatPosted(d.createdAt),
     description: d.description ?? "",
     promoted: d.promoted ?? false,
   };

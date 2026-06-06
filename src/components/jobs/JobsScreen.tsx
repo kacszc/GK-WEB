@@ -172,7 +172,8 @@ function JobCard({ job, onApply }: { job: JobPosting; onApply: () => void }) {
         <span className="rounded-tile bg-pill px-2 py-1 font-medium">{job.profession}</span>
         <span className="inline-flex items-center gap-1">
           <MapPin className="h-3.5 w-3.5 text-ink-4" />
-          {job.district} · {t("results.km", { km: job.distanceKm })}
+          {job.district}
+          {job.distanceKm ? ` · ${t("results.km", { km: job.distanceKm })}` : ""}
         </span>
       </div>
 
@@ -183,10 +184,12 @@ function JobCard({ job, onApply }: { job: JobPosting; onApply: () => void }) {
           <Coins className="h-3.5 w-3.5 text-[#e0a400]" />
           {t("results.perHour", { rate: job.rate })}
         </span>
-        <span className="inline-flex items-center gap-1">
-          <Clock className="h-3.5 w-3.5 text-ink-4" />
-          {t("jobs.hours", { n: job.hours })}
-        </span>
+        {job.hours > 0 && (
+          <span className="inline-flex items-center gap-1">
+            <Clock className="h-3.5 w-3.5 text-ink-4" />
+            {t("jobs.hours", { n: job.hours })}
+          </span>
+        )}
       </div>
 
       <div className="mt-4 flex items-center justify-between gap-2 border-t border-line pt-3">
