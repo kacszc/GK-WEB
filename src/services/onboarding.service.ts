@@ -6,7 +6,7 @@ import type {
   EmployerOnboardingData,
   EmployerOnboardingResult,
 } from "@/lib/types";
-import { apiGet } from "@/lib/api-client";
+import { apiGet, apiPost } from "@/lib/api-client";
 import { mockDelay } from "./mock-data";
 
 /** Run `fn`, falling back to `fallback` if the backend is unreachable/errors. */
@@ -107,30 +107,59 @@ export const onboardingService = {
 
   /** Look up a company in the GUS registry by NIP. */
   async lookupGus(nip: string): Promise<GusCompany> {
-    // TODO(backend): return apiGet(`/gus/company?nip=${nip}`);
-    await mockDelay(800, 1400);
     const clean = nip.replace(/\s+/g, "");
-    return {
-      name: "Marriott Warszawa Sp. z o.o.",
-      nip: clean || "5252335525",
-      regon: "012345678",
-      address: "Aleja Jana Pawła II 22, Warszawa",
-      status: "Aktywna · od 1989",
-    };
+    return withFallback(
+      () => apiGet<GusCompany>(`/api/gus/company?nip=${encodeURIComponent(clean)}`),
+      async () => {
+        await mockDelay(800, 1400);
+        return {
+          name: "Marriott Warszawa Sp. z o.o.",
+          nip: clean || "5252335525",
+          regon: "012345678",
+          address: "Aleja Jana Pawła II 22, Warszawa",
+          status: "Aktywna · od 1989",
+        };
+      },
+    );
   },
 
-  /** Persist specialist onboarding and return the starting Trust Score. */
+  /** Persist specialist onboarding (creates the profile) and return the starting Trust Score. */
   async completeWorker(data: WorkerOnboardingData): Promise<WorkerOnboardingResult> {
-    // TODO(backend): return apiPost("/onboarding/specialist", data);
-    await mockDelay(700, 1200);
     const firstName = data.name.trim().split(/\s+/)[0] || "Specjalisto";
-    return { trustScore: 42, firstName };
+    return withFallback(
+      async () => {
+        const res = await apiPost<{ id: string; trustScore: number }>("/api/me/specialist-profile", {
+          displayName: data.name,
+          headline: data.specializations.join(", ") || data.industry,
+          district: data.baseLocation,
+        });
+        return { trustScore: res.trustScore, firstName };
+      },
+      async () => {
+        await mockDelay(700, 1200);
+        return { trustScore: 42, firstName };
+      },
+    );
   },
 
-  /** Persist employer onboarding and return the welcome-token bonus. */
+  /** Persist employer onboarding (creates the company profile) and return the welcome-token bonus. */
   async completeEmployer(data: EmployerOnboardingData): Promise<EmployerOnboardingResult> {
-    // TODO(backend): return apiPost("/onboarding/employer", data);
-    await mockDelay(700, 1200);
-    return { bonusTokens: 10, companyName: data.company.name };
+    return withFallback(
+      async () => {
+        await apiPost("/api/me/employer-profile", {
+          name: data.company.name,
+          nip: data.company.nip,
+          regon: data.company.regon,
+          address: data.company.address,
+          city: data.location,
+          industries: data.industries,
+        });
+        return { bonusTokens: 10, companyName: data.company.name };
+      },
+      async () => {
+        await mockDelay(700, 1200);
+        return { bonusTokens: 10, companyName: data.company.name };
+      },
+    );
   },
 };
