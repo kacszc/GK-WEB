@@ -1,31 +1,50 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Send } from "lucide-react";
-import { accountService } from "@/services";
+import { messagesService } from "@/services";
 import { Avatar } from "@/components/ui/Avatar";
 import { useI18n } from "@/i18n/I18nProvider";
+import { useThreadSocket } from "@/lib/useThreadSocket";
 import { cn } from "@/lib/cn";
 import type { ChatMessage } from "@/lib/types";
 
 export function ChatView({ id }: { id: string }) {
   const { t } = useI18n();
   const [draft, setDraft] = useState("");
-  const [sentLocal, setSentLocal] = useState<ChatMessage[]>([]);
+  // Locally-appended messages (optimistic sends + live frames) kept per thread,
+  // so switching threads needs no reset effect.
+  const [extraByThread, setExtraByThread] = useState<Record<string, ChatMessage[]>>({});
+  const extra = extraByThread[id] ?? [];
   const listRef = useRef<HTMLDivElement>(null);
 
   const { data: convos = [] } = useQuery({
     queryKey: ["conversations"],
-    queryFn: accountService.getConversations,
+    queryFn: messagesService.getThreads,
   });
   const { data: thread } = useQuery({
     queryKey: ["thread", id],
-    queryFn: () => accountService.getThread(id),
+    queryFn: () => messagesService.getThread(id),
   });
 
-  const messages = [...(thread?.messages ?? []), ...sentLocal];
+  // Append a message, de-duping by id so optimistic + live frames don't double.
+  const append = useCallback(
+    (msg: ChatMessage) => {
+      setExtraByThread((prev) => {
+        const cur = prev[id] ?? [];
+        if (cur.some((x) => x.id === msg.id)) return prev;
+        return { ...prev, [id]: [...cur, msg] };
+      });
+    },
+    [id],
+  );
+
+  // Live updates over STOMP (no-op when signed out / backend down).
+  useThreadSocket(id, append);
+
+  const messages = [...(thread?.messages ?? []), ...extra];
 
   useEffect(() => {
     const el = listRef.current;
@@ -36,8 +55,8 @@ export function ChatView({ id }: { id: string }) {
     const text = draft.trim();
     if (!text) return;
     setDraft("");
-    const msg = await accountService.sendMessage(id, text);
-    setSentLocal((m) => [...m, msg]);
+    const msg = await messagesService.sendToThread(id, text);
+    append(msg);
   }
 
   return (

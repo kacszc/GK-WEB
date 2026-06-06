@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { accountService } from "@/services";
+import { messagesService } from "@/services";
 import { Avatar } from "@/components/ui/Avatar";
 import { useI18n } from "@/i18n/I18nProvider";
 
@@ -10,7 +10,7 @@ export function MessagesList() {
   const { t } = useI18n();
   const { data: convos = [], isLoading } = useQuery({
     queryKey: ["conversations"],
-    queryFn: accountService.getConversations,
+    queryFn: messagesService.getThreads,
   });
 
   return (

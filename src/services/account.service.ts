@@ -1,6 +1,6 @@
-import type { MyJob, Conversation, SavedContact, ActivityItem, ChatMessage, Applicant } from "@/lib/types";
+import type { MyJob, SavedContact, ActivityItem, Applicant } from "@/lib/types";
 import { apiGet, apiPost } from "@/lib/api-client";
-import { myJobs, conversations, savedContacts, activity, threads, applicants } from "./mock-account";
+import { myJobs, savedContacts, activity, applicants } from "./mock-account";
 import { mockDelay } from "./mock-data";
 
 /** Backend applicant DTO (job owner view). */
@@ -53,11 +53,6 @@ export const accountService = {
     await mockDelay(400, 900);
     return myJobs;
   },
-  async getConversations(): Promise<Conversation[]> {
-    // TODO(backend): return apiGet("/me/conversations");
-    await mockDelay(400, 900);
-    return conversations;
-  },
   async getContacts(): Promise<SavedContact[]> {
     // TODO(backend): return apiGet("/me/contacts");
     await mockDelay(400, 900);
@@ -67,14 +62,6 @@ export const accountService = {
     // TODO(backend): return apiGet("/me/activity");
     await mockDelay(400, 900);
     return activity;
-  },
-  async getThread(id: string): Promise<{ conversation: Conversation | null; messages: ChatMessage[] }> {
-    // TODO(backend): return apiGet(`/me/conversations/${id}`);
-    await mockDelay(300, 700);
-    return {
-      conversation: conversations.find((c) => c.id === id) ?? null,
-      messages: threads[id] ?? [],
-    };
   },
   async getJob(id: string): Promise<MyJob | null> {
     await mockDelay(300, 600);
@@ -107,10 +94,5 @@ export const accountService = {
       await mockDelay(500, 900);
     }
     return { ok: true };
-  },
-  async sendMessage(id: string, text: string): Promise<ChatMessage> {
-    // TODO(backend): return apiPost(`/me/conversations/${id}/messages`, { text });
-    await mockDelay(300, 600);
-    return { id: `m-${Date.now().toString(36)}`, fromMe: true, text, time: "teraz" };
   },
 };

@@ -170,6 +170,7 @@ const en: Dictionary = {
     memberSince: "On skill.com since",
     repeatClients: "Repeat clients",
     verification: "Verification & certificates",
+    portfolio: "Portfolio",
     reviews: "Reviews",
     reviewsCount: "{count} reviews",
     availability: "Availability",

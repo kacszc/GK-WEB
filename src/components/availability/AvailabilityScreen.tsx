@@ -87,9 +87,18 @@ export function AvailabilityScreen() {
     setOverrides((o) => ({ ...o, ...next }));
   }
 
-  function addRule(rule: Omit<RecurringRule, "id">) {
+  async function addRule(rule: Omit<RecurringRule, "id">) {
     ruleId.current += 1;
-    setLocalRules((rs) => [...rs, { ...rule, id: `local-${ruleId.current}` }]);
+    // Optimistic insert with a temporary id, then reconcile with the server id.
+    const tempId = `local-${ruleId.current}`;
+    setLocalRules((rs) => [...rs, { ...rule, id: tempId }]);
+    const created = await availabilityService.addRule(rule);
+    setLocalRules((rs) => rs.map((r) => (r.id === tempId ? created : r)));
+  }
+
+  function removeRule(id: string) {
+    setRemovedRuleIds((ids) => [...ids, id]);
+    void availabilityService.deleteRule(id);
   }
 
   const summary = data?.summary;
@@ -148,7 +157,7 @@ export function AvailabilityScreen() {
                     <p className="text-[12px] text-ink-4">{r.detail}</p>
                   </div>
                   <button
-                    onClick={() => setRemovedRuleIds((ids) => [...ids, r.id])}
+                    onClick={() => removeRule(r.id)}
                     aria-label={t("availability.deleteRule")}
                     className="opacity-0 transition-opacity hover:text-danger group-hover:opacity-100"
                   >

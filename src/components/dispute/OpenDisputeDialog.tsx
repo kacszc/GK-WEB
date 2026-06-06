@@ -21,12 +21,16 @@ export function OpenDisputeDialog({
   onClose,
   jobId,
   counterparty,
+  counterpartyId,
   onOpened,
 }: {
   open: boolean;
   onClose: () => void;
   jobId: string;
+  /** Display name for the dialog title. */
   counterparty: string;
+  /** The other party's user id, sent to the backend as `counterparty`. */
+  counterpartyId: string;
   onOpened: (d: Dispute) => void;
 }) {
   const { t } = useI18n();
@@ -45,7 +49,7 @@ export function OpenDisputeDialog({
   async function submit() {
     setSubmitting(true);
     try {
-      const d = await disputesService.open({ jobId, counterparty, reason, description, evidence });
+      const d = await disputesService.open({ jobId, counterparty: counterpartyId, reason, description, evidence });
       onOpened(d);
     } finally {
       setSubmitting(false);

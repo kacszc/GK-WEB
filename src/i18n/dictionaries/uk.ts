@@ -170,6 +170,7 @@ const uk: Dictionary = {
     memberSince: "На skill.com з",
     repeatClients: "Постійних клієнтів",
     verification: "Верифікація та сертифікати",
+    portfolio: "Портфоліо",
     reviews: "Відгуки",
     reviewsCount: "{count} відгуків",
     availability: "Доступність",

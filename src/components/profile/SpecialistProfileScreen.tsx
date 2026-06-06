@@ -24,8 +24,9 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { useSpecialist } from "@/hooks/useSpecialist";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useContact } from "@/lib/ContactProvider";
-import { reviewsService } from "@/services";
-import type { SpecialistProfile, Review } from "@/lib/types";
+import { reviewsService, portfolioService } from "@/services";
+import { cn } from "@/lib/cn";
+import type { SpecialistProfile, Review, PortfolioItem } from "@/lib/types";
 
 const LANG_KEY: Record<string, string> = {
   pl: "results.langPl",
@@ -73,6 +74,11 @@ function Profile({ s, t }: { s: SpecialistProfile; t: (k: string, p?: Record<str
     queryFn: () => reviewsService.listForSubject(s.id),
   });
   const reviews: Review[] = backendReviews.length > 0 ? backendReviews : s.reviewList;
+  // Public portfolio (empty when none / backend down → section hidden).
+  const { data: portfolio = [] } = useQuery({
+    queryKey: ["portfolio", "public", s.id],
+    queryFn: () => portfolioService.getPublicPortfolio(s.id),
+  });
   return (
     <>
       {/* Header card */}
@@ -181,6 +187,16 @@ function Profile({ s, t }: { s: SpecialistProfile; t: (k: string, p?: Record<str
             </div>
           </Section>
 
+          {portfolio.length > 0 && (
+            <Section title={t("profile.portfolio")}>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {portfolio.map((it) => (
+                  <ProfilePortfolioCard key={it.id} item={it} verifiedLabel={t("portfolio.verified")} />
+                ))}
+              </div>
+            </Section>
+          )}
+
           <Section title={`${t("profile.reviews")} · ${t("profile.reviewsCount", { count: s.reviews })}`}>
             <div className="flex flex-col gap-3">
               {reviews.map((r, i) => (
@@ -271,6 +287,34 @@ function Tag({ children, className }: { children: React.ReactNode; className?: s
     <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${className ?? ""}`}>
       {children}
     </span>
+  );
+}
+
+function ProfilePortfolioCard({ item, verifiedLabel }: { item: PortfolioItem; verifiedLabel: string }) {
+  const verified = item.status === "verified";
+  return (
+    <div className={cn("overflow-hidden rounded-tile border bg-surface", verified ? "border-success-badge" : "border-line-3")}>
+      <div className="flex h-28 gap-0.5">
+        {item.colors.slice(0, 3).map((c, i) => (
+          <div key={i} className="flex-1" style={{ background: c }} />
+        ))}
+      </div>
+      <div className="p-3">
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="text-[13px] font-semibold text-ink">{item.title}</h3>
+          {verified && (
+            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-success-chip px-2 py-0.5 text-[10px] font-semibold text-success-chip-text">
+              <ShieldCheck className="h-3 w-3" />
+              {verifiedLabel}
+            </span>
+          )}
+        </div>
+        <p className="mt-1 line-clamp-2 text-[12px] text-ink-2">{item.description}</p>
+        <p className="mt-1 text-[11px] text-ink-4">
+          {[item.location, item.date].filter(Boolean).join(" · ")}
+        </p>
+      </div>
+    </div>
   );
 }
 

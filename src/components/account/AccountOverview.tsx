@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Briefcase, MessageSquare, Coins, Plus, Search } from "lucide-react";
-import { accountService } from "@/services";
+import { accountService, messagesService } from "@/services";
 import { Skeleton, SkeletonCard } from "@/components/ui/Skeleton";
 import { useAuth } from "@/lib/AuthProvider";
 import { useWallet } from "@/lib/WalletProvider";
@@ -19,7 +19,7 @@ export function AccountOverview() {
   });
   const { data: convos = [], isLoading: convosLoading } = useQuery({
     queryKey: ["conversations"],
-    queryFn: accountService.getConversations,
+    queryFn: messagesService.getThreads,
   });
 
   // Show a skeleton until auth/wallet are restored and the stat data arrives,

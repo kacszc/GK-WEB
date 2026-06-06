@@ -221,8 +221,11 @@ export function JobDetailScreen({ id }: { id: string }) {
           onClose={() => setDisputeOpen(false)}
           jobId={id}
           counterparty={worker.name}
+          counterpartyId={worker.id}
           onOpened={(d) => {
-            setDispute(d);
+            // Show the worker's display name in the mediation heading rather than
+            // the raw counterparty id the backend echoes back.
+            setDispute({ ...d, counterparty: worker.name });
             setDisputeOpen(false);
           }}
         />

@@ -6,7 +6,7 @@
 import { getCurrentIdToken } from "@/lib/auth-token";
 
 // Base URL of the Spring Boot backend. Routes live under `/api/...`.
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
+export const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
 
 type ApiOptions = RequestInit & { locale?: string };
 
@@ -59,6 +59,22 @@ export async function apiPost<T>(
     method: "POST",
     body: body == null ? undefined : JSON.stringify(body),
   });
+}
+
+export async function apiPut<T>(
+  path: string,
+  body?: unknown,
+  opts: ApiOptions = {},
+): Promise<T> {
+  return request<T>(path, {
+    ...opts,
+    method: "PUT",
+    body: body == null ? undefined : JSON.stringify(body),
+  });
+}
+
+export async function apiDelete<T>(path: string, opts: ApiOptions = {}): Promise<T> {
+  return request<T>(path, { ...opts, method: "DELETE" });
 }
 
 /** True when a real backend URL is configured (used to decide mock vs HTTP). */

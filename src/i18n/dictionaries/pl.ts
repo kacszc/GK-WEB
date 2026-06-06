@@ -169,6 +169,7 @@ const pl = {
     memberSince: "Na skill.com od",
     repeatClients: "Stałych klientów",
     verification: "Weryfikacja i certyfikaty",
+    portfolio: "Portfolio",
     reviews: "Opinie",
     reviewsCount: "{count} opinii",
     availability: "Dostępność",
