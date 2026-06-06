@@ -17,7 +17,7 @@ const emailOk = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
 export function AuthScreen({ mode }: { mode: "login" | "register" }) {
   const { t } = useI18n();
-  const { signInWithEmail, signUpWithEmail, signInWithGoogle, getIdToken } = useAuth();
+  const { signInWithEmail, signUpWithEmail, getIdToken } = useAuth();
   const router = useRouter();
 
   const [role, setRole] = useState<UserRole>("employer");
@@ -71,21 +71,6 @@ export function AuthScreen({ mode }: { mode: "login" | "register" }) {
     }
   }
 
-  async function googleSignIn() {
-    setSubmitting(true);
-    setFormError(null);
-    try {
-      await signInWithGoogle();
-      // For new Google users the backend register-finalize is best-effort here;
-      // role selection happens during onboarding when needed.
-      router.push("/");
-    } catch {
-      setFormError(t("auth.googleError"));
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
   return (
     <div className="flex min-h-dvh flex-col bg-page">
       <header className="flex items-center justify-between px-4 py-4 sm:px-8">
@@ -104,19 +89,7 @@ export function AuthScreen({ mode }: { mode: "login" | "register" }) {
             {t(mode === "login" ? "auth.loginSubtitle" : "auth.registerSubtitle")}
           </p>
 
-          {/* Social */}
-          <div className="mt-5 grid grid-cols-2 gap-2">
-            <SocialButton label="Google" onClick={googleSignIn} disabled={submitting} />
-            {/* TODO(auth): wire Apple OAuth once enabled in the Firebase console. */}
-            <SocialButton label="Apple" disabled />
-          </div>
-          <div className="my-5 flex items-center gap-3 text-[12px] text-ink-4">
-            <span className="h-px flex-1 bg-line" />
-            {t("auth.orContinue")}
-            <span className="h-px flex-1 bg-line" />
-          </div>
-
-          <div className="flex flex-col gap-3">
+          <div className="mt-5 flex flex-col gap-3">
             {mode === "register" && (
               <div>
                 <Field label={t("auth.roleQuestion")} />
@@ -262,25 +235,4 @@ function TextInput({
 
 function Field({ label }: { label: string }) {
   return <label className="mb-1.5 block text-[12px] font-semibold text-ink-3">{label}</label>;
-}
-
-function SocialButton({
-  label,
-  onClick,
-  disabled,
-}: {
-  label: string;
-  onClick?: () => void;
-  disabled?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className="flex items-center justify-center gap-2 rounded-tile border border-line-2 bg-surface py-2.5 text-[13px] font-medium text-ink hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
-    >
-      {label}
-    </button>
-  );
 }
