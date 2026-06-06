@@ -264,6 +264,8 @@ const uk: Dictionary = {
     errPassword: "Пароль має містити щонайменше 6 символів",
     errName: "Вкажіть ім'я та прізвище",
     errTerms: "Прийміть правила",
+    errGeneric: "Щось пішло не так. Спробуйте ще раз.",
+    googleError: "Не вдалося увійти через Google.",
     logout: "Вийти",
     myJobs: "Мої замовлення",
     myProfile: "Мій профіль",

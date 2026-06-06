@@ -263,6 +263,8 @@ const pl = {
     errPassword: "Hasło musi mieć min. 6 znaków",
     errName: "Podaj imię i nazwisko",
     errTerms: "Zaakceptuj regulamin",
+    errGeneric: "Coś poszło nie tak. Spróbuj ponownie.",
+    googleError: "Logowanie przez Google nie powiodło się.",
     logout: "Wyloguj się",
     myJobs: "Moje zlecenia",
     myProfile: "Mój profil",

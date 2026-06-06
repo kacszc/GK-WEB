@@ -264,6 +264,8 @@ const en: Dictionary = {
     errPassword: "Password must be at least 6 characters",
     errName: "Enter your full name",
     errTerms: "Please accept the terms",
+    errGeneric: "Something went wrong. Please try again.",
+    googleError: "Google sign-in failed.",
     logout: "Log out",
     myJobs: "My jobs",
     myProfile: "My profile",

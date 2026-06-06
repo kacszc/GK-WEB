@@ -5,10 +5,64 @@ import type {
   SpecialistProfile,
   Review,
 } from "@/lib/types";
-// import { apiGet } from "@/lib/api-client";
+import { apiGet } from "@/lib/api-client";
 import { specialists } from "./mock-specialists";
 import { mockDelay } from "./mock-data";
 import { haversineKm } from "@/lib/geo";
+
+/** Backend specialist DTO (search results). */
+type SpecialistDto = {
+  id: string;
+  name: string;
+  headline: string;
+  district: string;
+  trustScore: number;
+  rating: number;
+  reviews: number;
+  rateFrom: number;
+  availability: "NOW" | "WEEK" | "DATE";
+  distanceKm: number;
+};
+
+/** Map backend availability enum casing to the frontend lowercase union. */
+function availabilityFromBackend(a: SpecialistDto["availability"]): Availability {
+  switch (a) {
+    case "NOW":
+      return "now";
+    case "WEEK":
+      return "week";
+    default:
+      return "date";
+  }
+}
+
+/**
+ * Adapt a backend DTO to the richer frontend `Specialist`. Fields the search
+ * endpoint doesn't provide yet get neutral defaults (filled by the detail
+ * endpoint / future API work).
+ */
+function toSpecialist(d: SpecialistDto, i: number): Specialist {
+  return {
+    id: d.id,
+    name: d.name,
+    avatarIndex: i,
+    role: d.headline,
+    trustScore: d.trustScore,
+    availability: availabilityFromBackend(d.availability),
+    kyc: d.trustScore >= 70,
+    topRated: d.rating >= 4.8,
+    district: d.district,
+    distanceKm: d.distanceKm,
+    rateFrom: d.rateFrom,
+    rating: d.rating,
+    reviews: d.reviews,
+    specialties: [],
+    languages: [],
+    experienceYears: 0,
+    lng: 0,
+    lat: 0,
+  };
+}
 
 export type SpecialistSort = "trust" | "distance" | "rate";
 
@@ -77,7 +131,31 @@ export const specialistsService = {
    * list client-side and the map uses the full set) plus availability facets.
    */
   async search(filters: SpecialistFilters = {}): Promise<SpecialistSearch> {
-    // TODO(backend): return apiGet(`/specialists/search?${qs}`, { locale: filters.locale });
+    // Try the real backend first; on any failure, fall back to the mock below.
+    try {
+      const params = new URLSearchParams();
+      if (filters.near) {
+        params.set("lat", String(filters.near.lat));
+        params.set("lng", String(filters.near.lng));
+      }
+      if (filters.maxDistanceKm != null) params.set("radiusKm", String(filters.maxDistanceKm));
+      if (filters.q) params.set("q", filters.q);
+      const qs = params.toString();
+      const dtos = await apiGet<SpecialistDto[]>(
+        `/api/specialists${qs ? `?${qs}` : ""}`,
+        { locale: filters.locale },
+      );
+      const items = dtos.map(toSpecialist);
+      return {
+        items,
+        total: items.length,
+        availableNow: items.filter((s) => s.availability === "now").length,
+        availableWeek: items.filter((s) => s.availability === "week").length,
+      };
+    } catch {
+      // Backend unavailable — use mock data.
+    }
+
     await mockDelay(650, 1200); // simulate a realistic network round-trip
 
     // If we know the user's location, recompute real distances from it.

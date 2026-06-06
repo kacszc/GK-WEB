@@ -6,8 +6,20 @@ import type {
   EmployerOnboardingData,
   EmployerOnboardingResult,
 } from "@/lib/types";
-// import { apiGet, apiPost } from "@/lib/api-client";
+import { apiGet } from "@/lib/api-client";
 import { mockDelay } from "./mock-data";
+
+/** Run `fn`, falling back to `fallback` if the backend is unreachable/errors. */
+async function withFallback<T>(fn: () => Promise<T>, fallback: () => Promise<T>): Promise<T> {
+  try {
+    return await fn();
+  } catch {
+    return fallback();
+  }
+}
+
+/** Backend industry DTO: { code, name }. */
+type IndustryDto = { code: string; name: string };
 
 // Industries (branże) — shared by both onboarding flows.
 const industries: IndustryOption[] = [
@@ -40,25 +52,43 @@ const languages = ["Polski", "Angielski", "Ukraiński", "Niemiecki", "Rosyjski"]
 const teamSizes = ["1–2 osoby", "3–5 osób", "5–10 osób", "10–25 osób", "25+ osób"];
 
 export const onboardingService = {
-  /** Industries used for the branża pickers. */
+  /** Industries used for the branża pickers. Backend: [{code,name}]. */
   async getIndustries(): Promise<IndustryOption[]> {
-    // TODO(backend): return apiGet("/catalog/industries");
-    await mockDelay();
-    return industries;
+    return withFallback(
+      async () => {
+        const dtos = await apiGet<IndustryDto[]>("/api/catalog/industries");
+        return dtos.map((d) => ({ id: d.code, label: d.name }));
+      },
+      async () => {
+        await mockDelay();
+        return industries;
+      },
+    );
   },
 
-  /** Specializations available within an industry. */
+  /** Specializations available within an industry. Backend: string[]. */
   async getSpecializations(industryId: string): Promise<string[]> {
-    // TODO(backend): return apiGet(`/catalog/industries/${industryId}/specializations`);
-    await mockDelay();
-    return specializations[industryId] ?? specializations.gastronomy;
+    return withFallback(
+      () =>
+        apiGet<string[]>(
+          `/api/catalog/industries/${encodeURIComponent(industryId)}/specializations`,
+        ),
+      async () => {
+        await mockDelay();
+        return specializations[industryId] ?? specializations.gastronomy;
+      },
+    );
   },
 
-  /** Spoken languages list. */
+  /** Spoken languages list. Backend: string[]. */
   async getLanguages(): Promise<string[]> {
-    // TODO(backend): return apiGet("/catalog/languages");
-    await mockDelay(120, 300);
-    return languages;
+    return withFallback(
+      () => apiGet<string[]>("/api/catalog/languages"),
+      async () => {
+        await mockDelay(120, 300);
+        return languages;
+      },
+    );
   },
 
   /** Average-team-size options for employer onboarding. */

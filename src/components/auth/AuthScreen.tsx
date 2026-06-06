@@ -17,7 +17,7 @@ const emailOk = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
 export function AuthScreen({ mode }: { mode: "login" | "register" }) {
   const { t } = useI18n();
-  const { signIn } = useAuth();
+  const { signInWithEmail, signUpWithEmail, signInWithGoogle, getIdToken } = useAuth();
   const router = useRouter();
 
   const [role, setRole] = useState<UserRole>("employer");
@@ -27,6 +27,7 @@ export function AuthScreen({ mode }: { mode: "login" | "register" }) {
   const [terms, setTerms] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const errors = {
     name: mode === "register" && !name.trim(),
@@ -42,17 +43,44 @@ export function AuthScreen({ mode }: { mode: "login" | "register" }) {
       return;
     }
     setSubmitting(true);
+    setFormError(null);
     try {
       if (mode === "register") {
-        // New accounts go straight into role-specific onboarding (they sign in there).
+        // Create the Firebase account, then finalize registration on the backend
+        // (sets the `role` custom claim) and refresh the token so the claim is
+        // present. Then continue into role-specific onboarding.
+        await signUpWithEmail(email, password, name);
+        try {
+          await authService.registerFinalize(role);
+          await getIdToken(true); // refresh so the role claim is visible
+        } catch {
+          // Backend may be down in preliminary integration — proceed anyway;
+          // onboarding still calls signIn() locally.
+        }
         const base = role === "specialist" ? "/onboarding/specialist" : "/onboarding/employer";
         const qs = new URLSearchParams({ name, email }).toString();
         router.push(`${base}?${qs}`);
         return;
       }
-      const user = await authService.login(email, password);
-      signIn(user);
+      await signInWithEmail(email, password);
       router.push("/");
+    } catch {
+      setFormError(t("auth.errGeneric"));
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function googleSignIn() {
+    setSubmitting(true);
+    setFormError(null);
+    try {
+      await signInWithGoogle();
+      // For new Google users the backend register-finalize is best-effort here;
+      // role selection happens during onboarding when needed.
+      router.push("/");
+    } catch {
+      setFormError(t("auth.googleError"));
     } finally {
       setSubmitting(false);
     }
@@ -78,8 +106,9 @@ export function AuthScreen({ mode }: { mode: "login" | "register" }) {
 
           {/* Social */}
           <div className="mt-5 grid grid-cols-2 gap-2">
-            <SocialButton label="Google" />
-            <SocialButton label="Apple" />
+            <SocialButton label="Google" onClick={googleSignIn} disabled={submitting} />
+            {/* TODO(auth): wire Apple OAuth once enabled in the Firebase console. */}
+            <SocialButton label="Apple" disabled />
           </div>
           <div className="my-5 flex items-center gap-3 text-[12px] text-ink-4">
             <span className="h-px flex-1 bg-line" />
@@ -158,6 +187,12 @@ export function AuthScreen({ mode }: { mode: "login" | "register" }) {
               </label>
             )}
 
+            {formError && (
+              <p className="text-[12px] text-[#b07400]" role="alert">
+                {formError}
+              </p>
+            )}
+
             <Button
               variant="gradient"
               onClick={submit}
@@ -229,9 +264,22 @@ function Field({ label }: { label: string }) {
   return <label className="mb-1.5 block text-[12px] font-semibold text-ink-3">{label}</label>;
 }
 
-function SocialButton({ label }: { label: string }) {
+function SocialButton({
+  label,
+  onClick,
+  disabled,
+}: {
+  label: string;
+  onClick?: () => void;
+  disabled?: boolean;
+}) {
   return (
-    <button className="flex items-center justify-center gap-2 rounded-tile border border-line-2 bg-surface py-2.5 text-[13px] font-medium text-ink hover:bg-muted">
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="flex items-center justify-center gap-2 rounded-tile border border-line-2 bg-surface py-2.5 text-[13px] font-medium text-ink hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+    >
       {label}
     </button>
   );

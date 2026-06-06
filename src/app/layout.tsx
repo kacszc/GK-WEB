@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { getI18n } from "@/i18n/server";
+import { FirebaseAnalytics } from "@/components/analytics/FirebaseAnalytics";
 import { I18nProvider } from "@/i18n/I18nProvider";
 import { QueryProvider } from "@/lib/QueryProvider";
 import { AuthProvider } from "@/lib/AuthProvider";
@@ -54,6 +56,9 @@ export default async function RootLayout({
                   <CookieConsentProvider>
                     {children}
                     <CookieConsent />
+                    <Suspense fallback={null}>
+                      <FirebaseAnalytics />
+                    </Suspense>
                   </CookieConsentProvider>
                 </ContactProvider>
               </WalletProvider>

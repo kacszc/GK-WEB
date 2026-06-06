@@ -1,24 +1,19 @@
-import type { AuthUser, UserRole } from "@/lib/types";
-// import { apiGet } from "@/lib/api-client";
-import { mockDelay } from "./mock-data";
+import type { UserRole } from "@/lib/types";
+import { apiPost } from "@/lib/api-client";
 
-function nameFromEmail(email: string): string {
-  const local = email.split("@")[0]?.replace(/[._-]+/g, " ").trim();
-  if (!local) return "Użytkownik";
-  return local.replace(/\b\w/g, (c) => c.toUpperCase());
+/** Map the frontend role to the backend enum casing. */
+function toBackendRole(role: UserRole): "EMPLOYER" | "SPECIALIST" {
+  return role === "specialist" ? "SPECIALIST" : "EMPLOYER";
 }
 
 export const authService = {
-  async login(email: string, password: string): Promise<AuthUser> {
-    // TODO(backend): return apiPost("/auth/login", { email, password });
-    void password; // mock: password not checked yet
-    await mockDelay(500, 1000);
-    return { name: nameFromEmail(email), email, role: "employer" };
-  },
-
-  async register(payload: { name: string; email: string; role: UserRole }): Promise<AuthUser> {
-    // TODO(backend): return apiPost("/auth/register", payload);
-    await mockDelay(600, 1100);
-    return { name: payload.name.trim() || nameFromEmail(payload.email), email: payload.email, role: payload.role };
+  /**
+   * Finalize registration on the backend after the Firebase account exists.
+   * Requires an authenticated request (Bearer token attached by api-client).
+   * The backend sets the `role` custom claim; the caller must then refresh the
+   * ID token (getIdToken(true)) so the new claim is visible to the client.
+   */
+  async registerFinalize(role: UserRole): Promise<void> {
+    await apiPost("/api/auth/register", { role: toBackendRole(role) });
   },
 };
