@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, MapPin, Star, Check, Loader2, CheckCircle2 } from "lucide-react";
-import { accountService } from "@/services";
+import { accountService, reviewsService } from "@/services";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
@@ -18,6 +18,7 @@ type Phase = "applicants" | "inProgress" | "completed";
 
 export function JobDetailScreen({ id }: { id: string }) {
   const { t } = useI18n();
+  const queryClient = useQueryClient();
   const { data: job } = useQuery({ queryKey: ["job", id], queryFn: () => accountService.getJob(id) });
   const { data: applicants = [], isLoading } = useQuery({
     queryKey: ["applicants", id],
@@ -26,11 +27,26 @@ export function JobDetailScreen({ id }: { id: string }) {
 
   const [phase, setPhase] = useState<Phase>("applicants");
   const [worker, setWorker] = useState<Applicant | null>(null);
+  const [selecting, setSelecting] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [reviewed, setReviewed] = useState(false);
   const [disputeOpen, setDisputeOpen] = useState(false);
   const [dispute, setDispute] = useState<Dispute | null>(null);
+
+  async function select(a: Applicant) {
+    setSelecting(a.id);
+    try {
+      if (a.applicationId) {
+        await accountService.selectApplicant(id, a.applicationId);
+        await queryClient.invalidateQueries({ queryKey: ["applicants", id] });
+      }
+      setWorker(a);
+      setPhase("inProgress");
+    } finally {
+      setSelecting(null);
+    }
+  }
 
   async function confirm() {
     setConfirming(true);
@@ -94,28 +110,34 @@ export function JobDetailScreen({ id }: { id: string }) {
                         <Link href={`/specialist/${a.id}`} className="text-sm font-semibold text-ink hover:underline">
                           {a.name}
                         </Link>
-                        <span className="inline-flex items-center gap-0.5 rounded-full bg-success-badge px-1.5 py-0.5 text-[10px] font-bold text-on-dark">
-                          <Star className="h-2.5 w-2.5 fill-current" />
-                          {a.trustScore}
-                        </span>
+                        {a.trustScore > 0 && (
+                          <span className="inline-flex items-center gap-0.5 rounded-full bg-success-badge px-1.5 py-0.5 text-[10px] font-bold text-on-dark">
+                            <Star className="h-2.5 w-2.5 fill-current" />
+                            {a.trustScore}
+                          </span>
+                        )}
                         <span className="text-[11px] text-ink-4">{a.appliedAgo}</span>
                       </div>
-                      <p className="text-[12px] text-ink-3">
-                        {a.role} · <MapPin className="inline h-3 w-3" /> {a.district} · ★ {a.rating.toFixed(1)} ({a.reviews}) · {a.rate} zł/h
-                      </p>
+                      {a.role && (
+                        <p className="text-[12px] text-ink-3">
+                          {a.role} · <MapPin className="inline h-3 w-3" /> {a.district} · ★ {a.rating.toFixed(1)} ({a.reviews}) · {a.rate} zł/h
+                        </p>
+                      )}
                       <p className="mt-2 text-[13px] text-ink-2">{a.message}</p>
                     </div>
                   </div>
                   <div className="mt-3 flex justify-end">
                     <Button
                       variant="dark"
-                      onClick={() => {
-                        setWorker(a);
-                        setPhase("inProgress");
-                      }}
+                      onClick={() => select(a)}
+                      disabled={selecting !== null}
                       className="rounded-tile px-4 py-2 text-[13px]"
                     >
-                      <Check className="h-4 w-4" />
+                      {selecting === a.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Check className="h-4 w-4" />
+                      )}
                       {t("jobDetail.select")}
                     </Button>
                   </div>
@@ -234,6 +256,7 @@ function ReviewDialog({
   onDone: () => void;
 }) {
   const { t } = useI18n();
+  const queryClient = useQueryClient();
   const [rating, setRating] = useState(5);
   const [text, setText] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -242,7 +265,9 @@ function ReviewDialog({
   async function submit() {
     setSubmitting(true);
     try {
-      await accountService.submitReview(jobId, workerId, rating, text);
+      await reviewsService.submit(jobId, workerId, rating, text);
+      // Refresh the reviewed specialist's public reviews if cached.
+      await queryClient.invalidateQueries({ queryKey: ["reviews", workerId] });
       setDone(true);
     } finally {
       setSubmitting(false);

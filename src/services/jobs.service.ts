@@ -1,5 +1,5 @@
 import type { JobDraft, JobResult, JobPosting, Availability } from "@/lib/types";
-import { apiGet } from "@/lib/api-client";
+import { apiGet, apiPost } from "@/lib/api-client";
 import { specialists } from "./mock-specialists";
 import { jobPostings } from "./mock-jobs";
 import { mockDelay } from "./mock-data";
@@ -121,12 +121,16 @@ export const jobsService = {
     }
   },
 
-  /** Apply to a job posting (mock). */
-  async apply(jobId: string, message: string): Promise<{ ok: true }> {
-    // TODO(backend): return apiPost(`/jobs/${jobId}/applications`, { message });
-    void jobId;
-    void message;
-    await mockDelay(600, 1100);
-    return { ok: true };
+  /** Apply to a job posting (SPECIALIST). Returns the created application id. */
+  async apply(jobId: string, message: string): Promise<{ applicationId?: string }> {
+    try {
+      return await apiPost<{ applicationId: string }>(
+        `/api/jobs/${encodeURIComponent(jobId)}/apply`,
+        { message },
+      );
+    } catch {
+      await mockDelay(600, 1100);
+      return {};
+    }
   },
 };

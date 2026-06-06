@@ -86,8 +86,15 @@ export type SavedContact = {
   trustScore: number;
 };
 
+/** Application status as returned by the backend. */
+export type ApplicationStatus = "APPLIED" | "SELECTED" | "REJECTED";
+
 /** An applicant for a posted job. */
 export type Applicant = {
+  /** Backend application id (used for select). Absent in mock data. */
+  applicationId?: string;
+  /** Backend application status. Absent in mock data (treated as APPLIED). */
+  status?: ApplicationStatus;
   id: string;
   name: string;
   avatarIndex: number;
@@ -228,6 +235,16 @@ export type Review = {
   rating: number;
   date: string;
   text: string;
+};
+
+/** A notification in the bell inbox (backend DTO). */
+export type Notification = {
+  id: string;
+  type: string;
+  title: string;
+  body: string;
+  read: boolean;
+  createdAt: string;
 };
 
 /** Full specialist profile (search card data + detail). */

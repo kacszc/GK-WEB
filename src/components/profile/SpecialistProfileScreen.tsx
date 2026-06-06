@@ -15,6 +15,7 @@ import {
   Share2,
   Bookmark,
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { SearchTopbar } from "@/components/search/SearchTopbar";
 import { TrustBadge, AvailabilityTag } from "@/components/search/SpecialistCard";
 import { Avatar } from "@/components/ui/Avatar";
@@ -23,7 +24,8 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { useSpecialist } from "@/hooks/useSpecialist";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useContact } from "@/lib/ContactProvider";
-import type { SpecialistProfile } from "@/lib/types";
+import { reviewsService } from "@/services";
+import type { SpecialistProfile, Review } from "@/lib/types";
 
 const LANG_KEY: Record<string, string> = {
   pl: "results.langPl",
@@ -64,6 +66,13 @@ export function SpecialistProfileScreen({ id }: { id: string }) {
 
 function Profile({ s, t }: { s: SpecialistProfile; t: (k: string, p?: Record<string, string | number>) => string }) {
   const { open } = useContact();
+  // Prefer real backend reviews when available; otherwise fall back to the
+  // profile's bundled (mock) review list.
+  const { data: backendReviews = [] } = useQuery({
+    queryKey: ["reviews", s.id],
+    queryFn: () => reviewsService.listForSubject(s.id),
+  });
+  const reviews: Review[] = backendReviews.length > 0 ? backendReviews : s.reviewList;
   return (
     <>
       {/* Header card */}
@@ -174,7 +183,7 @@ function Profile({ s, t }: { s: SpecialistProfile; t: (k: string, p?: Record<str
 
           <Section title={`${t("profile.reviews")} · ${t("profile.reviewsCount", { count: s.reviews })}`}>
             <div className="flex flex-col gap-3">
-              {s.reviewList.map((r, i) => (
+              {reviews.map((r, i) => (
                 <div key={i} className="rounded-tile border border-line-3 p-4">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-semibold text-ink">{r.author}</span>

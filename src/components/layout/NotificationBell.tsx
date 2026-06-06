@@ -1,0 +1,150 @@
+"use client";
+
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Bell, BellOff, CheckCheck, Loader2 } from "lucide-react";
+import { Popover } from "@/components/ui/Popover";
+import { notificationsService } from "@/services";
+import { useI18n } from "@/i18n/I18nProvider";
+import { useAuth } from "@/lib/AuthProvider";
+import { cn } from "@/lib/cn";
+import type { Notification } from "@/lib/types";
+
+/** Relative time label from an ISO timestamp. */
+function timeAgo(iso: string, t: (k: string, p?: Record<string, string | number>) => string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return iso;
+  const mins = Math.floor((Date.now() - date.getTime()) / 60_000);
+  if (mins < 1) return t("notifications.now");
+  if (mins < 60) return t("notifications.minsAgo", { n: mins });
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return t("notifications.hoursAgo", { n: hours });
+  const days = Math.floor(hours / 24);
+  return t("notifications.daysAgo", { n: days });
+}
+
+export function NotificationBell() {
+  const { t } = useI18n();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  // Poll the unread count while signed in. Returns 0 when the backend is down.
+  const { data: unread = 0 } = useQuery({
+    queryKey: ["notifications", "unread-count"],
+    queryFn: () => notificationsService.unreadCount(),
+    enabled: !!user,
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
+  });
+
+  return (
+    <Popover
+      align="end"
+      panelClassName="w-80 max-w-[calc(100vw-2rem)] p-0"
+      trigger={({ open }) => (
+        <span
+          aria-label={t("notifications.title")}
+          className={cn(
+            "relative grid h-9 w-9 place-items-center rounded-full border border-line-2 text-ink-2 transition-colors",
+            open ? "bg-muted" : "hover:bg-muted",
+          )}
+        >
+          <Bell className="h-4 w-4" />
+          {unread > 0 && (
+            <span className="absolute -right-1 -top-1 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-danger px-1 text-[10px] font-bold text-on-dark ring-2 ring-surface">
+              {unread > 9 ? "9+" : unread}
+            </span>
+          )}
+        </span>
+      )}
+    >
+      {() => <NotificationInbox onChange={() => queryClient.invalidateQueries({ queryKey: ["notifications"] })} />}
+    </Popover>
+  );
+}
+
+function NotificationInbox({ onChange }: { onChange: () => void }) {
+  const { t } = useI18n();
+  const queryClient = useQueryClient();
+
+  const { data: items = [], isLoading } = useQuery({
+    queryKey: ["notifications", "list"],
+    queryFn: () => notificationsService.list(),
+  });
+
+  const markRead = useMutation({
+    mutationFn: (id: string) => notificationsService.markRead(id),
+    onMutate: async (id) => {
+      // Optimistically mark the item read in the cached list.
+      queryClient.setQueryData<Notification[]>(["notifications", "list"], (prev) =>
+        prev?.map((n) => (n.id === id ? { ...n, read: true } : n)),
+      );
+    },
+    onSettled: onChange,
+  });
+
+  const markAll = useMutation({
+    mutationFn: () => notificationsService.markAllRead(),
+    onMutate: async () => {
+      queryClient.setQueryData<Notification[]>(["notifications", "list"], (prev) =>
+        prev?.map((n) => ({ ...n, read: true })),
+      );
+    },
+    onSettled: onChange,
+  });
+
+  const hasUnread = items.some((n) => !n.read);
+
+  return (
+    <div className="flex max-h-[26rem] flex-col">
+      <div className="flex items-center justify-between border-b border-line px-4 py-3">
+        <p className="text-sm font-semibold text-ink">{t("notifications.title")}</p>
+        {hasUnread && (
+          <button
+            onClick={() => markAll.mutate()}
+            disabled={markAll.isPending}
+            className="inline-flex items-center gap-1 text-[12px] font-medium text-ink-2 hover:text-ink"
+          >
+            <CheckCheck className="h-3.5 w-3.5" />
+            {t("notifications.markAll")}
+          </button>
+        )}
+      </div>
+
+      <div className="overflow-y-auto">
+        {isLoading ? (
+          <div className="grid place-items-center py-10 text-ink-3">
+            <Loader2 className="h-5 w-5 animate-spin" />
+          </div>
+        ) : items.length === 0 ? (
+          <div className="grid place-items-center gap-2 px-4 py-10 text-center">
+            <BellOff className="h-6 w-6 text-ink-4" />
+            <p className="text-[13px] text-ink-3">{t("notifications.empty")}</p>
+          </div>
+        ) : (
+          items.map((n) => (
+            <button
+              key={n.id}
+              onClick={() => !n.read && markRead.mutate(n.id)}
+              className={cn(
+                "flex w-full gap-3 border-b border-line px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-muted",
+                !n.read && "bg-[#f6f3ff]",
+              )}
+            >
+              <span
+                className={cn(
+                  "mt-1.5 h-2 w-2 shrink-0 rounded-full",
+                  n.read ? "bg-transparent" : "bg-brand-violet",
+                )}
+              />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[13px] font-semibold text-ink">{n.title}</span>
+                {n.body && <span className="mt-0.5 block text-[12px] leading-snug text-ink-2">{n.body}</span>}
+                <span className="mt-1 block text-[11px] text-ink-4">{timeAgo(n.createdAt, t)}</span>
+              </span>
+            </button>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}

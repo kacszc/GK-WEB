@@ -10,6 +10,16 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
 
 type ApiOptions = RequestInit & { locale?: string };
 
+/** Thrown on non-2xx responses. `status` lets callers branch (e.g. 422 token gate). */
+export class ApiError extends Error {
+  readonly status: number;
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
+
 async function authHeaders(): Promise<Record<string, string>> {
   const token = await getCurrentIdToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
@@ -27,7 +37,7 @@ async function request<T>(path: string, opts: ApiOptions = {}): Promise<T> {
     ...init,
   });
   if (!res.ok) {
-    throw new Error(`API ${res.status} ${res.statusText} — ${path}`);
+    throw new ApiError(res.status, `API ${res.status} ${res.statusText} — ${path}`);
   }
   // 204 / empty body — return undefined cast to T.
   if (res.status === 204) return undefined as T;

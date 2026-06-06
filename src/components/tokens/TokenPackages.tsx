@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Coins, Check, Loader2, CreditCard } from "lucide-react";
 import { Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
@@ -63,7 +63,8 @@ export function TokenPackages() {
 
 function CheckoutDialog({ pkg, onClose }: { pkg: TokenPackage | null; onClose: () => void }) {
   const { t } = useI18n();
-  const { topUp } = useWallet();
+  const { topUp, setBalance } = useWallet();
+  const queryClient = useQueryClient();
   const [paying, setPaying] = useState(false);
   const [done, setDone] = useState(false);
   const [invoice, setInvoice] = useState("");
@@ -73,7 +74,11 @@ function CheckoutDialog({ pkg, onClose }: { pkg: TokenPackage | null; onClose: (
     setPaying(true);
     try {
       const r = await walletService.buy(pkg.id);
-      topUp(r.tokens);
+      // Prefer the authoritative balance from the backend; otherwise top up the
+      // local mock balance by the package's token count.
+      if (r.balance != null) setBalance(r.balance);
+      else topUp(r.tokens);
+      await queryClient.invalidateQueries({ queryKey: ["walletTx"] });
       setInvoice(r.invoice);
       setDone(true);
     } finally {

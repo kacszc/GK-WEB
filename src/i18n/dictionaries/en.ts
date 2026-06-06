@@ -235,7 +235,17 @@ const en: Dictionary = {
     loginCta: "Log in",
     successTitle: "Message sent!",
     successDesc: "{name} usually replies within ~{min} min. We'll notify you about the reply.",
+    revealedTitle: "Contact details",
     done: "Done",
+  },
+  notifications: {
+    title: "Notifications",
+    markAll: "Mark all read",
+    empty: "No notifications.",
+    now: "now",
+    minsAgo: "{n} min ago",
+    hoursAgo: "{n} h ago",
+    daysAgo: "{n} d ago",
   },
   auth: {
     loginTitle: "Log in",

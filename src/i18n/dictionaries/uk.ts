@@ -235,7 +235,17 @@ const uk: Dictionary = {
     loginCta: "Увійти",
     successTitle: "Повідомлення надіслано!",
     successDesc: "{name} зазвичай відповідає за ~{min} хв. Ми сповістимо вас про відповідь.",
+    revealedTitle: "Контактні дані",
     done: "Готово",
+  },
+  notifications: {
+    title: "Сповіщення",
+    markAll: "Позначити всі",
+    empty: "Немає сповіщень.",
+    now: "щойно",
+    minsAgo: "{n} хв тому",
+    hoursAgo: "{n} год тому",
+    daysAgo: "{n} дн тому",
   },
   auth: {
     loginTitle: "Увійти",

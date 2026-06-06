@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { LogOut, Coins, Bell, Settings, Briefcase, User as UserIcon } from "lucide-react";
+import { LogOut, Coins, Settings, Briefcase, User as UserIcon } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Popover } from "@/components/ui/Popover";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { NotificationBell } from "@/components/layout/NotificationBell";
 import { useAuth } from "@/lib/AuthProvider";
 import { useWallet } from "@/lib/WalletProvider";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -47,13 +48,7 @@ export function HeaderAuth() {
           <Skeleton className="hidden h-[30px] w-24 rounded-full sm:block" />
         )}
 
-        <button
-          aria-label="Notifications"
-          className="relative grid h-9 w-9 place-items-center rounded-full border border-line-2 text-ink-2 hover:bg-muted"
-        >
-          <Bell className="h-4 w-4" />
-          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-success ring-2 ring-surface" />
-        </button>
+        <NotificationBell />
 
         <Popover
           align="end"

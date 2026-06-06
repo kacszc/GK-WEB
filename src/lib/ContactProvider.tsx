@@ -2,14 +2,15 @@
 
 import { createContext, useContext, useState } from "react";
 import Link from "next/link";
-import { Check, Star, Coins } from "lucide-react";
+import { Check, Star, Coins, Phone, Mail } from "lucide-react";
 import { Dialog } from "@/components/ui/Dialog";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useAuth } from "@/lib/AuthProvider";
 import { useWallet } from "@/lib/WalletProvider";
-import { messagesService } from "@/services";
+import { messagesService, contactsService } from "@/services";
+import { ApiError } from "@/lib/api-client";
 
 const CONTACT_COST = 3;
 import type { Specialist } from "@/lib/types";
@@ -47,11 +48,13 @@ function ContactModal({
 }) {
   const { t } = useI18n();
   const { user } = useAuth();
-  const { balance, spend } = useWallet();
+  const { balance, backed, spend, setBalance } = useWallet();
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [err, setErr] = useState(false);
+  const [insufficient, setInsufficient] = useState(false);
+  const [revealed, setRevealed] = useState<{ phone: string; email: string } | null>(null);
 
   const s = specialist;
   const min = 5;
@@ -62,15 +65,36 @@ function ContactModal({
       setErr(true);
       return;
     }
-    if (!spend(CONTACT_COST)) return; // insufficient balance — gate is shown instead
     setSending(true);
     try {
+      // Pay-per-contact: reveal contact details via the backend (debits tokens).
+      // When the backend isn't wallet-backed (signed out / offline), fall back
+      // to the local optimistic spend so the mock flow keeps working.
+      if (backed) {
+        try {
+          const r = await contactsService.reveal(s.id);
+          setBalance(r.balanceAfter);
+          setRevealed({ phone: r.phone, email: r.email });
+        } catch (e) {
+          if (e instanceof ApiError && e.status === 422) {
+            setInsufficient(true);
+            return;
+          }
+          throw e;
+        }
+      } else if (!spend(CONTACT_COST)) {
+        return; // insufficient local balance — gate is shown instead
+      }
       await messagesService.send(s.id, text);
       setSent(true);
     } finally {
       setSending(false);
     }
   }
+
+  // Show the token gate when the local balance is short OR the backend rejected
+  // the reveal with 422 (insufficient tokens).
+  const showGate = insufficient || balance < CONTACT_COST;
 
   return (
     <Dialog open={!!s} onClose={onClose} title={sent ? undefined : t("contact.title")}>
@@ -83,6 +107,25 @@ function ContactModal({
           <p className="mt-1 text-sm text-ink-2">
             {t("contact.successDesc", { name: s.name, min })}
           </p>
+          {revealed && (
+            <div className="mt-4 flex flex-col gap-2 rounded-tile bg-subtle p-3 text-left">
+              <p className="text-[12px] font-semibold text-ink-3">{t("contact.revealedTitle")}</p>
+              <a
+                href={`tel:${revealed.phone}`}
+                className="inline-flex items-center gap-2 text-sm font-medium text-ink hover:underline"
+              >
+                <Phone className="h-4 w-4 text-ink-3" />
+                {revealed.phone}
+              </a>
+              <a
+                href={`mailto:${revealed.email}`}
+                className="inline-flex items-center gap-2 text-sm font-medium text-ink hover:underline"
+              >
+                <Mail className="h-4 w-4 text-ink-3" />
+                {revealed.email}
+              </a>
+            </div>
+          )}
           <Button variant="dark" onClick={onClose} className="mt-5 w-full rounded-tile py-3 text-sm">
             {t("contact.done")}
           </Button>
@@ -112,7 +155,7 @@ function ContactModal({
                 {t("contact.loginCta")}
               </Link>
             </div>
-          ) : balance < CONTACT_COST ? (
+          ) : showGate ? (
             <div className="mt-4 rounded-tile border border-brand-violet/30 bg-[#f6f3ff] p-4 text-center">
               <span className="mx-auto grid h-10 w-10 place-items-center rounded-full bg-white">
                 <Coins className="h-5 w-5 text-[#e0a400]" />

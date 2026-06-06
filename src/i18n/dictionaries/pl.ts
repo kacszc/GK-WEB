@@ -234,7 +234,17 @@ const pl = {
     loginCta: "Zaloguj się",
     successTitle: "Wiadomość wysłana!",
     successDesc: "{name} zwykle odpowiada w ~{min} min. Powiadomimy Cię o odpowiedzi.",
+    revealedTitle: "Dane kontaktowe",
     done: "Gotowe",
+  },
+  notifications: {
+    title: "Powiadomienia",
+    markAll: "Oznacz wszystkie",
+    empty: "Brak powiadomień.",
+    now: "teraz",
+    minsAgo: "{n} min temu",
+    hoursAgo: "{n} godz. temu",
+    daysAgo: "{n} dni temu",
   },
   auth: {
     loginTitle: "Zaloguj się",
