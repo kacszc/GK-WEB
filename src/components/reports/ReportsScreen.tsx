@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Download, Calendar, Star } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
+import { Skeleton, SkeletonCard } from "@/components/ui/Skeleton";
 import { reportsService } from "@/services";
 import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
@@ -17,11 +18,30 @@ export function ReportsScreen() {
   if (isLoading || !data) {
     return (
       <div className="flex flex-col gap-5">
-        <div className="skeleton h-9 w-64 rounded-tile" />
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => <div key={i} className="skeleton h-24 rounded-panel" />)}
+        {/* Header */}
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-56 rounded-tile" />
+            <Skeleton className="h-3.5 w-72" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-9 w-28 rounded-tile" />
+            <Skeleton className="h-9 w-28 rounded-tile" />
+          </div>
         </div>
-        <div className="skeleton h-64 rounded-panel" />
+        {/* KPI row of 4 */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <SkeletonCard key={i} className="h-24 border border-line-3" />
+          ))}
+        </div>
+        {/* Chart + side column */}
+        <div className="grid gap-5 lg:grid-cols-[1fr_300px]">
+          <SkeletonCard className="h-72 border border-line-3" />
+          <SkeletonCard className="h-72 border border-line-3" />
+        </div>
+        {/* Table */}
+        <SkeletonCard className="h-64 border border-line-3" />
       </div>
     );
   }

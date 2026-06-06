@@ -4,14 +4,27 @@ import Link from "next/link";
 import { LogOut, Coins, Bell, Settings, Briefcase, User as UserIcon } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Popover } from "@/components/ui/Popover";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { useAuth } from "@/lib/AuthProvider";
 import { useWallet } from "@/lib/WalletProvider";
 import { useI18n } from "@/i18n/I18nProvider";
 
 export function HeaderAuth() {
   const { user, ready, signOut } = useAuth();
-  const { balance } = useWallet();
+  const { balance, ready: walletReady } = useWallet();
   const { t } = useI18n();
+
+  // While auth/wallet are restoring, show placeholders sized like the loaded
+  // state so the bar doesn't flash defaults or shift when real values arrive.
+  if (!ready) {
+    return (
+      <div className="flex items-center gap-1.5 sm:gap-2">
+        <Skeleton className="hidden h-[30px] w-24 rounded-full sm:block" />
+        <Skeleton className="h-9 w-9 rounded-full" />
+        <Skeleton className="h-9 w-9 rounded-full sm:w-[120px]" />
+      </div>
+    );
+  }
 
   // Logged in → tokens, notifications and an account menu.
   if (ready && user) {
@@ -22,13 +35,17 @@ export function HeaderAuth() {
 
     return (
       <div className="flex items-center gap-1.5 sm:gap-2">
-        <Link
-          href="/account/tokens"
-          className="hidden items-center gap-1.5 rounded-full bg-pill px-3 py-1.5 text-xs font-semibold text-ink transition-colors hover:bg-line-2 sm:inline-flex"
-        >
-          <Coins className="h-3.5 w-3.5 text-[#e0a400]" />
-          {t("results.tokens", { n: balance })}
-        </Link>
+        {walletReady ? (
+          <Link
+            href="/account/tokens"
+            className="hidden items-center gap-1.5 rounded-full bg-pill px-3 py-1.5 text-xs font-semibold text-ink transition-colors hover:bg-line-2 sm:inline-flex"
+          >
+            <Coins className="h-3.5 w-3.5 text-[#e0a400]" />
+            {t("results.tokens", { n: balance })}
+          </Link>
+        ) : (
+          <Skeleton className="hidden h-[30px] w-24 rounded-full sm:block" />
+        )}
 
         <button
           aria-label="Notifications"

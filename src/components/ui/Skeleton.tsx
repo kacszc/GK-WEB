@@ -5,6 +5,11 @@ export function Skeleton({ className }: { className?: string }) {
   return <span className={cn("skeleton block rounded-md", className)} />;
 }
 
+/** Panel-shaped loading placeholder matching the bordered card surfaces. */
+export function SkeletonCard({ className }: { className?: string }) {
+  return <span className={cn("skeleton block rounded-panel", className)} />;
+}
+
 /** Dropdown suggestion skeleton row (icon + two lines). */
 export function SuggestionSkeleton() {
   return (

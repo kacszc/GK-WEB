@@ -8,12 +8,13 @@ import { Toggle as Switch } from "@/components/ui/Toggle";
 import { Dialog } from "@/components/ui/Dialog";
 import { cn } from "@/lib/cn";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { useAuth } from "@/lib/AuthProvider";
 import { useI18n } from "@/i18n/I18nProvider";
 
 export function AccountSettings() {
   const { t } = useI18n();
-  const { user, signOut } = useAuth();
+  const { user, ready, signOut } = useAuth();
   const [name, setName] = useState(user?.name ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
   const [phone, setPhone] = useState("");
@@ -26,6 +27,12 @@ export function AccountSettings() {
   function save() {
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+  }
+
+  // While the session is being restored, show a form-shaped skeleton instead of
+  // inputs seeded with empty values.
+  if (!ready) {
+    return <SettingsSkeleton title={t("account.settingsTitle")} />;
   }
 
   return (
@@ -153,6 +160,27 @@ export function AccountSettings() {
           </Button>
         </div>
       </Dialog>
+    </div>
+  );
+}
+
+function SettingsSkeleton({ title }: { title: string }) {
+  return (
+    <div className="flex max-w-2xl flex-col gap-5">
+      <h1 className="text-2xl font-bold tracking-[-0.5px] text-ink">{title}</h1>
+      {Array.from({ length: 2 }).map((_, s) => (
+        <section key={s} className="rounded-panel border border-line-3 bg-surface p-6">
+          <Skeleton className="h-4 w-40" />
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            {Array.from({ length: 3 }).map((_, f) => (
+              <div key={f} className="space-y-1.5">
+                <Skeleton className="h-3 w-20" />
+                <Skeleton className="h-11 w-full rounded-tile" />
+              </div>
+            ))}
+          </div>
+        </section>
+      ))}
     </div>
   );
 }

@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Loader2 } from "lucide-react";
 import { AccountSidebar } from "./AccountSidebar";
+import { Skeleton, SkeletonCard } from "@/components/ui/Skeleton";
 import { useAuth } from "@/lib/AuthProvider";
 import { useI18n } from "@/i18n/I18nProvider";
 
@@ -10,10 +10,25 @@ export function AccountShell({ children }: { children: React.ReactNode }) {
   const { user, ready } = useAuth();
   const { t } = useI18n();
 
+  // While the session is being restored, mirror the real layout with a sidebar
+  // + content skeleton instead of a bare spinner, so there's no layout shift.
   if (!ready) {
     return (
-      <main className="mx-auto grid min-h-[50vh] w-full max-w-[1280px] place-items-center px-4">
-        <Loader2 className="h-6 w-6 animate-spin text-brand-violet" />
+      <main className="mx-auto grid w-full max-w-[1280px] gap-8 px-4 pt-6 pb-20 sm:px-8 lg:grid-cols-[220px_1fr]">
+        <nav className="flex gap-1 overflow-x-auto lg:flex-col lg:gap-0.5" aria-hidden>
+          {Array.from({ length: 7 }).map((_, i) => (
+            <Skeleton key={i} className="h-10 w-32 shrink-0 rounded-tile lg:w-full" />
+          ))}
+        </nav>
+        <div className="flex flex-col gap-6">
+          <Skeleton className="h-8 w-56 rounded-tile" />
+          <div className="grid gap-3 sm:grid-cols-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <SkeletonCard key={i} className="h-[104px] border border-line-3" />
+            ))}
+          </div>
+          <SkeletonCard className="h-64 border border-line-3" />
+        </div>
       </main>
     );
   }

@@ -4,19 +4,29 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Briefcase, MessageSquare, Coins, Plus, Search } from "lucide-react";
 import { accountService } from "@/services";
+import { Skeleton, SkeletonCard } from "@/components/ui/Skeleton";
 import { useAuth } from "@/lib/AuthProvider";
 import { useWallet } from "@/lib/WalletProvider";
 import { useI18n } from "@/i18n/I18nProvider";
 
 export function AccountOverview() {
   const { t } = useI18n();
-  const { user } = useAuth();
-  const { balance } = useWallet();
-  const { data: jobs = [] } = useQuery({ queryKey: ["myJobs"], queryFn: accountService.getMyJobs });
-  const { data: convos = [] } = useQuery({
+  const { user, ready: authReady } = useAuth();
+  const { balance, ready: walletReady } = useWallet();
+  const { data: jobs = [], isLoading: jobsLoading } = useQuery({
+    queryKey: ["myJobs"],
+    queryFn: accountService.getMyJobs,
+  });
+  const { data: convos = [], isLoading: convosLoading } = useQuery({
     queryKey: ["conversations"],
     queryFn: accountService.getConversations,
   });
+
+  // Show a skeleton until auth/wallet are restored and the stat data arrives,
+  // so the greeting and stat values don't flash empty/default values.
+  if (!authReady || !walletReady || jobsLoading || convosLoading) {
+    return <OverviewSkeleton />;
+  }
 
   const activeJobs = jobs.filter((j) => j.status === "active").length;
   const unread = convos.reduce((n, c) => n + c.unread, 0);
@@ -39,6 +49,27 @@ export function AccountOverview() {
       <div className="grid gap-3 sm:grid-cols-2">
         <Quick href="/post-job" icon={<Plus className="h-5 w-5" />} label={t("account.quickPost")} dark />
         <Quick href="/search" icon={<Search className="h-5 w-5" />} label={t("account.quickSearch")} />
+      </div>
+    </div>
+  );
+}
+
+function OverviewSkeleton() {
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="space-y-2">
+        <Skeleton className="h-8 w-64 rounded-tile" />
+        <Skeleton className="h-3.5 w-48" />
+      </div>
+      <div className="grid gap-3 sm:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <SkeletonCard key={i} className="h-[104px] border border-line-3" />
+        ))}
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {Array.from({ length: 2 }).map((_, i) => (
+          <SkeletonCard key={i} className="h-[76px] border border-line-3" />
+        ))}
       </div>
     </div>
   );
