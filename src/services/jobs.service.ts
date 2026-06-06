@@ -15,6 +15,7 @@ type JobDto = {
   status: string;
   createdAt: string;
   distanceKm: number;
+  promoted?: boolean;
   // Detail-only (optional) fields.
   description?: string;
   hours?: number;
@@ -37,6 +38,7 @@ function toJobPosting(d: JobDto): JobPosting {
     employerVerified: d.employerVerified ?? false,
     postedAgo: d.createdAt,
     description: d.description ?? "",
+    promoted: d.promoted ?? false,
   };
 }
 

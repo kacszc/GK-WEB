@@ -181,6 +181,7 @@ export type JobPosting = {
   employerVerified: boolean;
   postedAgo: string;
   description: string;
+  promoted?: boolean; // paid promotion (boost) — sorts to the top
 };
 
 /** A token package available for purchase. */

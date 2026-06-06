@@ -22,6 +22,8 @@ type SpecialistDto = {
   rateFrom: number;
   availability: "NOW" | "WEEK" | "DATE";
   distanceKm: number;
+  lat: number;
+  lng: number;
 };
 
 /** Map backend availability enum casing to the frontend lowercase union. */
@@ -59,8 +61,8 @@ function toSpecialist(d: SpecialistDto, i: number): Specialist {
     specialties: [],
     languages: [],
     experienceYears: 0,
-    lng: 0,
-    lat: 0,
+    lng: d.lng,
+    lat: d.lat,
   };
 }
 
