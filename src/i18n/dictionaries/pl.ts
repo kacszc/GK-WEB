@@ -129,7 +129,7 @@ const pl = {
     fAvailability: "DOSTĘPNOŚĆ",
     fAvailNow: "Dostępny TERAZ",
     fAvailWeek: "W tym tygodniu",
-    fAvailDate: "Dowolny termin",
+    fAvailDate: "Na umówiony termin",
     fSpecialization: "SPECJALIZACJA",
     fIndustry: "BRANŻA",
     fPickIndustry: "Najpierw wybierz branżę",
