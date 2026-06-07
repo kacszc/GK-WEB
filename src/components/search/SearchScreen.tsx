@@ -32,7 +32,7 @@ export function SearchScreen({
   const { t } = useI18n();
   const [filters, setFilters] = useState<SpecialistFilters>({
     q: initialQuery || undefined,
-    profession: initialProfession || undefined,
+    professions: initialProfession ? [initialProfession] : undefined,
     minTrust: 75,
     maxDistanceKm: 25,
     availability: ["now", "week"],
@@ -45,7 +45,7 @@ export function SearchScreen({
   const [filtersOpen, setFiltersOpen] = useState(false); // mobile filters toggle
 
   const activeCount =
-    (filters.profession ? 1 : 0) +
+    (filters.professions?.length ?? 0) +
     (filters.availability?.length ?? 0) +
     (filters.kyc ? 1 : 0) +
     (filters.minTrust ? 1 : 0) +

@@ -6,7 +6,7 @@ import { ChevronDown, SlidersHorizontal } from "lucide-react";
 import { useI18n } from "@/i18n/I18nProvider";
 import { specialistsService, type SpecialistFilters } from "@/services";
 import type { Availability, UserLocation } from "@/lib/types";
-import { LocationButton } from "./LocationButton";
+import { LocationPicker } from "./LocationPicker";
 import { cn } from "@/lib/cn";
 
 type Props = {
@@ -45,15 +45,30 @@ export function FilterSidebar({
     return [...set];
   };
 
-  // Which industry to expand: the user's pick, else the one owning the selected profession.
-  const industryOfProfession =
-    filters.profession && schema
+  const professions = filters.professions ?? [];
+  const specsOf = (industryCode: string) => schema?.specializations[industryCode] ?? [];
+  const selectedCountIn = (industryCode: string) =>
+    specsOf(industryCode).filter((s) => professions.includes(s.code)).length;
+
+  // Which industry to expand: the user's pick, else the one owning the first selected profession.
+  const industryOfFirstSelected =
+    professions.length && schema
       ? Object.keys(schema.specializations).find((code) =>
-          schema.specializations[code].some((s) => s.code === filters.profession),
+          schema.specializations[code].some((s) => professions.includes(s.code)),
         )
       : undefined;
-  const activeIndustry = openIndustry ?? industryOfProfession ?? null;
-  const specializations = (activeIndustry && schema?.specializations[activeIndustry]) || [];
+  const activeIndustry = openIndustry ?? industryOfFirstSelected ?? null;
+  const specializations = activeIndustry ? specsOf(activeIndustry) : [];
+  const allOfIndustrySelected =
+    specializations.length > 0 && specializations.every((s) => professions.includes(s.code));
+
+  const toggleWholeIndustry = () => {
+    const codes = specializations.map((s) => s.code);
+    const set = new Set(professions);
+    if (allOfIndustrySelected) codes.forEach((c) => set.delete(c));
+    else codes.forEach((c) => set.add(c));
+    onPatch({ professions: [...set] });
+  };
 
   const trust = schema?.trust ?? { min: 0, max: 100, defaultValue: 75 };
   const distance = schema?.distanceKm ?? { min: 1, max: 50, defaultValue: 25 };
@@ -67,34 +82,45 @@ export function FilterSidebar({
         variant === "full" ? "self-start lg:sticky lg:top-20" : "h-full overflow-y-auto pr-1",
       )}
     >
-      <LocationButton value={userLocation} onLocate={onLocate} onClear={onClearLocation} />
+      <LocationPicker value={userLocation} onLocate={onLocate} onClear={onClearLocation} />
 
-      {/* Industry → specialization (profession code) */}
+      {/* Industry → specialization. Multi-select: tick several specializations (even across
+          industries) or add a whole industry at once. */}
       <Section title={t("results.fIndustry")}>
         <div className="flex flex-wrap gap-1.5">
-          {schema?.industries.map((i) => (
-            <Pill
-              key={i.code}
-              label={i.label}
-              selected={activeIndustry === i.code}
-              onClick={() => setOpenIndustry(activeIndustry === i.code ? null : i.code)}
-            />
-          ))}
+          {schema?.industries.map((i) => {
+            const n = selectedCountIn(i.code);
+            return (
+              <Pill
+                key={i.code}
+                label={n > 0 ? `${i.label} · ${n}` : i.label}
+                selected={activeIndustry === i.code || n > 0}
+                onClick={() => setOpenIndustry(activeIndustry === i.code ? null : i.code)}
+              />
+            );
+          })}
         </div>
 
         {activeIndustry ? (
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {specializations.map((s) => (
-              <Pill
-                key={s.code}
-                label={s.label}
-                small
-                selected={filters.profession === s.code}
-                onClick={() =>
-                  onPatch({ profession: filters.profession === s.code ? undefined : s.code })
-                }
-              />
-            ))}
+          <div className="mt-3">
+            <button
+              type="button"
+              onClick={toggleWholeIndustry}
+              className="mb-2 text-[12px] font-semibold text-brand-violet hover:underline"
+            >
+              {allOfIndustrySelected ? t("results.fWholeIndustryClear") : t("results.fWholeIndustry")}
+            </button>
+            <div className="flex flex-wrap gap-1.5">
+              {specializations.map((s) => (
+                <Pill
+                  key={s.code}
+                  label={s.label}
+                  small
+                  selected={professions.includes(s.code)}
+                  onClick={() => onPatch({ professions: toggle(professions, s.code) })}
+                />
+              ))}
+            </div>
           </div>
         ) : (
           <p className="mt-2 text-[12px] text-ink-4">{t("results.fPickIndustry")}</p>

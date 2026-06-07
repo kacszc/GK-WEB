@@ -35,12 +35,13 @@ export function ActiveFilters({
   const chips: { key: string; label: string; remove: () => void }[] = [];
 
   if (filters.q) chips.push({ key: "q", label: filters.q, remove: () => onPatch({ q: undefined }) });
-  if (filters.profession) {
-    const label =
-      (schema && Object.values(schema.specializations).flat().find((s) => s.code === filters.profession)?.label) ||
-      filters.profession;
-    chips.push({ key: "prof", label, remove: () => onPatch({ profession: undefined }) });
-  }
+  const allSpecs = schema ? Object.values(schema.specializations).flat() : [];
+  for (const code of filters.professions ?? [])
+    chips.push({
+      key: `prof-${code}`,
+      label: allSpecs.find((s) => s.code === code)?.label ?? code,
+      remove: () => onPatch({ professions: (filters.professions ?? []).filter((c) => c !== code) }),
+    });
   if (filters.minTrust)
     chips.push({ key: "trust", label: `Trust ≥ ${filters.minTrust}`, remove: () => onPatch({ minTrust: 0 }) });
   if (filters.maxDistanceKm != null)
