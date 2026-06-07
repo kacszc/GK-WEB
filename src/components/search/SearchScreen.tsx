@@ -168,7 +168,13 @@ export function SearchScreen({
                     />
                   ))}
             </div>
-            <MapView specialists={items} activeId={activeId} onSelect={setActiveId} />
+            <MapView
+              specialists={items}
+              activeId={activeId}
+              onSelect={setActiveId}
+              cityCode={userLocation?.code ?? "warszawa"}
+              center={userLocation ? [userLocation.lng, userLocation.lat] : undefined}
+            />
           </div>
         )}
 
@@ -176,7 +182,13 @@ export function SearchScreen({
         {view === "map" && (
           <div className="grid gap-4 lg:h-[calc(100vh-220px)] lg:grid-cols-[200px_1fr]">
             {sidebar}
-            <MapView specialists={items} activeId={activeId} onSelect={setActiveId} />
+            <MapView
+              specialists={items}
+              activeId={activeId}
+              onSelect={setActiveId}
+              cityCode={userLocation?.code ?? "warszawa"}
+              center={userLocation ? [userLocation.lng, userLocation.lat] : undefined}
+            />
           </div>
         )}
 

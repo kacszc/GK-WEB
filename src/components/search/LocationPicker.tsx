@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { MapPin, Loader2, ChevronDown, Navigation, Check } from "lucide-react";
 import { Popover } from "@/components/ui/Popover";
 import { useI18n } from "@/i18n/I18nProvider";
 import { locateWarsawDistrict, reverseGeocodeCity } from "@/lib/geo";
-import { PL_CITIES, DEFAULT_CITY } from "@/lib/cities";
+import { geoService } from "@/services";
 import type { UserLocation } from "@/lib/types";
 import { cn } from "@/lib/cn";
 
@@ -25,12 +26,19 @@ export function LocationPicker({
   onLocate: (loc: UserLocation) => void;
   onClear: () => void;
 }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [state, setState] = useState<State>("idle");
   const [query, setQuery] = useState("");
 
-  const currentLabel = value?.label ?? DEFAULT_CITY.name;
-  const currentCity = value?.city ?? DEFAULT_CITY.name;
+  // Cities are backend-defined (geo.city) — add a city by inserting a row, no frontend change.
+  const { data: cities = [] } = useQuery({
+    queryKey: ["geoCities", locale],
+    queryFn: () => geoService.getCities(locale),
+  });
+
+  const defaultCity = cities[0]?.name ?? "Warszawa";
+  const currentLabel = value?.label ?? defaultCity;
+  const currentCity = value?.city ?? defaultCity;
 
   function detect(close: () => void) {
     if (!navigator.geolocation) {
@@ -43,7 +51,7 @@ export function LocationPicker({
         const { longitude: lng, latitude: lat } = pos.coords;
         const district = await locateWarsawDistrict(lng, lat);
         if (district) {
-          onLocate({ lng, lat, district, city: "Warszawa", label: `Warszawa · ${district}` });
+          onLocate({ lng, lat, district, city: "Warszawa", code: "warszawa", label: `Warszawa · ${district}` });
         } else {
           const city = await reverseGeocodeCity(lat, lng);
           onLocate({ lng, lat, city: city ?? undefined, label: city ?? t("results.useLocation") });
@@ -56,7 +64,7 @@ export function LocationPicker({
     );
   }
 
-  const filtered = PL_CITIES.filter((c) =>
+  const filtered = cities.filter((c) =>
     c.name.toLowerCase().includes(query.trim().toLowerCase()),
   );
 
@@ -115,7 +123,7 @@ export function LocationPicker({
                   <button
                     type="button"
                     onClick={() => {
-                      onLocate({ lng: c.lng, lat: c.lat, city: c.name, label: c.name });
+                      onLocate({ lng: c.lng, lat: c.lat, city: c.name, code: c.code, label: c.name });
                       close();
                     }}
                     className={cn(

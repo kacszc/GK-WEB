@@ -254,6 +254,7 @@ export type UserLocation = {
   lat: number;
   district?: string;
   city?: string;
+  code?: string; // backend city code (geo.city) — selects which zones the map loads
   label: string;
 };
 

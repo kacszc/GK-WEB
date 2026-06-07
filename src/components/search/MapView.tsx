@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useI18n } from "@/i18n/I18nProvider";
-import { warsawDistricts } from "@/services/warsaw-districts";
+import { geoService } from "@/services";
 import { avatarColors, initials } from "@/lib/avatar";
 import type { Specialist, Availability } from "@/lib/types";
 import type { TFunction } from "@/i18n/translate";
@@ -15,6 +16,8 @@ const AVAIL_COLOR: Record<Availability, string> = {
   week: "#e0a400",
   date: "#f97316",
 };
+
+const EMPTY_FC: GeoJSON.FeatureCollection = { type: "FeatureCollection", features: [] };
 
 function popupHtml(s: Specialist, t: TFunction): string {
   const color = avatarColors[s.avatarIndex % avatarColors.length];
@@ -42,12 +45,23 @@ export function MapView({
   specialists,
   activeId,
   onSelect,
+  cityCode = "warszawa",
+  center,
 }: {
   specialists: Specialist[];
   activeId?: string | null;
   onSelect?: (id: string | null) => void;
+  cityCode?: string;
+  center?: [number, number];
 }) {
   const { t } = useI18n();
+
+  // Zones (districts) come from the backend per city — add zones by inserting rows, not code.
+  const { data: zones = [] } = useQuery({
+    queryKey: ["geoZones", cityCode],
+    queryFn: () => geoService.getZones(cityCode),
+  });
+
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const loadedRef = useRef(false);
@@ -58,6 +72,7 @@ export function MapView({
   useEffect(() => {
     onSelectRef.current = onSelect;
   }, [onSelect]);
+  const initialCenterRef = useRef(center); // captured once for the initial camera
 
   // Init map once.
   useEffect(() => {
@@ -65,7 +80,7 @@ export function MapView({
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: "https://tiles.openfreemap.org/styles/liberty",
-      center: WARSAW,
+      center: initialCenterRef.current ?? WARSAW,
       zoom: 10.3,
       attributionControl: false,
     });
@@ -74,7 +89,7 @@ export function MapView({
     mapRef.current = map;
 
     map.on("load", () => {
-      map.addSource("districts", { type: "geojson", data: "/data/warsaw-districts.geojson" });
+      map.addSource("districts", { type: "geojson", data: EMPTY_FC });
       map.addLayer({
         id: "districts-fill",
         type: "fill",
@@ -98,17 +113,48 @@ export function MapView({
     };
   }, []);
 
-  // (Re)build markers when the specialist set changes.
+  // (Re)build the zone polygons + labels when the zones or specialists change.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    const apply = () => {
+      const fc: GeoJSON.FeatureCollection = {
+        type: "FeatureCollection",
+        features: zones.map((z) => ({
+          type: "Feature",
+          properties: { name: z.name },
+          geometry: z.polygon,
+        })),
+      };
+      const src = map.getSource("districts") as maplibregl.GeoJSONSource | undefined;
+      src?.setData(fc);
+
+      districtMarkersRef.current.forEach((m) => m.remove());
+      const counts: Record<string, number> = {};
+      for (const s of specialists) counts[s.district] = (counts[s.district] ?? 0) + 1;
+      districtMarkersRef.current = zones.map((z) => {
+        const el = document.createElement("div");
+        el.className =
+          "pointer-events-none whitespace-nowrap rounded-full bg-white/85 px-1.5 py-0.5 text-[10px] font-semibold text-[#5b21b6] shadow-sm";
+        el.textContent = counts[z.name] ? `${z.name} · ${counts[z.name]}` : z.name;
+        if (!counts[z.name]) el.style.opacity = "0.5";
+        return new maplibregl.Marker({ element: el }).setLngLat(z.center).addTo(map);
+      });
+    };
+
+    if (loadedRef.current) apply();
+    else map.once("skill:ready", apply);
+  }, [zones, specialists]);
+
+  // Specialist pins.
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
     const build = () => {
-      // specialist pins
       markersRef.current.forEach((m) => m.remove());
       markersRef.current = specialists.map((s) => {
-        // Outer element keeps MapLibre's positioning transform untouched;
-        // the inner dot handles the hover scale (avoids the pin "jumping").
         const el = document.createElement("button");
         el.className = "block border-0 bg-transparent p-0 cursor-pointer leading-none";
         const dot = document.createElement("span");
@@ -122,24 +168,20 @@ export function MapView({
         });
         return new maplibregl.Marker({ element: el }).setLngLat([s.lng, s.lat]).addTo(map);
       });
-
-      // district labels with counts
-      districtMarkersRef.current.forEach((m) => m.remove());
-      const counts: Record<string, number> = {};
-      for (const s of specialists) counts[s.district] = (counts[s.district] ?? 0) + 1;
-      districtMarkersRef.current = warsawDistricts.map((d) => {
-        const el = document.createElement("div");
-        el.className =
-          "pointer-events-none whitespace-nowrap rounded-full bg-white/85 px-1.5 py-0.5 text-[10px] font-semibold text-[#5b21b6] shadow-sm";
-        el.textContent = counts[d.name] ? `${d.name} · ${counts[d.name]}` : d.name;
-        if (!counts[d.name]) el.style.opacity = "0.5";
-        return new maplibregl.Marker({ element: el }).setLngLat(d.center).addTo(map);
-      });
     };
 
     if (loadedRef.current) build();
     else map.once("skill:ready", build);
   }, [specialists]);
+
+  // Recenter when the chosen city changes.
+  const cx = center?.[0];
+  const cy = center?.[1];
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || cx == null || cy == null) return;
+    map.flyTo({ center: [cx, cy], zoom: Math.max(map.getZoom(), 10.3), speed: 0.8 });
+  }, [cx, cy]);
 
   // Open popup / fly to the active specialist.
   useEffect(() => {
