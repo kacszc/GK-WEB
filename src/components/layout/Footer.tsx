@@ -23,7 +23,7 @@ export async function Footer() {
         {/* Top */}
         <div className="flex flex-col gap-10 lg:flex-row lg:gap-16">
           <div className="lg:w-[280px]">
-            <Logo dark />
+            <Logo dark href="/" />
             <p className="mt-4 text-sm leading-6 text-on-dark-4">{t("footer.description")}</p>
           </div>
 

@@ -12,7 +12,7 @@ export async function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-surface/90 backdrop-blur">
       <div className="mx-auto flex w-full max-w-[1280px] items-center justify-between gap-4 px-4 py-3 sm:px-8">
-        <Logo />
+        <Logo href="/" />
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-4 md:flex">

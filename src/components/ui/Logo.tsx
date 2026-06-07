@@ -1,14 +1,17 @@
+import Link from "next/link";
 import { cn } from "@/lib/cn";
 
-/** skill.com logo — gradient tile + wordmark. */
+/** skill.com logo — gradient tile + wordmark. Pass `href` (e.g. "/") to make it a navigable link. */
 export function Logo({
   className,
   dark = false,
+  href,
 }: {
   className?: string;
   dark?: boolean; // variant for dark background (white wordmark)
+  href?: string; // when set, the logo links there (top bars use "/")
 }) {
-  return (
+  const content = (
     <span className={cn("inline-flex items-center gap-2", className)}>
       <span className="grid h-7 w-7 place-items-center rounded-soft bg-gradient-to-br from-brand-violet to-brand-blue text-on-dark">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
@@ -25,4 +28,13 @@ export function Logo({
       </span>
     </span>
   );
+
+  if (href) {
+    return (
+      <Link href={href} aria-label="skill.com — strona główna" className="inline-flex rounded-soft">
+        {content}
+      </Link>
+    );
+  }
+  return content;
 }
