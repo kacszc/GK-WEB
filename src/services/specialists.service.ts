@@ -17,8 +17,8 @@ type SpecialistDto = {
   headline: string;
   district: string;
   trustScore: number;
-  rating: number;
-  reviews: number;
+  rating: number | null;
+  reviews: number | null;
   rateFrom: number;
   availability: "NOW" | "WEEK" | "DATE";
   distanceKm: number;
@@ -52,12 +52,12 @@ function toSpecialist(d: SpecialistDto, i: number): Specialist {
     trustScore: d.trustScore,
     availability: availabilityFromBackend(d.availability),
     kyc: d.trustScore >= 70,
-    topRated: d.rating >= 4.8,
+    topRated: (d.rating ?? 0) >= 4.8,
     district: d.district,
     distanceKm: d.distanceKm,
     rateFrom: d.rateFrom,
-    rating: d.rating,
-    reviews: d.reviews,
+    rating: d.rating ?? 0,
+    reviews: d.reviews ?? 0,
     specialties: [],
     languages: [],
     experienceYears: 0,

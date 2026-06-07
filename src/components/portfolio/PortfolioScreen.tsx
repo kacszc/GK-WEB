@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, MapPin, BadgeCheck, Clock, ImageIcon } from "lucide-react";
+import { Plus, MapPin, BadgeCheck, PenLine, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { portfolioService } from "@/services";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -82,10 +82,10 @@ function PortfolioCard({ item }: { item: PortfolioItem }) {
         <span
           className={cn(
             "absolute right-2 top-2 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold shadow-sm backdrop-blur",
-            verified ? "bg-success-chip/95 text-success-chip-text" : "bg-surface/90 text-ink-2",
+            verified ? "bg-success-chip/95 text-success-chip-text" : "bg-[#efeaff]/95 text-brand-violet",
           )}
         >
-          {verified ? <BadgeCheck className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
+          {verified ? <BadgeCheck className="h-3 w-3" /> : <PenLine className="h-3 w-3" />}
           {t(verified ? "portfolio.verified" : "portfolio.selfAdded")}
         </span>
       </div>

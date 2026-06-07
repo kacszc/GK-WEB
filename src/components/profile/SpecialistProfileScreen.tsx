@@ -112,10 +112,12 @@ function Profile({ s, t }: { s: SpecialistProfile; t: (k: string, p?: Record<str
               <MapPin className="h-3.5 w-3.5 text-ink-4" />
               {s.district} · {t("results.km", { km: s.distanceKm })}
             </span>
-            <span className="inline-flex items-center gap-1">
-              <Star className="h-3.5 w-3.5 fill-current text-[#e0a400]" />
-              {s.rating.toFixed(1)} ({s.reviews})
-            </span>
+            {s.reviews > 0 && (
+              <span className="inline-flex items-center gap-1">
+                <Star className="h-3.5 w-3.5 fill-current text-[#e0a400]" />
+                {s.rating.toFixed(1)} ({s.reviews})
+              </span>
+            )}
             <span className="inline-flex items-center gap-1">
               <Globe className="h-3.5 w-3.5 text-ink-4" />
               {s.languages.map((l) => t(LANG_KEY[l] ?? l)).join(", ")}

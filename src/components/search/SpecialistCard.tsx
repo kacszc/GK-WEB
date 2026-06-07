@@ -162,7 +162,7 @@ export function SpecialistCard({
           <span className="text-[15px] font-bold text-ink">
             {t("results.perHour", { rate: s.rateFrom })}
           </span>
-          {!compact && (
+          {!compact && s.reviews > 0 && (
             <span className="ml-2 text-[12px] text-ink-3">
               <Star className="mr-0.5 inline h-3 w-3 fill-current text-[#e0a400]" />
               {s.rating.toFixed(1)} ({s.reviews})

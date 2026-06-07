@@ -10,11 +10,11 @@ type EmployerDto = {
   verified: boolean;
   industries: string[];
   city: string;
-  rating: number;
+  rating: number | null;
   completedJobs: number;
   memberSince: string;
   description: string;
-  avgHireDays: number;
+  avgHireDays: number | null;
   onTimePayment: number;
   hiredRoles: { role: string; count: number }[];
   ratings: EmployerRating[];
@@ -35,11 +35,11 @@ function toEmployerProfile(d: EmployerDto): EmployerProfile {
     location: d.city,
     website: "",
     email: "",
-    rating: d.rating,
+    rating: d.rating ?? 0,
     completedJobs: d.completedJobs,
     memberSince: d.memberSince,
     description: d.description,
-    avgHireDays: d.avgHireDays,
+    avgHireDays: d.avgHireDays ?? 0,
     onTimePayment: d.onTimePayment,
     hiredRoles: d.hiredRoles,
     ratings: d.ratings,
