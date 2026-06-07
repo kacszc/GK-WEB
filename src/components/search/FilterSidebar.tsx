@@ -93,7 +93,10 @@ export function FilterSidebar({
               <Pill
                 key={i.code}
                 label={!whole && n > 0 ? `${i.label} · ${n}` : i.label}
-                selected={whole || n > 0 || activeIndustry === i.code}
+                // "selected" reflects the actual selection only; being expanded is shown by the
+                // specializations appearing below (a ring marks the open-but-unselected one).
+                selected={whole || n > 0}
+                ring={!whole && n === 0 && activeIndustry === i.code}
                 onClick={() => toggleIndustry(i.code)}
               />
             );
@@ -242,11 +245,13 @@ function Pill({
   label,
   selected,
   small,
+  ring,
   onClick,
 }: {
   label: string;
   selected: boolean;
   small?: boolean;
+  ring?: boolean; // expanded-but-unselected hint (outline only)
   onClick: () => void;
 }) {
   return (
@@ -258,7 +263,9 @@ function Pill({
         small ? "px-2.5 py-1 text-[12px]" : "px-3 py-1.5 text-[12px]",
         selected
           ? "border-ink bg-ink text-on-dark"
-          : "border-line-2 text-ink hover:bg-muted",
+          : ring
+            ? "border-brand-violet text-ink"
+            : "border-line-2 text-ink hover:bg-muted",
       )}
     >
       {label}
