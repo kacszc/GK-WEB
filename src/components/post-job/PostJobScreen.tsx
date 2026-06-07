@@ -135,23 +135,28 @@ export function PostJobScreen() {
             {/* Profession */}
             <SectionCard title={t("postJob.sProfession")} hint={t("postJob.sProfessionHint")}>
               <div className="flex flex-wrap gap-2">
-                {professions.slice(0, 10).map((p) => (
-                  <button
-                    key={p.label}
-                    onClick={() => set({ profession: p.label })}
-                    className={cn(
-                      "rounded-full border px-3.5 py-2 text-[13px] font-medium transition-colors",
-                      draft.profession === p.label
-                        ? "border-ink bg-ink text-on-dark"
-                        : "border-line-2 text-ink hover:bg-muted",
-                    )}
-                  >
-                    {p.label}
-                  </button>
-                ))}
+                {professions.slice(0, 10).map((p) => {
+                  const code = p.code ?? p.label; // value we submit; falls back to label offline
+                  return (
+                    <button
+                      key={code}
+                      onClick={() => set({ profession: code })}
+                      className={cn(
+                        "rounded-full border px-3.5 py-2 text-[13px] font-medium transition-colors",
+                        draft.profession === code
+                          ? "border-ink bg-ink text-on-dark"
+                          : "border-line-2 text-ink hover:bg-muted",
+                      )}
+                    >
+                      {p.label}
+                    </button>
+                  );
+                })}
               </div>
+              {/* Free-text fallback for a profession not in the catalog. When a chip (code) is
+                  picked, the input clears so it never surfaces the raw code. */}
               <input
-                value={draft.profession}
+                value={professions.some((p) => (p.code ?? p.label) === draft.profession) ? "" : draft.profession}
                 onChange={(e) => set({ profession: e.target.value })}
                 placeholder={t("postJob.professionPlaceholder")}
                 className={inputCls(showErrors && errors.profession)}

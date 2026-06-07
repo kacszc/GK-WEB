@@ -75,7 +75,7 @@ export function JobsScreen({ initialQuery }: { initialQuery: string }) {
           >
             <option value="">{t("jobs.allProfessions")}</option>
             {professions.map((p) => (
-              <option key={p.label} value={p.label}>
+              <option key={p.code ?? p.label} value={p.code ?? p.label}>
                 {p.label}
               </option>
             ))}

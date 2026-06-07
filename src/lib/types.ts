@@ -2,7 +2,8 @@
 // These types should mirror the DTOs returned by the API.
 
 export type Profession = {
-  label: string;
+  code?: string; // stable English slug submitted in forms/filters (backend-provided)
+  label: string; // localized display name
   count: number;
   live?: boolean; // green "NOW" chip
 };

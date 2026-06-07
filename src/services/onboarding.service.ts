@@ -66,13 +66,19 @@ export const onboardingService = {
     );
   },
 
-  /** Specializations available within an industry. Backend: string[]. */
+  /**
+   * Specializations within an industry. Backend returns {code,label,...}; the picker only feeds the
+   * (free-text) headline today, so we surface localized labels. Switch to codes once specialists get
+   * a structured specialization relation.
+   */
   async getSpecializations(industryId: string): Promise<string[]> {
     return withFallback(
-      () =>
-        apiGet<string[]>(
+      async () => {
+        const dtos = await apiGet<{ code: string; label: string }[]>(
           `/api/catalog/industries/${encodeURIComponent(industryId)}/specializations`,
-        ),
+        );
+        return dtos.map((d) => d.label);
+      },
       async () => {
         await mockDelay();
         return specializations[industryId] ?? specializations.gastronomy;
@@ -80,10 +86,13 @@ export const onboardingService = {
     );
   },
 
-  /** Spoken languages list. Backend: string[]. */
+  /** Spoken languages. Backend returns {code,name}; the picker is cosmetic (not persisted) → labels. */
   async getLanguages(): Promise<string[]> {
     return withFallback(
-      () => apiGet<string[]>("/api/catalog/languages"),
+      async () => {
+        const dtos = await apiGet<{ code: string; name: string }[]>("/api/catalog/languages");
+        return dtos.map((d) => d.name);
+      },
       async () => {
         await mockDelay(120, 300);
         return languages;
