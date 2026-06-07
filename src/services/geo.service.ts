@@ -14,6 +14,8 @@ export type GeoCity = {
 export type GeoZone = {
   name: string;
   center: [number, number];
+  color: string; // fill color (hex)
+  borderColor: string; // outline color (hex)
   polygon: GeoJSON.Geometry;
 };
 

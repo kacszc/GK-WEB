@@ -67,6 +67,7 @@ export function MapView({
   const loadedRef = useRef(false);
   const markersRef = useRef<maplibregl.Marker[]>([]);
   const districtMarkersRef = useRef<maplibregl.Marker[]>([]);
+  const labelElsRef = useRef<Map<string, HTMLDivElement>>(new Map());
   const popupRef = useRef<maplibregl.Popup | null>(null);
   const onSelectRef = useRef(onSelect);
   useEffect(() => {
@@ -94,13 +95,19 @@ export function MapView({
         id: "districts-fill",
         type: "fill",
         source: "districts",
-        paint: { "fill-color": "#7c3aed", "fill-opacity": 0.05 },
+        // Per-zone color from the backend (feature property), brand violet as fallback.
+        paint: { "fill-color": ["coalesce", ["get", "color"], "#7c3aed"], "fill-opacity": 0.08 },
       });
       map.addLayer({
         id: "districts-line",
         type: "line",
         source: "districts",
-        paint: { "line-color": "#7c3aed", "line-opacity": 0.35, "line-width": 1.2, "line-dasharray": [2, 2] },
+        paint: {
+          "line-color": ["coalesce", ["get", "borderColor"], "#7c3aed"],
+          "line-opacity": 0.4,
+          "line-width": 1.2,
+          "line-dasharray": [2, 2],
+        },
       });
       loadedRef.current = true;
       map.fire("skill:ready");
@@ -113,7 +120,8 @@ export function MapView({
     };
   }, []);
 
-  // (Re)build the zone polygons + labels when the zones or specialists change.
+  // Build the zone polygons + label markers ONCE per city (when zones change). Rebuilding these on
+  // every filter change is what made the labels flicker — counts are updated separately below.
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -123,7 +131,7 @@ export function MapView({
         type: "FeatureCollection",
         features: zones.map((z) => ({
           type: "Feature",
-          properties: { name: z.name },
+          properties: { name: z.name, color: z.color, borderColor: z.borderColor },
           geometry: z.polygon,
         })),
       };
@@ -131,21 +139,33 @@ export function MapView({
       src?.setData(fc);
 
       districtMarkersRef.current.forEach((m) => m.remove());
-      const counts: Record<string, number> = {};
-      for (const s of specialists) counts[s.district] = (counts[s.district] ?? 0) + 1;
+      labelElsRef.current = new Map();
       districtMarkersRef.current = zones.map((z) => {
         const el = document.createElement("div");
         el.className =
           "pointer-events-none whitespace-nowrap rounded-full bg-white/85 px-1.5 py-0.5 text-[10px] font-semibold text-[#5b21b6] shadow-sm";
-        el.textContent = counts[z.name] ? `${z.name} · ${counts[z.name]}` : z.name;
-        if (!counts[z.name]) el.style.opacity = "0.5";
+        el.textContent = z.name;
+        labelElsRef.current.set(z.name, el);
         return new maplibregl.Marker({ element: el }).setLngLat(z.center).addTo(map);
       });
     };
 
     if (loadedRef.current) apply();
     else map.once("skill:ready", apply);
-  }, [zones, specialists]);
+  }, [zones]);
+
+  // Update label counts by MUTATING the existing label elements (no marker churn → no flicker).
+  useEffect(() => {
+    const counts: Record<string, number> = {};
+    for (const s of specialists) counts[s.district] = (counts[s.district] ?? 0) + 1;
+    for (const z of zones) {
+      const el = labelElsRef.current.get(z.name);
+      if (!el) continue;
+      const n = counts[z.name] ?? 0;
+      el.textContent = n ? `${z.name} · ${n}` : z.name;
+      el.style.opacity = n ? "1" : "0.5";
+    }
+  }, [specialists, zones]);
 
   // Specialist pins.
   useEffect(() => {
