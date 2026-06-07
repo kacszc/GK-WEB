@@ -5,12 +5,12 @@ import { Footer } from "@/components/layout/Footer";
 export default async function JobsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; profession?: string }>;
 }) {
-  const { q } = await searchParams;
+  const { q, profession } = await searchParams;
   return (
     <>
-      <JobsScreen initialQuery={q ?? ""} />
+      <JobsScreen initialQuery={q ?? ""} initialProfession={profession} />
       <Footer />
     </>
   );

@@ -23,9 +23,18 @@ const AVAIL_KEY: Record<Availability, string> = {
   date: "results.fAvailDate",
 };
 
-export function JobsScreen({ initialQuery }: { initialQuery: string }) {
+export function JobsScreen({
+  initialQuery,
+  initialProfession,
+}: {
+  initialQuery: string;
+  initialProfession?: string;
+}) {
   const { t } = useI18n();
-  const [filters, setFilters] = useState<JobFilters>({ q: initialQuery || undefined });
+  const [filters, setFilters] = useState<JobFilters>({
+    q: initialQuery || undefined,
+    profession: initialProfession || undefined,
+  });
   const [applyJob, setApplyJob] = useState<JobPosting | null>(null);
 
   const { data: jobs = [], isLoading } = useJobSearch(filters);

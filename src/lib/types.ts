@@ -9,6 +9,7 @@ export type Profession = {
 };
 
 export type Specialization = {
+  code?: string; // profession code — lets picking a suggestion pre-select the filter
   title: string;
   count: number;
   hint: "enter" | "arrow";

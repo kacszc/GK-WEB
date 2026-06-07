@@ -5,7 +5,7 @@ import { professions, suggestedSpecializations, trending, mockDelay } from "./mo
 /** Backend payload shape for GET /api/landing. */
 type LandingDto = {
   popular: { code: string; label: string; count: number; live: boolean }[];
-  searchKeys: { label: string; count: number }[];
+  searchKeys: { code: string; label: string; count: number }[];
   trending: { rank: string; code: string; label: string; delta: number; added: number }[];
   liveStats: { onlineNow: number; jobsToday: number; avgResponseMin: number };
   recent: { query: string; location: string | null; rangeKm: number | null }[];
@@ -14,7 +14,7 @@ type LandingDto = {
 function fromDto(d: LandingDto): Landing {
   return {
     popular: d.popular.map<Profession>((p) => ({ code: p.code, label: p.label, count: p.count, live: p.live })),
-    searchKeys: d.searchKeys.map<Specialization>((k) => ({ title: k.label, count: k.count, hint: "arrow" })),
+    searchKeys: d.searchKeys.map<Specialization>((k) => ({ code: k.code, title: k.label, count: k.count, hint: "arrow" })),
     trending: d.trending.map<Trend>((t) => ({ rank: t.rank, code: t.code, label: t.label, delta: t.delta, added: t.added })),
     liveStats: d.liveStats,
     recent: d.recent.map((r) => ({ query: r.query, location: r.location, rangeKm: r.rangeKm })),

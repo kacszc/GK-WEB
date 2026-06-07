@@ -14,7 +14,7 @@ type Props = {
   totalCount: number;
   loading?: boolean;
   mode: SearchMode;
-  onPick: (value: string) => void;
+  onPick: (value: string, code?: string) => void;
   onOpenMap?: () => void;
 };
 
@@ -65,7 +65,7 @@ export function AutocompleteDropdown({
                     style={{ animationDelay: `${i * 35}ms` }}
                   >
                     <button
-                      onClick={() => onPick(s.title)}
+                      onClick={() => onPick(s.title, s.code)}
                       className={cn(
                         "flex w-full items-center gap-3 px-5 py-2.5 text-left transition-colors hover:bg-muted cursor-pointer",
                         i === 0 && "bg-muted",

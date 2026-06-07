@@ -32,10 +32,10 @@ export const searchService = {
     // Real profession suggestions from the catalog; the people preview stays client-side
     // (there is no people-suggest endpoint — the results page runs the real specialist search).
     try {
-      const dtos = await apiGet<{ label: string; count: number; live: boolean }[]>(
+      const dtos = await apiGet<{ code: string; label: string; count: number; live: boolean }[]>(
         `/api/search/suggest?q=${encodeURIComponent(query)}`,
       );
-      const specializations: Specialization[] = dtos.map((d) => ({ title: d.label, count: d.count, hint: "arrow" }));
+      const specializations: Specialization[] = dtos.map((d) => ({ code: d.code, title: d.label, count: d.count, hint: "arrow" }));
       const people = !q
         ? peopleNearby
         : peopleNearby.filter((p) => p.name.toLowerCase().includes(q) || p.meta.toLowerCase().includes(q));

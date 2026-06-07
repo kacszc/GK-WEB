@@ -44,14 +44,16 @@ export function HeroSearch({ mode, seedKeys = [] }: { mode: SearchMode; seedKeys
   const firstRun = useRef(true);
   const router = useRouter();
 
-  function goToResults(value: string, view?: "map") {
+  function goToResults(value: string, opts?: { view?: "map"; professionCode?: string }) {
     const q = value.trim();
     const base = mode === "job" ? "/jobs" : "/search";
     // Remember the search (query + where + range) for the "recently viewed" landing section.
     if (q) recordSearch({ query: q, location: where.location, rangeKm: where.distanceKm });
     const params = new URLSearchParams();
-    if (q) params.set("q", q);
-    if (view) params.set("view", view);
+    // A picked profession goes by code (pre-selects the filter); free text goes by q.
+    if (opts?.professionCode) params.set("profession", opts.professionCode);
+    else if (q) params.set("q", q);
+    if (opts?.view) params.set("view", opts.view);
     const qs = params.toString();
     router.push(`${base}${qs ? `?${qs}` : ""}`);
   }
@@ -103,16 +105,16 @@ export function HeroSearch({ mode, seedKeys = [] }: { mode: SearchMode; seedKeys
     };
   }, []);
 
-  function handlePick(value: string) {
+  function handlePick(value: string, code?: string) {
     setOpen(false);
     inputRef.current?.blur();
-    goToResults(value);
+    goToResults(value, code ? { professionCode: code } : undefined);
   }
 
   function handleOpenMap() {
     setOpen(false);
     inputRef.current?.blur();
-    goToResults(query, "map");
+    goToResults(query, { view: "map" });
   }
 
   return (
