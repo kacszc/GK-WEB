@@ -7,6 +7,8 @@ export { statsService } from "./stats.service";
 export { landingService } from "./landing.service";
 export { geoService } from "./geo.service";
 export type { GeoCity, GeoZone } from "./geo.service";
+export { alertsService } from "./alerts.service";
+export type { JobAlert, AlertDraft } from "./alerts.service";
 export { specialistsService, specialistFacets } from "./specialists.service";
 export type { SpecialistFilters, SpecialistSort, SearchFilterSchema, FilterOption, FilterRange } from "./specialists.service";
 export { jobsService } from "./jobs.service";

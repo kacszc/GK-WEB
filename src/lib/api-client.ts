@@ -73,6 +73,18 @@ export async function apiPut<T>(
   });
 }
 
+export async function apiPatch<T>(
+  path: string,
+  body?: unknown,
+  opts: ApiOptions = {},
+): Promise<T> {
+  return request<T>(path, {
+    ...opts,
+    method: "PATCH",
+    body: body == null ? undefined : JSON.stringify(body),
+  });
+}
+
 export async function apiDelete<T>(path: string, opts: ApiOptions = {}): Promise<T> {
   return request<T>(path, { ...opts, method: "DELETE" });
 }
