@@ -11,6 +11,7 @@ import { WalletProvider } from "@/lib/WalletProvider";
 import { ContactProvider } from "@/lib/ContactProvider";
 import { ToastProvider } from "@/lib/ToastProvider";
 import { NotificationToaster } from "@/components/layout/NotificationToaster";
+import { ErrorToaster } from "@/components/layout/ErrorToaster";
 import { CookieConsentProvider } from "@/lib/CookieConsentProvider";
 import { CookieConsent } from "@/components/legal/CookieConsent";
 
@@ -59,6 +60,7 @@ export default async function RootLayout({
                   <CookieConsentProvider>
                     {children}
                     <NotificationToaster />
+                    <ErrorToaster />
                     <CookieConsent />
                     <Suspense fallback={null}>
                       <FirebaseAnalytics />

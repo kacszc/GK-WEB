@@ -111,6 +111,10 @@ const pl = {
     errorTitle: "Nie udało się",
     errorBody: "Spróbuj ponownie.",
   },
+  error: {
+    title: "Nie udało się",
+    body: "Spróbuj ponownie.",
+  },
   results: {
     edit: "Edytuj",
     breadcrumbHome: "Strona główna",

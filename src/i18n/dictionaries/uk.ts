@@ -112,6 +112,10 @@ const uk: Dictionary = {
     errorTitle: "Не вдалося",
     errorBody: "Спробуйте ще раз.",
   },
+  error: {
+    title: "Не вдалося",
+    body: "Спробуйте ще раз.",
+  },
   results: {
     edit: "Редагувати",
     breadcrumbHome: "Головна",

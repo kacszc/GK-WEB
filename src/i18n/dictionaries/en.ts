@@ -112,6 +112,10 @@ const en: Dictionary = {
     errorTitle: "Something went wrong",
     errorBody: "Please try again.",
   },
+  error: {
+    title: "Something went wrong",
+    body: "Please try again.",
+  },
   results: {
     edit: "Edit",
     breadcrumbHome: "Home",
