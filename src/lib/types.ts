@@ -343,8 +343,8 @@ export type EmployerOnboardingResult = {
 
 // --- Portfolio ------------------------------------------------------------
 
-/** Verification status of a portfolio item. */
-export type PortfolioStatus = "pending" | "verified";
+/** Provenance of a portfolio item: self-added by the specialist, or employer-confirmed. */
+export type PortfolioStatus = "self" | "verified";
 
 /** A portfolio entry (gallery of a completed job). */
 export type PortfolioItem = {
@@ -481,10 +481,17 @@ export type AvailabilitySummary = {
   estimatedEarnings: number;
 };
 
+/** A job-driven booking on the calendar (several may share one day). */
+export type AvailabilityBooking = {
+  date: string;
+  title: string;
+};
+
 /** Full month of availability data. */
 export type AvailabilityMonth = {
   days: AvailabilityDay[];
   rules: RecurringRule[];
+  bookings: AvailabilityBooking[];
   summary: AvailabilitySummary;
 };
 

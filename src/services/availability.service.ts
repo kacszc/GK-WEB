@@ -47,6 +47,7 @@ type RuleDto = { id: string; label: string; detail: string; available: boolean }
 type MonthDto = {
   days: DayDto[];
   rules: RuleDto[];
+  bookings?: { date: string; title: string }[];
   summary: {
     free: number;
     booked: number;
@@ -60,6 +61,7 @@ function toMonth(dto: MonthDto): AvailabilityMonth {
   return {
     days: dto.days.map((d) => ({ date: d.date, state: stateFromEnum(d.state) })),
     rules: dto.rules,
+    bookings: dto.bookings ?? [],
     summary: dto.summary,
   };
 }
@@ -80,6 +82,7 @@ function mockMonth(year: number, month: number): AvailabilityMonth {
   return {
     days,
     rules,
+    bookings: [],
     summary: { free, booked, blocked, jobsDone: 3, estimatedEarnings: booked * 370 },
   };
 }

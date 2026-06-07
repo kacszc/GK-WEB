@@ -54,6 +54,15 @@ export function AvailabilityScreen() {
     [data, localRules, removedRuleIds],
   );
 
+  // Job-driven bookings grouped by day (several services may share a day).
+  const bookingsByDate = useMemo(() => {
+    const map: Record<string, string[]> = {};
+    (data?.bookings ?? []).forEach((b) => {
+      (map[b.date] ??= []).push(b.title);
+    });
+    return map;
+  }, [data]);
+
   const monthFormatter = (d: Date) =>
     new Intl.DateTimeFormat(intlTags[locale], { month: "long", year: "numeric" }).format(d);
 
@@ -125,6 +134,7 @@ export function AvailabilityScreen() {
           month={month}
           onMonthChange={setMonth}
           days={daysMap}
+          bookings={bookingsByDate}
           weekdays={dict.availability.weekdays}
           labels={labels}
           monthFormatter={monthFormatter}

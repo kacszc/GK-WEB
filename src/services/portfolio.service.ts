@@ -21,7 +21,7 @@ type PortfolioItemView = {
   description: string;
   location: string;
   date: string | null;
-  status: "PENDING" | "VERIFIED";
+  status: "SELF" | "VERIFIED";
   photoCount: number;
   colors: string[];
   linkedJobId: string | null;
@@ -64,7 +64,7 @@ function toPortfolioItem(v: PortfolioItemView): PortfolioItem {
     description: v.description,
     location: v.location,
     date: displayDate(v.date),
-    status: v.status === "VERIFIED" ? "verified" : "pending",
+    status: v.status === "VERIFIED" ? "verified" : "self",
     photoCount: v.photoCount,
     colors: v.colors?.length ? v.colors : ["#5b4636"],
     linkedJob: linked,
@@ -116,7 +116,8 @@ export const portfolioService = {
   /**
    * Submit a new portfolio entry. The API has no file storage yet, so we send
    * metadata only (title/description/location/date/linkedJobId); the server
-   * derives `photoCount`/`colors`. Linked entries start "pending".
+   * derives `photoCount`/`colors`. Items are "self" unless linked to a completed job the
+   * specialist did (then the server marks them "verified" — employer-confirmed).
    */
   async upload(draft: PortfolioDraft): Promise<PortfolioItem> {
     const linked = draft.linkedJobId
@@ -141,7 +142,7 @@ export const portfolioService = {
         description: draft.description,
         location: draft.location,
         date: draft.date,
-        status: "pending",
+        status: "self",
         photoCount: draft.fileNames.length,
         colors: ["#5b4636", "#c47b35", "#4f6b58"].slice(0, Math.max(1, draft.fileNames.length)),
         linkedJob: linked?.employer,

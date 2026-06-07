@@ -84,7 +84,7 @@ export const portfolioItems: PortfolioItem[] = [
     description: "Stała obsługa baru w restauracji przez weekend.",
     location: "Warszawa Śródmieście",
     date: "06.04.2026",
-    status: "pending",
+    status: "self",
     photoCount: 2,
     colors: ["#4f6b58", "#6b4f5a"],
   },

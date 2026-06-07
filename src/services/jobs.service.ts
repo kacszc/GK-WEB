@@ -89,6 +89,7 @@ export const jobsService = {
         people: draft.people,
         rateFrom: draft.rate ?? 0,
         hours: draft.hours,
+        workDate: draft.date ? draft.date.toISOString().slice(0, 10) : null,
       });
       return { id: dto.id, notifiedCount };
     } catch {

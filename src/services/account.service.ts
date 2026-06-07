@@ -1,4 +1,4 @@
-import type { MyJob, SavedContact, ActivityItem, Applicant } from "@/lib/types";
+import type { MyJob, SavedContact, ActivityItem, ActivityType, Applicant } from "@/lib/types";
 import { apiGet, apiPost } from "@/lib/api-client";
 import { myJobs, savedContacts, activity, applicants } from "./mock-account";
 import { mockDelay } from "./mock-data";
@@ -46,6 +46,35 @@ type MyJobDto = {
   rate: number;
   createdAt: string;
 };
+
+/** A specialist the employer has paid to contact. */
+type ContactCardDto = {
+  id: string;
+  name: string;
+  role: string | null;
+  district: string | null;
+  trustScore: number;
+  rating: number | null;
+};
+
+/** Notification row (also used as the activity feed source). */
+type NotificationDto = { id: string; type: string; title: string; createdAt: string };
+
+/** Map a backend notification type to the activity-feed category. */
+function activityType(type: string): ActivityType {
+  switch (type) {
+    case "JOB_COMPLETED":
+      return "hired";
+    case "REVIEW_RECEIVED":
+      return "review";
+    case "JOB_APPLICATION":
+      return "applied";
+    case "MESSAGE":
+      return "contacted";
+    default:
+      return "job_posted";
+  }
+}
 
 function toMyJob(d: MyJobDto): MyJob {
   return {
@@ -95,14 +124,36 @@ export const accountService = {
     }
   },
   async getContacts(): Promise<SavedContact[]> {
-    // TODO(backend): return apiGet("/me/contacts");
-    await mockDelay(400, 900);
-    return savedContacts;
+    try {
+      const dtos = await apiGet<ContactCardDto[]>("/api/contacts");
+      return dtos.map((c, i) => ({
+        id: c.id,
+        name: c.name,
+        avatarIndex: i % 14,
+        role: c.role ?? "",
+        district: c.district ?? "",
+        rating: c.rating ?? 0,
+        trustScore: c.trustScore ?? 0,
+      }));
+    } catch {
+      await mockDelay(400, 900);
+      return savedContacts;
+    }
   },
   async getActivity(): Promise<ActivityItem[]> {
-    // TODO(backend): return apiGet("/me/activity");
-    await mockDelay(400, 900);
-    return activity;
+    try {
+      // The activity feed is the user's recent notifications.
+      const dtos = await apiGet<NotificationDto[]>("/api/notifications");
+      return dtos.slice(0, 20).map((n) => ({
+        id: n.id,
+        type: activityType(n.type),
+        text: n.title,
+        time: appliedAgo(n.createdAt),
+      }));
+    } catch {
+      await mockDelay(400, 900);
+      return activity;
+    }
   },
   async getJob(id: string): Promise<MyJob | null> {
     await mockDelay(300, 600);

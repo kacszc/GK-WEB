@@ -47,6 +47,7 @@ export function AvailabilityCalendar({
   month,
   onMonthChange,
   days,
+  bookings,
   weekdays,
   labels,
   monthFormatter,
@@ -58,6 +59,7 @@ export function AvailabilityCalendar({
   month: Date;
   onMonthChange: (d: Date) => void;
   days: Record<string, DayState>;
+  bookings?: Record<string, string[]>;
   weekdays: string[];
   labels: Record<DayState, string>;
   monthFormatter: (d: Date) => string;
@@ -117,6 +119,7 @@ export function AvailabilityCalendar({
           }
           const key = iso(date);
           const state = days[key];
+          const dayBookings = bookings?.[key] ?? [];
           const interactive = editable && !!onDayStateChange;
           const isOpen = openDay === key;
           const lastCols = i % 7 >= 5; // anchor menu to the right edge for Sat/Sun
@@ -134,6 +137,14 @@ export function AvailabilityCalendar({
               >
                 <span className="block text-[13px] font-semibold">{date.getDate()}</span>
                 {state && <span className="block text-[9px] font-bold tracking-[0.5px]">{labels[state]}</span>}
+                {dayBookings.length > 0 && (
+                  <span
+                    title={dayBookings.join(" · ")}
+                    className="mt-0.5 inline-flex items-center gap-1 rounded-full bg-brand-violet px-1.5 py-0.5 text-[9px] font-bold text-on-dark"
+                  >
+                    ●{dayBookings.length > 1 ? ` ${dayBookings.length}` : ""}
+                  </span>
+                )}
               </button>
 
               {/* Per-day menu */}
