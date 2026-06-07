@@ -32,6 +32,29 @@ export type LiveStat = {
   accent?: boolean; // zielona liczba
 };
 
+/** Raw live counters from the backend; the UI builds localized rows from these. */
+export type LandingLiveStats = {
+  onlineNow: number;
+  jobsToday: number;
+  avgResponseMin: number;
+};
+
+/** A recently-performed search (query + where + range) — a landing quick action. */
+export type RecentSearch = {
+  query: string;
+  location?: string | null;
+  rangeKm?: number | null;
+};
+
+/** The whole landing page in one payload, composed by the backend (GET /api/landing). */
+export type Landing = {
+  popular: Profession[]; // "one-click" chips
+  searchKeys: Specialization[]; // seed search suggestions (shown on focus)
+  trending: Trend[];
+  liveStats: LandingLiveStats;
+  recent: RecentSearch[]; // signed-in only; empty otherwise
+};
+
 export type FooterColumn = {
   title: string;
   links: string[];

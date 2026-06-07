@@ -1,25 +1,35 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { SearchBar } from "./SearchBar";
 import { AutocompleteDropdown } from "./AutocompleteDropdown";
 import { presetDate } from "./WhenFilter";
 import { searchService } from "@/services";
-import type { SearchSuggestions, WhenValue, WhereValue, SearchMode } from "@/lib/types";
+import { recordSearch } from "@/lib/searchHistory";
+import type { SearchSuggestions, WhenValue, WhereValue, SearchMode, Specialization } from "@/lib/types";
 
-const EMPTY: SearchSuggestions = {
-  query: "",
-  specializations: [],
-  people: [],
-  totalCount: 0,
-};
+export function HeroSearch({ mode, seedKeys = [] }: { mode: SearchMode; seedKeys?: Specialization[] }) {
+  // Seed dropdown state from the landing payload so focus shows suggestions with no extra fetch.
+  const seedState: SearchSuggestions = useMemo(
+    () => ({
+      query: "",
+      specializations: seedKeys,
+      people: [],
+      totalCount: seedKeys.reduce((sum, s) => sum + s.count, 0),
+    }),
+    [seedKeys],
+  );
 
-export function HeroSearch({ mode }: { mode: SearchMode }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [results, setResults] = useState<SearchSuggestions>(EMPTY);
+  const [loading, setLoading] = useState(false);
+  const [fetched, setFetched] = useState<SearchSuggestions>(seedState);
+
+  // While the box is empty we show the seed keys; once typing, the fetched results.
+  const typing = query.trim().length > 0;
+  const results = typing ? fetched : seedState;
+  const isLoading = typing ? loading : false;
   const [when, setWhen] = useState<WhenValue>(() => ({
     preset: "today",
     date: presetDate("today"),
@@ -34,14 +44,25 @@ export function HeroSearch({ mode }: { mode: SearchMode }) {
   const firstRun = useRef(true);
   const router = useRouter();
 
-  function goToResults(value: string) {
+  function goToResults(value: string, view?: "map") {
     const q = value.trim();
     const base = mode === "job" ? "/jobs" : "/search";
-    router.push(`${base}${q ? `?q=${encodeURIComponent(q)}` : ""}`);
+    // Remember the search (query + where + range) for the "recently viewed" landing section.
+    if (q) recordSearch({ query: q, location: where.location, rangeKm: where.distanceKm });
+    const params = new URLSearchParams();
+    if (q) params.set("q", q);
+    if (view) params.set("view", view);
+    const qs = params.toString();
+    router.push(`${base}${qs ? `?${qs}` : ""}`);
   }
 
-  // Fetch suggestions from the service (debounce + random mock delay).
+  // Fetch suggestions while typing. When the box is empty we show the seed keys from the
+  // landing payload (derived above — no request, no state write here).
   useEffect(() => {
+    if (!query.trim()) {
+      firstRun.current = false;
+      return;
+    }
     let active = true;
     const delay = firstRun.current ? 0 : 180;
     firstRun.current = false;
@@ -50,7 +71,7 @@ export function HeroSearch({ mode }: { mode: SearchMode }) {
       setLoading(true);
       searchService.suggest(query).then((res) => {
         if (!active) return;
-        setResults(res);
+        setFetched(res);
         setLoading(false);
       });
     }, delay);
@@ -88,6 +109,12 @@ export function HeroSearch({ mode }: { mode: SearchMode }) {
     goToResults(value);
   }
 
+  function handleOpenMap() {
+    setOpen(false);
+    inputRef.current?.blur();
+    goToResults(query, "map");
+  }
+
   return (
     <div ref={containerRef} className="relative w-full max-w-[900px]">
       <SearchBar
@@ -98,7 +125,7 @@ export function HeroSearch({ mode }: { mode: SearchMode }) {
         }}
         onFocus={() => setOpen(true)}
         resultCount={results.totalCount}
-        loading={loading}
+        loading={isLoading}
         inputRef={inputRef}
         onSubmit={() => goToResults(query)}
         mode={mode}
@@ -114,9 +141,10 @@ export function HeroSearch({ mode }: { mode: SearchMode }) {
             specializations={results.specializations}
             people={results.people}
             totalCount={results.totalCount}
-            loading={loading}
+            loading={isLoading}
             mode={mode}
             onPick={handlePick}
+            onOpenMap={handleOpenMap}
           />
         </div>
       )}

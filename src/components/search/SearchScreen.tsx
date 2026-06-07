@@ -20,7 +20,13 @@ const CITY = "Warszawa";
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
-export function SearchScreen({ initialQuery }: { initialQuery: string }) {
+export function SearchScreen({
+  initialQuery,
+  initialView = "list",
+}: {
+  initialQuery: string;
+  initialView?: ResultsView;
+}) {
   const { t } = useI18n();
   const [filters, setFilters] = useState<SpecialistFilters>({
     q: initialQuery || undefined,
@@ -30,7 +36,7 @@ export function SearchScreen({ initialQuery }: { initialQuery: string }) {
     languages: ["pl"],
     sort: "trust",
   });
-  const [view, setView] = useState<ResultsView>("list");
+  const [view, setView] = useState<ResultsView>(initialView);
   const [page, setPage] = useState(1);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);

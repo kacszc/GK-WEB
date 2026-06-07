@@ -193,7 +193,7 @@ function Profile({ s, t }: { s: SpecialistProfile; t: (k: string, p?: Record<str
             <Section title={t("profile.portfolio")}>
               <div className="grid gap-4 sm:grid-cols-2">
                 {portfolio.map((it) => (
-                  <ProfilePortfolioCard key={it.id} item={it} verifiedLabel={t("portfolio.verified")} selfLabel={t("portfolio.selfAdded")} />
+                  <ProfilePortfolioCard key={it.id} item={it} verifiedLabel={t("portfolio.verified")} />
                 ))}
               </div>
             </Section>
@@ -292,7 +292,7 @@ function Tag({ children, className }: { children: React.ReactNode; className?: s
   );
 }
 
-function ProfilePortfolioCard({ item, verifiedLabel, selfLabel }: { item: PortfolioItem; verifiedLabel: string; selfLabel: string }) {
+function ProfilePortfolioCard({ item, verifiedLabel }: { item: PortfolioItem; verifiedLabel: string }) {
   const verified = item.status === "verified";
   return (
     <div className={cn("overflow-hidden rounded-tile border bg-surface", verified ? "border-success-badge" : "border-line-3")}>
@@ -304,14 +304,12 @@ function ProfilePortfolioCard({ item, verifiedLabel, selfLabel }: { item: Portfo
       <div className="p-3">
         <div className="flex items-start justify-between gap-2">
           <h3 className="text-[13px] font-semibold text-ink">{item.title}</h3>
-          {verified ? (
+          {/* Public profile: only the employer-confirmed badge. "Added by you" is first-person
+              and would make no sense to a visitor, so self-added items show no badge here. */}
+          {verified && (
             <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-success-chip px-2 py-0.5 text-[10px] font-semibold text-success-chip-text">
               <ShieldCheck className="h-3 w-3" />
               {verifiedLabel}
-            </span>
-          ) : (
-            <span className="inline-flex shrink-0 items-center rounded-full bg-pill px-2 py-0.5 text-[10px] font-semibold text-ink-3">
-              {selfLabel}
             </span>
           )}
         </div>

@@ -5,9 +5,9 @@ import { SearchToggle } from "./SearchToggle";
 import { HeroSearch } from "./HeroSearch";
 import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
-import type { SearchMode } from "@/lib/types";
+import type { SearchMode, Specialization } from "@/lib/types";
 
-export function Hero() {
+export function Hero({ seedKeys = [] }: { seedKeys?: Specialization[] }) {
   const { t } = useI18n();
   const [mode, setMode] = useState<SearchMode>("worker");
 
@@ -25,7 +25,7 @@ export function Hero() {
         {t(`mode.${mode}.title`)}
       </h1>
 
-      <HeroSearch mode={mode} />
+      <HeroSearch mode={mode} seedKeys={seedKeys} />
     </section>
   );
 }

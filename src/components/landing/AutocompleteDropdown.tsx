@@ -15,6 +15,7 @@ type Props = {
   loading?: boolean;
   mode: SearchMode;
   onPick: (value: string) => void;
+  onOpenMap?: () => void;
 };
 
 export function AutocompleteDropdown({
@@ -25,6 +26,7 @@ export function AutocompleteDropdown({
   loading = false,
   mode,
   onPick,
+  onOpenMap,
 }: Props) {
   const { t } = useI18n();
   const empty = specializations.length === 0 && people.length === 0;
@@ -134,7 +136,11 @@ export function AutocompleteDropdown({
             <span className="flex items-center gap-2 text-[13px] font-medium text-ink-2">
               {t(`mode.${mode}.showAll`, { count: totalCount })} <Kbd>↵</Kbd>
             </span>
-            <Button variant="outline" className="rounded-soft px-3 py-1.5 text-xs font-medium">
+            <Button
+              variant="outline"
+              onClick={onOpenMap}
+              className="rounded-soft px-3 py-1.5 text-xs font-medium"
+            >
               <MapIcon className="h-3.5 w-3.5" />
               {t("dropdown.openMap")}
             </Button>

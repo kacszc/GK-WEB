@@ -171,25 +171,23 @@ export function PortfolioUploadDialog({
             </div>
           </div>
 
-          {/* Link to job */}
-          <p className="mb-2 mt-5 text-[12px] font-semibold text-ink-3">{t("portfolio.linkLabel")}</p>
-          <div className="flex flex-col gap-2">
+          {/* Link to job (optional — defaults to no link) */}
+          <label className="mb-1.5 mt-5 block text-[12px] font-semibold text-ink-3">{t("portfolio.linkLabel")}</label>
+          <select
+            value={linkedJobId ?? ""}
+            onChange={(e) => setLinkedJobId(e.target.value || null)}
+            className="w-full rounded-tile border border-line-2 bg-surface px-3 py-2.5 text-sm text-ink outline-none transition-colors focus:border-ink"
+          >
+            <option value="">{t("portfolio.linkNone")}</option>
             {jobs.map((j) => (
-              <LinkOption
-                key={j.id}
-                selected={linkedJobId === j.id}
-                onClick={() => setLinkedJobId(j.id)}
-                title={`${j.title} · ${j.date}`}
-                sub={`${j.employer} · ${t("portfolio.completed")}`}
-              />
+              <option key={j.id} value={j.id}>
+                {j.title} · {j.date} — {j.employer}
+              </option>
             ))}
-            <LinkOption
-              selected={linkedJobId === null}
-              onClick={() => setLinkedJobId(null)}
-              title={t("portfolio.linkNone")}
-              sub={t("portfolio.linkNoneHint")}
-            />
-          </div>
+          </select>
+          <p className={cn("mt-1.5 text-[12px]", linkedJobId ? "text-success-chip-text" : "text-ink-4")}>
+            {t(linkedJobId ? "portfolio.linkConfirmHint" : "portfolio.linkNoneHint")}
+          </p>
 
           {/* Actions */}
           <div className="mt-6 flex justify-end gap-2">
@@ -203,41 +201,5 @@ export function PortfolioUploadDialog({
         </>
       )}
     </Dialog>
-  );
-}
-
-function LinkOption({
-  selected,
-  onClick,
-  title,
-  sub,
-}: {
-  selected: boolean;
-  onClick: () => void;
-  title: string;
-  sub: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "flex items-center gap-3 rounded-tile border px-3.5 py-3 text-left transition-colors",
-        selected ? "border-success-badge bg-success-chip/40" : "border-line-2 hover:bg-muted",
-      )}
-    >
-      <span
-        className={cn(
-          "grid h-4 w-4 shrink-0 place-items-center rounded-full border-2",
-          selected ? "border-success-badge" : "border-line-4",
-        )}
-      >
-        {selected && <span className="h-2 w-2 rounded-full bg-success-badge" />}
-      </span>
-      <span className="min-w-0">
-        <span className="block truncate text-[13px] font-semibold text-ink">{title}</span>
-        <span className="block truncate text-[12px] text-ink-3">{sub}</span>
-      </span>
-    </button>
   );
 }

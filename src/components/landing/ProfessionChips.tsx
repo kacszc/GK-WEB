@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { CountChip } from "@/components/ui/CountChip";
-import { catalogService } from "@/services";
 import { getI18n } from "@/i18n/server";
+import type { Profession } from "@/lib/types";
 
-export async function ProfessionChips() {
+export async function ProfessionChips({ items }: { items: Profession[] }) {
   const { t } = await getI18n();
-  const professions = await catalogService.getPopularProfessions();
+  const professions = items;
+
+  // Backend returned nothing for this section — don't render it.
+  if (professions.length === 0) return null;
 
   return (
     <section className="mx-auto w-full max-w-[1280px] px-4 pb-6 pt-4 sm:px-8">
