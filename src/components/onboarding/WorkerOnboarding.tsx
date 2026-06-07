@@ -61,6 +61,8 @@ export function WorkerOnboarding({
   async function finish() {
     setBusy(true);
     try {
+      // `specs` holds codes; map back to labels for the (free-text) headline, send codes for the relation.
+      const specLabels = specs.map((c) => specializations.find((o) => o.code === c)?.label ?? c);
       const res = await onboardingService.completeWorker({
         name,
         email,
@@ -68,7 +70,8 @@ export function WorkerOnboarding({
         industry,
         baseLocation,
         radiusKm,
-        specializations: specs,
+        specializations: specLabels,
+        specializationCodes: specs,
         languages: langs,
       });
       signIn({ name: name.trim() || res.firstName, email, role: "specialist" });
@@ -159,7 +162,7 @@ export function WorkerOnboarding({
             <p className="mb-2 text-[12px] font-semibold text-ink-3">{t("onboarding.wSpecLabel", { industry: industryLabel })}</p>
             <div className="flex flex-wrap gap-2">
               {specializations.map((s) => (
-                <Chip key={s} label={s} selected={specs.includes(s)} check onClick={() => toggle(specs, setSpecs, s)} />
+                <Chip key={s.code} label={s.label} selected={specs.includes(s.code)} check onClick={() => toggle(specs, setSpecs, s.code)} />
               ))}
             </div>
             <p className="mb-2 mt-5 text-[12px] font-semibold text-ink-3">{t("onboarding.wLanguages")}</p>

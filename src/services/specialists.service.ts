@@ -70,6 +70,7 @@ export type SpecialistSort = "trust" | "distance" | "rate";
 
 export type SpecialistFilters = {
   q?: string;
+  profession?: string; // specialization code (from a chip/trending link)
   minTrust?: number;
   maxDistanceKm?: number;
   availability?: Availability[];
@@ -142,6 +143,16 @@ export const specialistsService = {
       }
       if (filters.maxDistanceKm != null) params.set("radiusKm", String(filters.maxDistanceKm));
       if (filters.q) params.set("q", filters.q);
+      // The rich sidebar filters now run server-side (real SQL), not just in the mock.
+      if (filters.profession) params.set("profession", filters.profession);
+      if (filters.minTrust != null) params.set("minTrust", String(filters.minTrust));
+      if (filters.availability?.length) {
+        params.set("availability", filters.availability.map((a) => a.toUpperCase()).join(","));
+      }
+      if (filters.rateMin != null) params.set("rateMin", String(filters.rateMin));
+      if (filters.rateMax != null) params.set("rateMax", String(filters.rateMax));
+      if (filters.kyc) params.set("kyc", "true");
+      if (filters.sort) params.set("sort", filters.sort);
       const qs = params.toString();
       const dtos = await apiGet<SpecialistDto[]>(
         `/api/specialists${qs ? `?${qs}` : ""}`,

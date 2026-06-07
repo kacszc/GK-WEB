@@ -22,14 +22,17 @@ const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export function SearchScreen({
   initialQuery,
+  initialProfession,
   initialView = "list",
 }: {
   initialQuery: string;
+  initialProfession?: string;
   initialView?: ResultsView;
 }) {
   const { t } = useI18n();
   const [filters, setFilters] = useState<SpecialistFilters>({
     q: initialQuery || undefined,
+    profession: initialProfession || undefined,
     minTrust: 75,
     maxDistanceKm: 25,
     availability: ["now", "week"],

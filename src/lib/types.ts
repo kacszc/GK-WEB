@@ -22,6 +22,7 @@ export type Person = {
 
 export type Trend = {
   rank: string;
+  code?: string; // stable profession slug for code-based search links
   label: string;
   delta: number; // zmiana %
   added: number;
@@ -340,7 +341,8 @@ export type WorkerOnboardingData = {
   industry: string;
   baseLocation: string;
   radiusKm: number;
-  specializations: string[];
+  specializations: string[]; // labels (compose the free-text headline)
+  specializationCodes: string[]; // stable codes → specialist's specialization relation
   languages: string[];
 };
 

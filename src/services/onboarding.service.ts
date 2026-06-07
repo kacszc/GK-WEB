@@ -21,6 +21,9 @@ async function withFallback<T>(fn: () => Promise<T>, fallback: () => Promise<T>)
 /** Backend industry DTO: { code, name }. */
 type IndustryDto = { code: string; name: string };
 
+/** A pickable specialization: stable code (submitted) + localized label (shown). */
+export type SpecializationOption = { code: string; label: string };
+
 // Industries (branże) — shared by both onboarding flows.
 const industries: IndustryOption[] = [
   { id: "gastronomy", label: "Gastronomia" },
@@ -67,21 +70,22 @@ export const onboardingService = {
   },
 
   /**
-   * Specializations within an industry. Backend returns {code,label,...}; the picker only feeds the
-   * (free-text) headline today, so we surface localized labels. Switch to codes once specialists get
-   * a structured specialization relation.
+   * Specializations within an industry as {code,label} options: the picker submits codes (stored as
+   * the specialist's specialization relation, driving code-based search) and shows localized labels.
    */
-  async getSpecializations(industryId: string): Promise<string[]> {
+  async getSpecializations(industryId: string): Promise<SpecializationOption[]> {
     return withFallback(
-      async () => {
-        const dtos = await apiGet<{ code: string; label: string }[]>(
+      () =>
+        apiGet<SpecializationOption[]>(
           `/api/catalog/industries/${encodeURIComponent(industryId)}/specializations`,
-        );
-        return dtos.map((d) => d.label);
-      },
+        ),
       async () => {
         await mockDelay();
-        return specializations[industryId] ?? specializations.gastronomy;
+        // Offline: derive a stand-in code from the label so selection still works.
+        return (specializations[industryId] ?? specializations.gastronomy).map((label) => ({
+          code: label,
+          label,
+        }));
       },
     );
   },
@@ -139,8 +143,9 @@ export const onboardingService = {
       async () => {
         const res = await apiPost<{ id: string; trustScore: number }>("/api/me/specialist-profile", {
           displayName: data.name,
-          headline: data.specializations.join(", ") || data.industry,
+          headline: data.specializations.join(", ") || data.industry, // free-text label list
           district: data.baseLocation,
+          specializationCodes: data.specializationCodes, // structured codes → search relation
         });
         return { trustScore: res.trustScore, firstName };
       },

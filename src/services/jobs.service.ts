@@ -104,6 +104,8 @@ export const jobsService = {
       const params = new URLSearchParams();
       if (filters.profession) params.set("profession", filters.profession);
       if (filters.district) params.set("district", filters.district);
+      if (filters.q) params.set("q", filters.q);
+      if (filters.rateMin != null) params.set("rateMin", String(filters.rateMin));
       const qs = params.toString();
       const dtos = await apiGet<JobDto[]>(`/api/jobs${qs ? `?${qs}` : ""}`, {
         locale: filters.locale,

@@ -5,14 +5,14 @@ import { Footer } from "@/components/layout/Footer";
 export default async function SearchPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; view?: string }>;
+  searchParams: Promise<{ q?: string; profession?: string; view?: string }>;
 }) {
-  const { q, view } = await searchParams;
+  const { q, profession, view } = await searchParams;
   const initialView =
     view === "map" || view === "mapList" || view === "list" ? view : undefined;
   return (
     <>
-      <SearchScreen initialQuery={q ?? ""} initialView={initialView} />
+      <SearchScreen initialQuery={q ?? ""} initialProfession={profession} initialView={initialView} />
       <Footer />
     </>
   );

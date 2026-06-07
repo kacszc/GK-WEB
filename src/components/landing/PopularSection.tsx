@@ -53,7 +53,7 @@ export async function PopularSection({
               {trending.map((row, i) => (
                 <li key={row.rank} className={cn(i < trending.length - 1 && "border-b border-line-soft")}>
                   <Link
-                    href={`/search?q=${encodeURIComponent(row.label)}`}
+                    href={row.code ? `/search?profession=${encodeURIComponent(row.code)}` : `/search?q=${encodeURIComponent(row.label)}`}
                     className="flex items-center gap-3 px-6 py-3 transition-colors hover:bg-muted"
                   >
                     <span className="w-6 text-sm font-bold text-ink-4">{row.rank}</span>
