@@ -1,7 +1,5 @@
 import type { MyJob, SavedContact, ActivityItem, ActivityType, Applicant } from "@/lib/types";
 import { apiGet, apiPost } from "@/lib/api-client";
-import { myJobs, savedContacts, activity, applicants } from "./mock-account";
-import { mockDelay } from "./mock-data";
 
 /** Backend applicant DTO (job owner view) — bare; enriched client-side from the specialist profile. */
 type ApplicantDto = {
@@ -115,88 +113,59 @@ function toApplicant(d: ApplicantDto, p?: SpecialistProfileDto): Applicant {
 
 export const accountService = {
   async getMyJobs(): Promise<MyJob[]> {
-    try {
-      const dtos = await apiGet<MyJobDto[]>("/api/me/jobs");
-      return dtos.map(toMyJob);
-    } catch {
-      await mockDelay(400, 900);
-      return myJobs;
-    }
+    const dtos = await apiGet<MyJobDto[]>("/api/me/jobs");
+    return dtos.map(toMyJob);
   },
   async getContacts(): Promise<SavedContact[]> {
-    try {
-      const dtos = await apiGet<ContactCardDto[]>("/api/contacts");
-      return dtos.map((c, i) => ({
-        id: c.id,
-        name: c.name,
-        avatarIndex: i % 14,
-        role: c.role ?? "",
-        district: c.district ?? "",
-        rating: c.rating ?? 0,
-        trustScore: c.trustScore ?? 0,
-      }));
-    } catch {
-      await mockDelay(400, 900);
-      return savedContacts;
-    }
+    const dtos = await apiGet<ContactCardDto[]>("/api/contacts");
+    return dtos.map((c, i) => ({
+      id: c.id,
+      name: c.name,
+      avatarIndex: i % 14,
+      role: c.role ?? "",
+      district: c.district ?? "",
+      rating: c.rating ?? 0,
+      trustScore: c.trustScore ?? 0,
+    }));
   },
   async getActivity(): Promise<ActivityItem[]> {
-    try {
-      // The activity feed is the user's recent notifications.
-      const dtos = await apiGet<NotificationDto[]>("/api/notifications");
-      return dtos.slice(0, 20).map((n) => ({
-        id: n.id,
-        type: activityType(n.type),
-        text: n.title,
-        time: appliedAgo(n.createdAt),
-      }));
-    } catch {
-      await mockDelay(400, 900);
-      return activity;
-    }
+    // The activity feed is the user's recent notifications.
+    const dtos = await apiGet<NotificationDto[]>("/api/notifications");
+    return dtos.slice(0, 20).map((n) => ({
+      id: n.id,
+      type: activityType(n.type),
+      text: n.title,
+      time: appliedAgo(n.createdAt),
+    }));
   },
+  /** A single owned job — derived from the real /api/me/jobs list. */
   async getJob(id: string): Promise<MyJob | null> {
-    await mockDelay(300, 600);
-    return myJobs.find((j) => j.id === id) ?? null;
+    const jobs = await this.getMyJobs();
+    return jobs.find((j) => j.id === id) ?? null;
   },
   async getApplicants(jobId: string): Promise<Applicant[]> {
-    try {
-      const dtos = await apiGet<ApplicantDto[]>(
-        `/api/jobs/${encodeURIComponent(jobId)}/applicants`,
-      );
-      // Enrich each applicant with the specialist's public profile (name/trust/rating).
-      const ids = [...new Set(dtos.map((d) => d.specialistId))];
-      const profiles = new Map<string, SpecialistProfileDto>();
-      await Promise.all(
-        ids.map(async (id) => {
-          try {
-            profiles.set(id, await apiGet<SpecialistProfileDto>(`/api/specialists/${encodeURIComponent(id)}`));
-          } catch {
-            /* applicant without a public profile — fall back to placeholders */
-          }
-        }),
-      );
-      return dtos.map((d) => toApplicant(d, profiles.get(d.specialistId)));
-    } catch {
-      await mockDelay(400, 800);
-      return applicants;
-    }
+    const dtos = await apiGet<ApplicantDto[]>(`/api/jobs/${encodeURIComponent(jobId)}/applicants`);
+    // Enrich each applicant with the specialist's public profile (name/trust/rating).
+    const ids = [...new Set(dtos.map((d) => d.specialistId))];
+    const profiles = new Map<string, SpecialistProfileDto>();
+    await Promise.all(
+      ids.map(async (id) => {
+        try {
+          profiles.set(id, await apiGet<SpecialistProfileDto>(`/api/specialists/${encodeURIComponent(id)}`));
+        } catch {
+          /* applicant without a public profile — leave placeholders */
+        }
+      }),
+    );
+    return dtos.map((d) => toApplicant(d, profiles.get(d.specialistId)));
   },
   /** Select an applicant (job owner). */
   async selectApplicant(jobId: string, applicationId: string): Promise<{ ok: true }> {
-    try {
-      await apiPost(`/api/jobs/${encodeURIComponent(jobId)}/select`, { applicationId });
-    } catch {
-      await mockDelay(400, 800);
-    }
+    await apiPost(`/api/jobs/${encodeURIComponent(jobId)}/select`, { applicationId });
     return { ok: true };
   },
   async confirmCompletion(jobId: string): Promise<{ ok: true }> {
-    try {
-      await apiPost(`/api/jobs/${encodeURIComponent(jobId)}/complete`);
-    } catch {
-      await mockDelay(500, 900);
-    }
+    await apiPost(`/api/jobs/${encodeURIComponent(jobId)}/complete`);
     return { ok: true };
   },
 };

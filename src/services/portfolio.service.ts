@@ -1,7 +1,5 @@
 import type { PortfolioItem, LinkableJob } from "@/lib/types";
 import { apiGet, apiPost } from "@/lib/api-client";
-import { mockDelay } from "./mock-data";
-import { portfolioItems, linkableJobs } from "./mock-account";
 
 /** Draft of a new portfolio entry submitted from the upload dialog. */
 export type PortfolioDraft = {
@@ -55,9 +53,6 @@ function toIsoDate(date: string): string | null {
 }
 
 function toPortfolioItem(v: PortfolioItemView): PortfolioItem {
-  const linked = v.linkedJobId
-    ? linkableJobs.find((j) => j.id === v.linkedJobId)?.employer
-    : undefined;
   return {
     id: v.id,
     title: v.title,
@@ -67,86 +62,52 @@ function toPortfolioItem(v: PortfolioItemView): PortfolioItem {
     status: v.status === "VERIFIED" ? "verified" : "self",
     photoCount: v.photoCount,
     colors: v.colors?.length ? v.colors : ["#5b4636"],
-    linkedJob: linked,
+    linkedJob: undefined,
   };
 }
 
 export const portfolioService = {
   /** Existing portfolio entries of the current specialist. */
   async getPortfolio(): Promise<PortfolioItem[]> {
-    try {
-      const views = await apiGet<PortfolioItemView[]>("/api/me/portfolio");
-      return views.map(toPortfolioItem);
-    } catch {
-      await mockDelay();
-      return portfolioItems;
-    }
+    const views = await apiGet<PortfolioItemView[]>("/api/me/portfolio");
+    return views.map(toPortfolioItem);
   },
 
   /** Public portfolio of a specialist (shown on the public profile). */
   async getPublicPortfolio(userId: string): Promise<PortfolioItem[]> {
-    try {
-      const views = await apiGet<PortfolioItemView[]>(
-        `/api/specialists/${encodeURIComponent(userId)}/portfolio`,
-      );
-      return views.map(toPortfolioItem);
-    } catch {
-      return [];
-    }
+    const views = await apiGet<PortfolioItemView[]>(
+      `/api/specialists/${encodeURIComponent(userId)}/portfolio`,
+    );
+    return views.map(toPortfolioItem);
   },
 
   /** Completed jobs the worker can link a realisation to (unlocks confirmation). */
   async getLinkableJobs(): Promise<LinkableJob[]> {
-    try {
-      const views = await apiGet<JobCardDto[]>("/api/me/jobs/completed");
-      // The card projection carries no employer name (cross-schema join would break module
-      // boundaries), so we surface the district as the location hint instead.
-      return views.map((v) => ({
-        id: v.id,
-        title: v.title,
-        employer: v.district ?? "",
-        date: displayDate(v.createdAt),
-      }));
-    } catch {
-      await mockDelay(200, 500);
-      return linkableJobs;
-    }
+    const views = await apiGet<JobCardDto[]>("/api/me/jobs/completed");
+    // The card projection carries no employer name (cross-schema join would break module
+    // boundaries), so we surface the district as the location hint instead.
+    return views.map((v) => ({
+      id: v.id,
+      title: v.title,
+      employer: v.district ?? "",
+      date: displayDate(v.createdAt),
+    }));
   },
 
   /**
-   * Submit a new portfolio entry. The API has no file storage yet, so we send
-   * metadata only (title/description/location/date/linkedJobId); the server
-   * derives `photoCount`/`colors`. Items are "self" unless linked to a completed job the
-   * specialist did (then the server marks them "verified" — employer-confirmed).
+   * Submit a new portfolio entry. The API has no file storage yet, so we send metadata only
+   * (title/description/location/date/linkedJobId); the server derives photoCount/colors and the
+   * status (SELF, or VERIFIED when linked to a completed job the specialist actually did).
    */
   async upload(draft: PortfolioDraft): Promise<PortfolioItem> {
-    const linked = draft.linkedJobId
-      ? linkableJobs.find((j) => j.id === draft.linkedJobId)
-      : undefined;
-    const title = linked?.title ?? (draft.description.slice(0, 40) || "Realizacja");
-    try {
-      const view = await apiPost<PortfolioItemView>("/api/me/portfolio", {
-        title,
-        description: draft.description,
-        location: draft.location,
-        date: toIsoDate(draft.date),
-        linkedJobId: draft.linkedJobId,
-      });
-      return toPortfolioItem(view);
-    } catch {
-      // TODO(backend): file upload needs storage — only metadata is sent today.
-      await mockDelay(900, 1500);
-      return {
-        id: `pf-${draft.fileNames.length}-${draft.date}`,
-        title,
-        description: draft.description,
-        location: draft.location,
-        date: draft.date,
-        status: "self",
-        photoCount: draft.fileNames.length,
-        colors: ["#5b4636", "#c47b35", "#4f6b58"].slice(0, Math.max(1, draft.fileNames.length)),
-        linkedJob: linked?.employer,
-      };
-    }
+    const title = draft.description.slice(0, 40) || "Realizacja";
+    const view = await apiPost<PortfolioItemView>("/api/me/portfolio", {
+      title,
+      description: draft.description,
+      location: draft.location,
+      date: toIsoDate(draft.date),
+      linkedJobId: draft.linkedJobId,
+    });
+    return toPortfolioItem(view);
   },
 };

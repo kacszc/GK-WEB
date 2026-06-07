@@ -1,6 +1,5 @@
 import type { Dispute, DisputeReason, DisputeEvent, DisputeEventType, DisputeSummary } from "@/lib/types";
 import { apiGet, apiPost } from "@/lib/api-client";
-import { mockDelay } from "./mock-data";
 
 export type OpenDisputeDraft = {
   jobId: string;
@@ -99,36 +98,6 @@ function toDispute(v: DisputeView): Dispute {
   };
 }
 
-// --- Mock fallback --------------------------------------------------------
-
-function mockDispute(id: string, draft?: OpenDisputeDraft): Dispute {
-  const reasonLabel = draft ? reasonLabels[draft.reason] : "Nie zapłacił w terminie";
-  return {
-    id,
-    counterparty: draft?.counterparty ?? "Hotel Marriott Warszawa",
-    reasonLabel,
-    openedAt: "25.05.2026 14:32",
-    mediator: "Marek B.",
-    remaining: "16h",
-    events: [
-      {
-        id: "e1",
-        type: "opened",
-        title: "Spór otwarty",
-        text: draft ? `Powód: ${reasonLabel}. ${draft.description}`.trim() : "Materiał miał zapłacić 330 zł do końca tygodnia. Minęło 8 dni, brak płatności.",
-        time: "25.05 14:32",
-      },
-      {
-        id: "e2",
-        type: "mediator",
-        title: "Mediator dołączył do sprawy · Marek B.",
-        text: "Witam. Skontaktuję się z obiema stronami w ciągu 24h na zebranie szczegółów. Proszę o cierpliwość.",
-        time: "25.05 16:08",
-      },
-    ],
-  };
-}
-
 type DisputeSummaryDto = {
   id: string;
   jobId: string;
@@ -141,55 +110,35 @@ type DisputeSummaryDto = {
 export const disputesService = {
   /** Current user's disputes (as opener or counterparty). */
   async getMyDisputes(): Promise<DisputeSummary[]> {
-    try {
-      const dtos = await apiGet<DisputeSummaryDto[]>("/api/disputes");
-      return dtos.map((d) => ({
-        id: d.id,
-        counterpartyId: d.counterpartyId,
-        reasonLabel: reasonLabels[reasonFromEnum(d.reason)],
-        status: d.status === "RESOLVED" ? "resolved" : "open",
-        openedAt: fmtDateTime(d.createdAt),
-      }));
-    } catch {
-      await mockDelay();
-      return [];
-    }
+    const dtos = await apiGet<DisputeSummaryDto[]>("/api/disputes");
+    return dtos.map((d) => ({
+      id: d.id,
+      counterpartyId: d.counterpartyId,
+      reasonLabel: reasonLabels[reasonFromEnum(d.reason)],
+      status: d.status === "RESOLVED" ? "resolved" : "open",
+      openedAt: fmtDateTime(d.createdAt),
+    }));
   },
 
   /** Open a new dispute and return the created mediation case. */
   async open(draft: OpenDisputeDraft): Promise<Dispute> {
-    try {
-      const view = await apiPost<DisputeView>("/api/disputes", {
-        jobId: draft.jobId,
-        counterparty: draft.counterparty,
-        reason: REASON_TO_ENUM[draft.reason],
-        description: draft.description,
-      });
-      return toDispute(view);
-    } catch {
-      await mockDelay(700, 1200);
-      return mockDispute("2891", draft);
-    }
+    const view = await apiPost<DisputeView>("/api/disputes", {
+      jobId: draft.jobId,
+      counterparty: draft.counterparty,
+      reason: REASON_TO_ENUM[draft.reason],
+      description: draft.description,
+    });
+    return toDispute(view);
   },
 
   /** Fetch an existing dispute by id. */
   async get(id: string): Promise<Dispute> {
-    try {
-      const view = await apiGet<DisputeView>(`/api/disputes/${encodeURIComponent(id)}`);
-      return toDispute(view);
-    } catch {
-      await mockDelay();
-      return mockDispute(id);
-    }
+    return toDispute(await apiGet<DisputeView>(`/api/disputes/${encodeURIComponent(id)}`));
   },
 
   /** Resolve a dispute (status → RESOLVED). */
   async resolve(id: string, resolution?: string): Promise<{ ok: true }> {
-    try {
-      await apiPost(`/api/disputes/${encodeURIComponent(id)}/resolve`, resolution ? { resolution } : {});
-    } catch {
-      await mockDelay(500, 900);
-    }
+    await apiPost(`/api/disputes/${encodeURIComponent(id)}/resolve`, resolution ? { resolution } : {});
     return { ok: true };
   },
 };

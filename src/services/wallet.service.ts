@@ -1,38 +1,5 @@
 import type { TokenPackage, WalletTx, WalletTxType, Plan } from "@/lib/types";
 import { apiGet, apiPost } from "@/lib/api-client";
-import { mockDelay } from "./mock-data";
-
-const PACKAGES: TokenPackage[] = [
-  { id: "p15", tokens: 15, pricePerToken: 2.45 },
-  { id: "p50", tokens: 50, pricePerToken: 2.38, popular: true },
-  { id: "p150", tokens: 150, pricePerToken: 1.99 },
-  { id: "p400", tokens: 400, pricePerToken: 1.75 },
-];
-
-const PLANS: Plan[] = [
-  {
-    id: "pro",
-    name: "PRO",
-    price: 39,
-    period: "mies.",
-    perks: ["1 boost profilu / mies. (gratis)", "Wyższa pozycja w wynikach", "Odznaka PRO", "Statystyki profilu"],
-    highlight: true,
-  },
-  {
-    id: "boost",
-    name: "Boost",
-    price: 19,
-    period: "jednorazowo",
-    perks: ["Pozycja #1 w kategorii", "7 dni widoczności", "Wyróżnienie na liście"],
-  },
-];
-
-const TX: WalletTx[] = [
-  { id: "t1", type: "purchase", amount: 50, label: "Pakiet 50 tokenów", date: "12 maja 2026", invoice: "FV/2026/05/0124" },
-  { id: "t2", type: "spend", amount: -3, label: "Kontakt — Anna K.", date: "13 maja 2026" },
-  { id: "t3", type: "spend", amount: -3, label: "Kontakt — Tomasz P.", date: "14 maja 2026" },
-  { id: "t4", type: "bonus", amount: 5, label: "Bonus powitalny", date: "10 maja 2026" },
-];
 
 // --- Backend DTOs ---------------------------------------------------------
 
@@ -120,47 +87,26 @@ export const walletService = {
     return dto.balance;
   },
   async getPackages(): Promise<TokenPackage[]> {
-    try {
-      const dtos = await apiGet<PackageDto[]>("/api/wallet/packages");
-      return dtos.map(toPackage);
-    } catch {
-      await mockDelay(200, 500);
-      return PACKAGES;
-    }
+    const dtos = await apiGet<PackageDto[]>("/api/wallet/packages");
+    return dtos.map(toPackage);
   },
   async getPlans(): Promise<Plan[]> {
-    try {
-      const dtos = await apiGet<PlanDto[]>("/api/wallet/plans");
-      return dtos.map(toPlan);
-    } catch {
-      await mockDelay(200, 500);
-      return PLANS;
-    }
+    const dtos = await apiGet<PlanDto[]>("/api/wallet/plans");
+    return dtos.map(toPlan);
   },
   async getTransactions(): Promise<WalletTx[]> {
-    try {
-      const dtos = await apiGet<TxDto[]>("/api/wallet/transactions");
-      return dtos.map(toWalletTx);
-    } catch {
-      await mockDelay(300, 700);
-      return TX;
-    }
+    const dtos = await apiGet<TxDto[]>("/api/wallet/transactions");
+    return dtos.map(toWalletTx);
   },
-  /** Buy a package; returns the new balance (backend) or a mock token count. */
-  async buy(packageId: string): Promise<{ balance?: number; tokens: number; invoice: string }> {
-    try {
-      const dto = await apiPost<WalletDto>("/api/wallet/buy", { packageId });
-      const pkg = PACKAGES.find((p) => p.id === packageId);
-      return {
-        balance: dto.balance,
-        tokens: pkg?.tokens ?? 0,
-        invoice: `FV/2026/05/${Math.floor(Date.now() / 1000) % 9000}`,
-      };
-    } catch {
-      await mockDelay(800, 1400);
-      const pkg = PACKAGES.find((p) => p.id === packageId);
-      return { tokens: pkg?.tokens ?? 0, invoice: `FV/2026/05/${Math.floor(Date.now() / 1000) % 9000}` };
-    }
+  /** Buy a package; returns the new balance + how many tokens it adds (from the catalog). */
+  async buy(packageId: string): Promise<{ balance: number; tokens: number; invoice: string }> {
+    const dto = await apiPost<WalletDto>("/api/wallet/buy", { packageId });
+    const pkg = (await this.getPackages()).find((p) => p.id === packageId);
+    return {
+      balance: dto.balance,
+      tokens: pkg?.tokens ?? 0,
+      invoice: `FV/2026/05/${Math.floor(Date.now() / 1000) % 9000}`,
+    };
   },
   /** Promote (boost) a job for N days; spends tokens and returns the new balance. */
   async boost(jobId: string, days: number): Promise<{ balance: number }> {

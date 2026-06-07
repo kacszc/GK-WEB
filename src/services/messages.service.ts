@@ -1,7 +1,5 @@
 import type { Conversation, ChatMessage } from "@/lib/types";
 import { apiGet, apiPost } from "@/lib/api-client";
-import { mockDelay } from "./mock-data";
-import { conversations, threads } from "./mock-account";
 
 // --- Backend DTOs ---------------------------------------------------------
 
@@ -83,69 +81,39 @@ export function toChatMessage(m: MessageView): ChatMessage {
 }
 
 export const messagesService = {
-  /**
-   * Send a contact message to a specialist. Used by the contact flow which only
-   * knows the recipient (no thread yet) → POST with `recipientId`.
-   */
+  /** Send a contact message to a specialist (no thread yet → POST with recipientId). */
   async send(specialistId: string, text: string): Promise<{ ok: true }> {
-    try {
-      await apiPost<MessageView>("/api/messages", { recipientId: specialistId, text });
-      return { ok: true };
-    } catch {
-      await mockDelay(600, 1100);
-      return { ok: true };
-    }
+    await apiPost<MessageView>("/api/messages", { recipientId: specialistId, text });
+    return { ok: true };
   },
 
-  /** Inbox thread list. Falls back to mock conversations when signed out / down. */
+  /** Inbox thread list. */
   async getThreads(): Promise<Conversation[]> {
-    try {
-      const dtos = await apiGet<ThreadDto[]>("/api/messages/threads");
-      return dtos.map(toConversation);
-    } catch {
-      await mockDelay(400, 900);
-      return conversations;
-    }
+    const dtos = await apiGet<ThreadDto[]>("/api/messages/threads");
+    return dtos.map(toConversation);
   },
 
-  /**
-   * Open a thread (marks it read server-side). Returns a UI-shaped conversation
-   * header plus messages. Falls back to mock data on failure.
-   */
+  /** Open a thread (marks it read server-side): header + messages. */
   async getThread(
     id: string,
   ): Promise<{ conversation: Conversation | null; messages: ChatMessage[] }> {
-    try {
-      const dto = await apiGet<ThreadDetailDto>(`/api/messages/threads/${encodeURIComponent(id)}`);
-      return {
-        conversation: {
-          id: dto.threadId,
-          name: counterpartyLabel(dto.counterpartyName, dto.counterpartyId),
-          avatarIndex: 0,
-          role: "",
-          lastMessage: "",
-          time: "",
-          unread: 0,
-        },
-        messages: dto.messages.map(toChatMessage),
-      };
-    } catch {
-      await mockDelay(300, 700);
-      return {
-        conversation: conversations.find((c) => c.id === id) ?? null,
-        messages: threads[id] ?? [],
-      };
-    }
+    const dto = await apiGet<ThreadDetailDto>(`/api/messages/threads/${encodeURIComponent(id)}`);
+    return {
+      conversation: {
+        id: dto.threadId,
+        name: counterpartyLabel(dto.counterpartyName, dto.counterpartyId),
+        avatarIndex: 0,
+        role: "",
+        lastMessage: "",
+        time: "",
+        unread: 0,
+      },
+      messages: dto.messages.map(toChatMessage),
+    };
   },
 
   /** Post a message to an existing thread. Returns the created message (UI shape). */
   async sendToThread(threadId: string, text: string): Promise<ChatMessage> {
-    try {
-      const m = await apiPost<MessageView>("/api/messages", { threadId, text });
-      return toChatMessage(m);
-    } catch {
-      await mockDelay(300, 600);
-      return { id: `m-${Date.now().toString(36)}`, fromMe: true, text, time: "teraz" };
-    }
+    return toChatMessage(await apiPost<MessageView>("/api/messages", { threadId, text }));
   },
 };
