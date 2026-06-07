@@ -1,16 +1,7 @@
-import type {
-  Specialist,
-  SpecialistSearch,
-  Availability,
-  SpecialistProfile,
-  Review,
-} from "@/lib/types";
+import type { Specialist, SpecialistSearch, Availability, SpecialistProfile } from "@/lib/types";
 import { apiGet } from "@/lib/api-client";
-import { specialists } from "./mock-specialists";
-import { mockDelay } from "./mock-data";
-import { haversineKm } from "@/lib/geo";
 
-/** Backend specialist DTO (search results). */
+/** Backend specialist DTO (search results + detail; detail adds completedJobs). */
 type SpecialistDto = {
   id: string;
   name: string;
@@ -24,6 +15,7 @@ type SpecialistDto = {
   distanceKm: number;
   lat: number;
   lng: number;
+  completedJobs?: number;
 };
 
 /** Map backend availability enum casing to the frontend lowercase union. */
@@ -39,9 +31,8 @@ function availabilityFromBackend(a: SpecialistDto["availability"]): Availability
 }
 
 /**
- * Adapt a backend DTO to the richer frontend `Specialist`. Fields the search
- * endpoint doesn't provide yet get neutral defaults (filled by the detail
- * endpoint / future API work).
+ * Adapt a backend DTO to the richer frontend `Specialist`. Fields the search endpoint doesn't
+ * provide yet get neutral defaults (filled by the detail endpoint / future API work).
  */
 function toSpecialist(d: SpecialistDto, i: number): Specialist {
   return {
@@ -66,6 +57,20 @@ function toSpecialist(d: SpecialistDto, i: number): Specialist {
   };
 }
 
+/** Profile fields the backend doesn't expose yet — neutral defaults (no fabricated data). Real
+ * reviews/portfolio are loaded separately by the profile page. */
+function profileExtras(base: Specialist, completedJobs: number): Omit<SpecialistProfile, keyof Specialist> {
+  return {
+    bio: base.role ? `${base.role}. Dyspozycyjność w okolicy: ${base.district}.` : "",
+    completedJobs,
+    responseTimeMin: 0,
+    memberSince: "",
+    repeatClientsPct: 0,
+    certifications: [],
+    reviewList: [],
+  };
+}
+
 export type SpecialistSort = "trust" | "distance" | "rate";
 
 export type SpecialistFilters = {
@@ -81,109 +86,36 @@ export type SpecialistFilters = {
   kyc?: boolean;
   languages?: string[];
   sort?: SpecialistSort;
-  near?: { lng: number; lat: number }; // recompute distance from user's location
+  near?: { lng: number; lat: number };
   locale?: string;
 };
 
-function matches(s: Specialist, f: SpecialistFilters): boolean {
-  const q = f.q?.trim().toLowerCase();
-  if (q) {
-    const hay = `${s.name} ${s.role} ${s.specialties.map((x) => x.label).join(" ")}`.toLowerCase();
-    if (!hay.includes(q)) return false;
-  }
-  if (f.minTrust != null && s.trustScore < f.minTrust) return false;
-  if (f.maxDistanceKm != null && s.distanceKm > f.maxDistanceKm) return false;
-  if (f.availability?.length && !f.availability.includes(s.availability)) return false;
-  if (f.kyc && !s.kyc) return false;
-  if (f.rateMin != null && s.rateFrom < f.rateMin) return false;
-  if (f.rateMax != null && s.rateFrom > f.rateMax) return false;
-  if (f.specialties?.length) {
-    const labels = s.specialties.map((x) => x.label.toLowerCase());
-    if (!f.specialties.some((sp) => labels.includes(sp.toLowerCase()))) return false;
-  }
-  if (f.languages?.length && !f.languages.some((l) => s.languages.includes(l))) return false;
-  return true;
-}
-
-function sortBy(sort: SpecialistSort | undefined) {
-  return (a: Specialist, b: Specialist) => {
-    if (sort === "distance") return a.distanceKm - b.distanceKm;
-    if (sort === "rate") return a.rateFrom - b.rateFrom;
-    // default: trust (then rating)
-    return b.trustScore - a.trustScore || b.rating - a.rating;
-  };
-}
-
-// Facet counts over the full dataset (for sidebar option counts). From backend later.
-function countBy<T>(arr: T[], key: (x: T) => string[]): Record<string, number> {
-  const out: Record<string, number> = {};
-  for (const item of arr) for (const k of key(item)) out[k] = (out[k] ?? 0) + 1;
-  return out;
-}
-
-export const specialistFacets = {
-  specialties: countBy(specialists, (s) => s.specialties.map((x) => x.label)),
-  availability: countBy(specialists, (s) => [s.availability]),
-  languages: countBy(specialists, (s) => s.languages),
-  kyc: specialists.filter((s) => s.kyc).length,
-  total: specialists.length,
-};
-
 export const specialistsService = {
-  /**
-   * Search specialists. Returns ALL matching items (the screen paginates the
-   * list client-side and the map uses the full set) plus availability facets.
-   */
+  /** Search specialists (all matching items + availability facets). Backend only. */
   async search(filters: SpecialistFilters = {}): Promise<SpecialistSearch> {
-    // Try the real backend first; on any failure, fall back to the mock below.
-    try {
-      const params = new URLSearchParams();
-      if (filters.near) {
-        params.set("lat", String(filters.near.lat));
-        params.set("lng", String(filters.near.lng));
-      }
-      if (filters.maxDistanceKm != null) params.set("radiusKm", String(filters.maxDistanceKm));
-      if (filters.q) params.set("q", filters.q);
-      // The rich sidebar filters now run server-side (real SQL), not just in the mock.
-      if (filters.professions?.length) params.set("professions", filters.professions.join(","));
-      if (filters.industries?.length) params.set("industries", filters.industries.join(","));
-      if (filters.minTrust != null) params.set("minTrust", String(filters.minTrust));
-      if (filters.availability?.length) {
-        params.set("availability", filters.availability.map((a) => a.toUpperCase()).join(","));
-      }
-      if (filters.rateMin != null) params.set("rateMin", String(filters.rateMin));
-      if (filters.rateMax != null) params.set("rateMax", String(filters.rateMax));
-      if (filters.kyc) params.set("kyc", "true");
-      if (filters.languages?.length) params.set("languages", filters.languages.join(","));
-      if (filters.sort) params.set("sort", filters.sort);
-      const qs = params.toString();
-      const dtos = await apiGet<SpecialistDto[]>(
-        `/api/specialists${qs ? `?${qs}` : ""}`,
-        { locale: filters.locale },
-      );
-      const items = dtos.map(toSpecialist);
-      return {
-        items,
-        total: items.length,
-        availableNow: items.filter((s) => s.availability === "now").length,
-        availableWeek: items.filter((s) => s.availability === "week").length,
-      };
-    } catch {
-      // Backend unavailable — use mock data.
+    const params = new URLSearchParams();
+    if (filters.near) {
+      params.set("lat", String(filters.near.lat));
+      params.set("lng", String(filters.near.lng));
     }
-
-    await mockDelay(650, 1200); // simulate a realistic network round-trip
-
-    // If we know the user's location, recompute real distances from it.
-    const pool = filters.near
-      ? specialists.map((s) => ({
-          ...s,
-          distanceKm: Math.round(haversineKm([filters.near!.lng, filters.near!.lat], [s.lng, s.lat])),
-        }))
-      : specialists;
-
-    const items = pool.filter((s) => matches(s, filters)).sort(sortBy(filters.sort));
-
+    if (filters.maxDistanceKm != null) params.set("radiusKm", String(filters.maxDistanceKm));
+    if (filters.q) params.set("q", filters.q);
+    if (filters.professions?.length) params.set("professions", filters.professions.join(","));
+    if (filters.industries?.length) params.set("industries", filters.industries.join(","));
+    if (filters.minTrust != null) params.set("minTrust", String(filters.minTrust));
+    if (filters.availability?.length) {
+      params.set("availability", filters.availability.map((a) => a.toUpperCase()).join(","));
+    }
+    if (filters.rateMin != null) params.set("rateMin", String(filters.rateMin));
+    if (filters.rateMax != null) params.set("rateMax", String(filters.rateMax));
+    if (filters.kyc) params.set("kyc", "true");
+    if (filters.languages?.length) params.set("languages", filters.languages.join(","));
+    if (filters.sort) params.set("sort", filters.sort);
+    const qs = params.toString();
+    const dtos = await apiGet<SpecialistDto[]>(`/api/specialists${qs ? `?${qs}` : ""}`, {
+      locale: filters.locale,
+    });
+    const items = dtos.map(toSpecialist);
     return {
       items,
       total: items.length,
@@ -193,28 +125,15 @@ export const specialistsService = {
   },
 
   /** Full profile for a single specialist (by user id). */
-  async getById(id: string): Promise<SpecialistProfile | null> {
-    try {
-      const dto = await apiGet<SpecialistDto>(`/api/specialists/${encodeURIComponent(id)}`);
-      const base = toSpecialist(dto, 0);
-      // Core fields are real; structural extras (gallery/certs) are derived until those have a backend.
-      // Real reviews + portfolio are loaded separately by the profile page (reviews/portfolio services).
-      return { ...base, ...profileExtras(base) };
-    } catch {
-      await mockDelay(500, 1000);
-      const s = specialists.find((x) => x.id === id);
-      if (!s) return null;
-      return { ...s, ...profileExtras(s) };
-    }
+  async getById(id: string): Promise<SpecialistProfile> {
+    const dto = await apiGet<SpecialistDto>(`/api/specialists/${encodeURIComponent(id)}`);
+    const base = toSpecialist(dto, 0);
+    return { ...base, ...profileExtras(base, dto.completedJobs ?? 0) };
   },
 
   /** The backend-defined filter schema (industries → specializations, availability, sort, ranges). */
   async getFilters(locale?: string): Promise<SearchFilterSchema> {
-    try {
-      return await apiGet<SearchFilterSchema>("/api/specialists/filters", { locale });
-    } catch {
-      return FALLBACK_FILTER_SCHEMA;
-    }
+    return apiGet<SearchFilterSchema>("/api/specialists/filters", { locale });
   },
 };
 
@@ -233,59 +152,3 @@ export type SearchFilterSchema = {
   rate: FilterRange;
   kyc: boolean;
 };
-
-/** Minimal offline fallback so the sidebar still renders when the backend is down. */
-const FALLBACK_FILTER_SCHEMA: SearchFilterSchema = {
-  industries: [],
-  specializations: {},
-  availability: [
-    { code: "NOW", label: "Teraz" },
-    { code: "WEEK", label: "W tym tygodniu" },
-    { code: "DATE", label: "Konkretny termin" },
-  ],
-  languages: [
-    { code: "pl", label: "Polski" },
-    { code: "en", label: "Angielski" },
-    { code: "uk", label: "Ukraiński" },
-  ],
-  sort: [
-    { code: "trust", label: "Trust Score" },
-    { code: "distance", label: "Najbliżej" },
-    { code: "rate", label: "Najtańsi" },
-  ],
-  trust: { min: 0, max: 100, defaultValue: 75 },
-  distanceKm: { min: 1, max: 50, defaultValue: 25 },
-  rate: { min: 0, max: 200, defaultValue: 0 },
-  kyc: true,
-};
-
-// --- Mock profile detail (deterministic per specialist) ---
-
-const REVIEW_AUTHORS = ["Marek W.", "Ewa S.", "Restauracja Vega", "Hotel Bristol", "Kamil R.", "Bar Tonic"];
-const REVIEW_TEXTS = [
-  "Świetny kontakt i pełen profesjonalizm. Zjawił się punktualnie i ogarnął temat bez problemu.",
-  "Bardzo dobra współpraca, na pewno skorzystamy ponownie. Polecam!",
-  "Doświadczenie widać od pierwszej minuty. Goście byli zachwyceni.",
-  "Solidnie, szybko i bez żadnych niespodzianek. Duży plus za komunikację.",
-  "Pomoc w ostatniej chwili — uratował nam event. Dziękujemy!",
-];
-const CERTS = ["Książeczka sanepidu", "Certyfikat baristy SCA", "Szkolenie BHP", "Kurs sommelierski", "HACCP"];
-
-function profileExtras(s: Specialist): Omit<SpecialistProfile, keyof Specialist> {
-  const i = s.avatarIndex;
-  const reviews: Review[] = Array.from({ length: 3 }, (_, k) => ({
-    author: REVIEW_AUTHORS[(i + k) % REVIEW_AUTHORS.length],
-    rating: Math.min(5, Math.round((s.rating + (k % 2 === 0 ? 0.1 : -0.2)) * 2) / 2),
-    date: ["2 tyg. temu", "1 mies. temu", "3 mies. temu"][k],
-    text: REVIEW_TEXTS[(i + k) % REVIEW_TEXTS.length],
-  }));
-  return {
-    bio: `${s.role}. ${s.experienceYears} lat doświadczenia w gastronomii i obsłudze eventów. Dyspozycyjność w okolicy: ${s.district}. Stawiam na punktualność, kulturę pracy i jakość.`,
-    completedJobs: 40 + ((i * 17) % 160),
-    responseTimeMin: [3, 5, 8, 12][i % 4],
-    memberSince: `${2019 + (i % 5)}`,
-    repeatClientsPct: 60 + ((i * 7) % 35),
-    certifications: CERTS.filter((_, idx) => (i + idx) % 2 === 0).slice(0, 3),
-    reviewList: reviews,
-  };
-}

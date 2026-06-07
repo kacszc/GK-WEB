@@ -1,6 +1,5 @@
 import type { Landing, Profession, Specialization, Trend } from "@/lib/types";
 import { apiGet } from "@/lib/api-client";
-import { professions, suggestedSpecializations, trending, mockDelay } from "./mock-data";
 
 /** Backend payload shape for GET /api/landing. */
 type LandingDto = {
@@ -21,30 +20,12 @@ function fromDto(d: LandingDto): Landing {
   };
 }
 
-/** Mock landing used only when the backend is unreachable (keeps dev usable). */
-function mockLanding(): Landing {
-  return {
-    popular: professions,
-    searchKeys: suggestedSpecializations,
-    trending,
-    liveStats: { onlineNow: 247, jobsToday: 18, avgResponseMin: 3 },
-    recent: [],
-  };
-}
-
 export const landingService = {
   /**
-   * Whole landing page in one call. Auth-aware on the backend: a signed-in caller gets a
-   * personalized order + recently-viewed quick actions. On transport failure we fall back to
-   * the mock so the page still renders in dev — but we never fabricate sections the backend
-   * returned empty (the UI hides empty sections).
+   * Whole landing page in one backend call. Auth-aware: a signed-in caller gets a personalized
+   * order + recently-viewed quick actions. Empty sections are hidden by the UI.
    */
   async getLanding(opts: { locale?: string } = {}): Promise<Landing> {
-    try {
-      return fromDto(await apiGet<LandingDto>("/api/landing", { locale: opts.locale }));
-    } catch {
-      await mockDelay();
-      return mockLanding();
-    }
+    return fromDto(await apiGet<LandingDto>("/api/landing", { locale: opts.locale }));
   },
 };

@@ -7,8 +7,8 @@ import type {
   TeamMember,
   MaintenanceStatus,
 } from "@/lib/types";
-// import { apiGet } from "@/lib/api-client";
-import { mockDelay } from "./mock-data";
+
+// Help/about/contact/maintenance are static content authored here; there is no backend endpoint yet.
 
 const helpCategories: HelpCategory[] = [
   { id: "account", name: "Konto", articleCount: 12, color: "#7c3aed" },
@@ -68,44 +68,29 @@ const maintenance: MaintenanceStatus = {
 
 export const supportService = {
   async getHelpCategories(): Promise<HelpCategory[]> {
-    // TODO(backend): return apiGet("/help/categories");
-    await mockDelay();
     return helpCategories;
   },
   async getPopularArticles(): Promise<HelpArticle[]> {
-    // TODO(backend): return apiGet("/help/articles/popular");
-    await mockDelay();
     return popularArticles;
   },
   async getContactMethods(): Promise<ContactMethod[]> {
-    // TODO(backend): return apiGet("/support/contact-methods");
-    await mockDelay(150, 350);
     return contactMethods;
   },
   async getCompanyInfo(): Promise<CompanyInfo> {
-    // TODO(backend): return apiGet("/company");
-    await mockDelay(120, 300);
     return companyInfo;
   },
   async getAboutStats(): Promise<AboutStat[]> {
-    // TODO(backend): return apiGet("/about/stats");
-    await mockDelay();
     return aboutStats;
   },
   async getTeam(): Promise<TeamMember[]> {
-    // TODO(backend): return apiGet("/about/team");
-    await mockDelay();
     return team;
   },
   async getMaintenanceStatus(): Promise<MaintenanceStatus> {
-    // TODO(backend): return apiGet("/status/maintenance");
-    await mockDelay(150, 350);
     return maintenance;
   },
   async sendContactMessage(payload: { name: string; email: string; topic: string; message: string }): Promise<{ ok: true }> {
     // TODO(backend): return apiPost("/support/contact", payload);
     void payload;
-    await mockDelay(700, 1200);
     return { ok: true };
   },
 };

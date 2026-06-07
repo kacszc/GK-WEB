@@ -1,9 +1,7 @@
 import type { LegalDoc, CookieCategory } from "@/lib/types";
-// import { apiGet } from "@/lib/api-client";
-import { mockDelay } from "./mock-data";
 
-// Legal documents are dynamic content: the backend returns them localized via
-// the Accept-Language header. Mocks below are the Polish source of truth.
+// Legal documents are static content authored here (the Polish source of truth);
+// there is no backend endpoint for them.
 
 const terms: LegalDoc = {
   slug: "terms",
@@ -275,15 +273,11 @@ const cookieCategories: CookieCategory[] = [
 export const legalService = {
   /** A single legal document by slug. */
   async getDocument(slug: string): Promise<LegalDoc | null> {
-    // TODO(backend): return apiGet(`/legal/${slug}`); // localized via Accept-Language
-    await mockDelay();
     return docs[slug] ?? null;
   },
 
   /** Cookie categories shown in the consent banner and policy page. */
   async getCookieCategories(): Promise<CookieCategory[]> {
-    // TODO(backend): return apiGet("/legal/cookie-categories");
-    await mockDelay(150, 350);
     return cookieCategories;
   },
 };

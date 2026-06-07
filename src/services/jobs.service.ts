@@ -1,8 +1,5 @@
 import type { JobDraft, JobResult, JobPosting, Availability } from "@/lib/types";
 import { apiGet, apiPost } from "@/lib/api-client";
-import { specialists } from "./mock-specialists";
-import { jobPostings } from "./mock-jobs";
-import { mockDelay } from "./mock-data";
 
 /** Backend job DTO (list + detail). */
 type JobDto = {
@@ -23,10 +20,10 @@ type JobDto = {
   employerVerified?: boolean;
 };
 
-/** Backend sends an ISO timestamp; mock data already uses display strings. Render a relative label. */
+/** Backend sends an ISO timestamp → render a relative label. */
 function formatPosted(value: string): string {
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value; // already a display string (mock)
+  if (Number.isNaN(date.getTime())) return value;
   const hours = Math.floor((Date.now() - date.getTime()) / 3_600_000);
   if (hours < 1) return "przed chwilą";
   if (hours < 24) return `${hours} godz. temu`;
@@ -64,90 +61,46 @@ export type JobFilters = {
 };
 
 export const jobsService = {
-  /** Publish a job posting and return its id + how many specialists were notified. */
+  /** Publish a job posting and return its id + a cosmetic "notified N specialists" estimate. */
   async create(draft: JobDraft): Promise<JobResult> {
-    // Vanity "notified N specialists" estimate (cosmetic; the backend doesn't compute it).
-    const q = draft.profession.trim().toLowerCase();
-    const matching = specialists.filter(
-      (s) =>
-        s.availability !== "date" &&
-        (s.role.toLowerCase().includes(q) ||
-          s.specialties.some((sp) => sp.label.toLowerCase().includes(q))),
-    ).length;
-    const notifiedCount = Math.max(8, matching * 11 + (draft.people - 1) * 3);
-
-    try {
-      // TODO(geocoder): district → lat/lng. For now default to Warsaw centre (matches profile defaults).
-      const dto = await apiPost<JobDto>("/api/jobs", {
-        title: draft.title,
-        profession: draft.profession,
-        description: draft.description,
-        district: draft.district,
-        latitude: 52.2297,
-        longitude: 21.0122,
-        radiusKm: draft.radiusKm,
-        people: draft.people,
-        rateFrom: draft.rate ?? 0,
-        hours: draft.hours,
-        workDate: draft.date ? draft.date.toISOString().slice(0, 10) : null,
-      });
-      return { id: dto.id, notifiedCount };
-    } catch {
-      await mockDelay(700, 1300);
-      return { id: `job-${Date.now().toString(36)}`, notifiedCount };
-    }
+    // TODO(geocoder): district → lat/lng. For now default to Warsaw centre (matches profile defaults).
+    const dto = await apiPost<JobDto>("/api/jobs", {
+      title: draft.title,
+      profession: draft.profession,
+      description: draft.description,
+      district: draft.district,
+      latitude: 52.2297,
+      longitude: 21.0122,
+      radiusKm: draft.radiusKm,
+      people: draft.people,
+      rateFrom: draft.rate ?? 0,
+      hours: draft.hours,
+      workDate: draft.date ? draft.date.toISOString().slice(0, 10) : null,
+    });
+    // Cosmetic estimate (the backend doesn't compute reach yet).
+    const notifiedCount = Math.max(8, draft.people * 11);
+    return { id: dto.id, notifiedCount };
   },
 
   /** Browse public job postings (job-seeker side). */
   async searchJobs(filters: JobFilters = {}): Promise<JobPosting[]> {
-    try {
-      const params = new URLSearchParams();
-      if (filters.profession) params.set("profession", filters.profession);
-      if (filters.district) params.set("district", filters.district);
-      if (filters.q) params.set("q", filters.q);
-      if (filters.rateMin != null) params.set("rateMin", String(filters.rateMin));
-      const qs = params.toString();
-      const dtos = await apiGet<JobDto[]>(`/api/jobs${qs ? `?${qs}` : ""}`, {
-        locale: filters.locale,
-      });
-      return dtos.map(toJobPosting);
-    } catch {
-      // Backend unavailable — use mock data below.
-    }
-
-    await mockDelay(550, 1100);
-    const q = filters.q?.trim().toLowerCase();
-    return jobPostings.filter((j) => {
-      if (q && !`${j.title} ${j.profession} ${j.employer}`.toLowerCase().includes(q)) return false;
-      if (filters.profession && j.profession !== filters.profession) return false;
-      if (filters.district && j.district !== filters.district) return false;
-      if (filters.when?.length && !filters.when.includes(j.when)) return false;
-      if (filters.rateMin != null && j.rate < filters.rateMin) return false;
-      return true;
-    });
+    const params = new URLSearchParams();
+    if (filters.profession) params.set("profession", filters.profession);
+    if (filters.district) params.set("district", filters.district);
+    if (filters.q) params.set("q", filters.q);
+    if (filters.rateMin != null) params.set("rateMin", String(filters.rateMin));
+    const qs = params.toString();
+    const dtos = await apiGet<JobDto[]>(`/api/jobs${qs ? `?${qs}` : ""}`, { locale: filters.locale });
+    return dtos.map(toJobPosting);
   },
 
   /** Full detail for a single job posting. */
-  async getById(id: string, locale?: string): Promise<JobPosting | null> {
-    try {
-      const dto = await apiGet<JobDto>(`/api/jobs/${encodeURIComponent(id)}`, { locale });
-      return toJobPosting(dto);
-    } catch {
-      await mockDelay(400, 800);
-      return jobPostings.find((j) => j.id === id) ?? null;
-    }
+  async getById(id: string, locale?: string): Promise<JobPosting> {
+    return toJobPosting(await apiGet<JobDto>(`/api/jobs/${encodeURIComponent(id)}`, { locale }));
   },
 
   /** Apply to a job posting (SPECIALIST). Returns the created application id. */
   async apply(jobId: string, message: string): Promise<{ applicationId?: string }> {
-    try {
-      return await apiPost<{ applicationId: string }>(
-        `/api/jobs/${encodeURIComponent(jobId)}/apply`,
-        { message },
-      );
-    } catch {
-      await mockDelay(600, 1100);
-      return {};
-    }
+    return apiPost<{ applicationId: string }>(`/api/jobs/${encodeURIComponent(jobId)}/apply`, { message });
   },
 };

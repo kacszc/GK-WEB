@@ -6,7 +6,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Loader2, CheckCircle2, Gift } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
-import { useAuth } from "@/lib/AuthProvider";
 import { useWallet } from "@/lib/WalletProvider";
 import { onboardingService } from "@/services";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -20,7 +19,6 @@ const nipOk = (v: string) => v.replace(/\D/g, "").length === 10;
 export function EmployerOnboarding({ initialEmail = "" }: { initialEmail?: string }) {
   const { t } = useI18n();
   const router = useRouter();
-  const { signIn } = useAuth();
   const { topUp } = useWallet();
 
   const [step, setStep] = useState<Step>("company");
@@ -64,7 +62,6 @@ export function EmployerOnboarding({ initialEmail = "" }: { initialEmail?: strin
     setBusy(true);
     try {
       const res = await onboardingService.completeEmployer({ company, email, industries, teamSize, location });
-      signIn({ name: company.name, email, role: "employer" });
       topUp(res.bonusTokens);
       setResult(res);
       setStep("done");

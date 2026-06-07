@@ -17,7 +17,7 @@ const emailOk = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
 export function AuthScreen({ mode }: { mode: "login" | "register" }) {
   const { t } = useI18n();
-  const { signInWithEmail, signUpWithEmail, getIdToken } = useAuth();
+  const { signInWithEmail, signUpWithEmail, refreshUser } = useAuth();
   const router = useRouter();
 
   const [role, setRole] = useState<UserRole>("employer");
@@ -47,16 +47,11 @@ export function AuthScreen({ mode }: { mode: "login" | "register" }) {
     try {
       if (mode === "register") {
         // Create the Firebase account, then finalize registration on the backend
-        // (sets the `role` custom claim) and refresh the token so the claim is
-        // present. Then continue into role-specific onboarding.
+        // (sets the `role` custom claim) and re-derive the app user so the new
+        // role is reflected. Then continue into role-specific onboarding.
         await signUpWithEmail(email, password, name);
-        try {
-          await authService.registerFinalize(role);
-          await getIdToken(true); // refresh so the role claim is visible
-        } catch {
-          // Backend may be down in preliminary integration — proceed anyway;
-          // onboarding still calls signIn() locally.
-        }
+        await authService.registerFinalize(role);
+        await refreshUser(); // force-refresh token + re-derive so the role claim is visible
         const base = role === "specialist" ? "/onboarding/specialist" : "/onboarding/employer";
         const qs = new URLSearchParams({ name, email }).toString();
         router.push(`${base}?${qs}`);

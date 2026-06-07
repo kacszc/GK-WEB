@@ -14,20 +14,13 @@ import {
 import { firebaseAuth } from "@/lib/firebase";
 import type { AuthUser, UserRole } from "@/lib/types";
 
-// Legacy local-session key. We still mirror the derived user here so that the
-// app keeps working when Firebase is unavailable (and to avoid a flash of
-// "logged out" before onAuthStateChanged fires).
+// We mirror the Firebase-derived user here to avoid a flash of "logged out"
+// before onAuthStateChanged fires on load. Cleared explicitly on signOut().
 const STORAGE_KEY = "skill_user";
 
 type AuthContextValue = {
   user: AuthUser | null;
   ready: boolean;
-  /**
-   * Backward-compatible local sign-in. Sets the app user synchronously without
-   * touching Firebase. Used by the onboarding flows which already have the user
-   * data and (separately) create the Firebase account / finalize on the backend.
-   */
-  signIn: (user: AuthUser) => void;
   /** Sign out of Firebase and clear the local session. */
   signOut: () => Promise<void>;
   // --- Firebase-backed auth (priority: Google + email/password) ------------
@@ -36,6 +29,12 @@ type AuthContextValue = {
   signInWithGoogle: () => Promise<void>;
   /** Get a fresh ID token for API calls. `forceRefresh` re-reads custom claims. */
   getIdToken: (forceRefresh?: boolean) => Promise<string | null>;
+  /**
+   * Re-read the current Firebase user with a forced token refresh and update the
+   * app user. Call after the backend changes custom claims (e.g. registerFinalize
+   * sets the `role` claim) so the new role is reflected without a page reload.
+   */
+  refreshUser: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -46,10 +45,10 @@ function roleFromClaim(claim: unknown): UserRole {
 }
 
 /** Derive the app user from a Firebase user + its ID token custom claims. */
-async function deriveUser(fb: FirebaseUser): Promise<AuthUser> {
+async function deriveUser(fb: FirebaseUser, forceRefresh = false): Promise<AuthUser> {
   let role: UserRole = "employer";
   try {
-    const res = await fb.getIdTokenResult();
+    const res = await fb.getIdTokenResult(forceRefresh);
     role = roleFromClaim(res.claims.role);
   } catch {
     // If claims can't be read, default to employer; backend register fixes it.
@@ -63,8 +62,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    // Seed from the legacy local session to avoid a logged-out flash. Deferred
-    // so we don't call setState synchronously in the effect body.
+    // Seed from the mirrored session to avoid a logged-out flash. Deferred so we
+    // don't call setState synchronously in the effect body.
     const seed = setTimeout(() => {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
@@ -84,7 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // ignore
         }
       }
-      // When `fb` is null we keep any locally-seeded user (mock/onboarding):
+      // When `fb` is null we keep any mirrored user from the seed above:
       // signOut() clears it explicitly, so no action is needed here.
       setReady(true);
     });
@@ -97,15 +96,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       clearTimeout(t);
       unsub();
     };
-  }, []);
-
-  const signIn = useCallback((u: AuthUser) => {
-    setUser(u);
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(u));
-    } catch {
-      // ignore
-    }
   }, []);
 
   const signOut = useCallback(async () => {
@@ -154,17 +144,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const refreshUser = useCallback(async () => {
+    const fb = firebaseAuth.currentUser;
+    if (!fb) return;
+    const derived = await deriveUser(fb, true);
+    setUser(derived);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(derived));
+    } catch {
+      // ignore
+    }
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
         user,
         ready,
-        signIn,
         signOut,
         signInWithEmail,
         signUpWithEmail,
         signInWithGoogle,
         getIdToken,
+        refreshUser,
       }}
     >
       {children}

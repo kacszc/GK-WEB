@@ -6,7 +6,6 @@ import { useQuery } from "@tanstack/react-query";
 import { MailCheck, Loader2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
-import { useAuth } from "@/lib/AuthProvider";
 import { onboardingService } from "@/services";
 import { useI18n } from "@/i18n/I18nProvider";
 import type { WorkerOnboardingResult } from "@/lib/types";
@@ -24,7 +23,6 @@ export function WorkerOnboarding({
 }) {
   const { t } = useI18n();
   const router = useRouter();
-  const { signIn } = useAuth();
 
   const [step, setStep] = useState<Step>("basics");
   const [name, setName] = useState(initialName);
@@ -74,7 +72,6 @@ export function WorkerOnboarding({
         specializationCodes: specs,
         languages: langs,
       });
-      signIn({ name: name.trim() || res.firstName, email, role: "specialist" });
       setResult(res);
       setStep("done");
     } finally {

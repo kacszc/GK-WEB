@@ -1,15 +1,15 @@
 // Data-layer facade. Components import services from here and stay unaware of the source.
-// Today: mocks with a random delay. Tomorrow: HTTP to Spring Boot (see TODO in the services).
+// All services call the Spring Boot backend over HTTP (see @/lib/api-client); legal/support
+// content and a few not-yet-built endpoints are the only static data left.
 
 export { searchService } from "./search.service";
 export { catalogService } from "./catalog.service";
-export { statsService } from "./stats.service";
 export { landingService } from "./landing.service";
 export { geoService } from "./geo.service";
 export type { GeoCity, GeoZone } from "./geo.service";
 export { alertsService } from "./alerts.service";
 export type { JobAlert, AlertDraft } from "./alerts.service";
-export { specialistsService, specialistFacets } from "./specialists.service";
+export { specialistsService } from "./specialists.service";
 export type { SpecialistFilters, SpecialistSort, SearchFilterSchema, FilterOption, FilterRange } from "./specialists.service";
 export { jobsService } from "./jobs.service";
 export type { JobFilters } from "./jobs.service";
