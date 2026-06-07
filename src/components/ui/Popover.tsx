@@ -8,10 +8,11 @@ type PopoverProps = {
   children: (state: { close: () => void }) => React.ReactNode;
   align?: "start" | "end";
   panelClassName?: string;
+  triggerClassName?: string;
 };
 
 /** Floating popover anchored under the trigger — does not affect layout. */
-export function Popover({ trigger, children, align = "end", panelClassName }: PopoverProps) {
+export function Popover({ trigger, children, align = "end", panelClassName, triggerClassName }: PopoverProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -32,7 +33,7 @@ export function Popover({ trigger, children, align = "end", panelClassName }: Po
 
   return (
     <div ref={ref} className="relative">
-      <button type="button" onClick={() => setOpen((o) => !o)} className="cursor-pointer">
+      <button type="button" onClick={() => setOpen((o) => !o)} className={cn("cursor-pointer", triggerClassName)}>
         {trigger({ open })}
       </button>
       {open && (

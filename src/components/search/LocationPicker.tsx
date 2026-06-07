@@ -63,6 +63,8 @@ export function LocationPicker({
   return (
     <Popover
       align="start"
+      triggerClassName="w-full"
+      panelClassName="w-full"
       trigger={({ open }) => (
         <span
           className={cn(
@@ -79,7 +81,7 @@ export function LocationPicker({
       )}
     >
       {({ close }) => (
-        <div className="w-[260px]">
+        <div className="w-full">
           <button
             type="button"
             onClick={() => detect(close)}
