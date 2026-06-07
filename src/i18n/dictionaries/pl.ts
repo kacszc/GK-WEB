@@ -109,7 +109,7 @@ const pl = {
     paused: "Wstrzymany",
     delete: "Usuń",
     errorTitle: "Nie udało się",
-    errorBody: "Spróbuj ponownie. Jeśli problem się powtarza, sprawdź czy jesteś zalogowany.",
+    errorBody: "Spróbuj ponownie.",
   },
   results: {
     edit: "Edytuj",
