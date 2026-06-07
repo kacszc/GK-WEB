@@ -69,10 +69,22 @@ export function MapView({
   const districtMarkersRef = useRef<maplibregl.Marker[]>([]);
   const labelElsRef = useRef<Map<string, HTMLDivElement>>(new Map());
   const popupRef = useRef<maplibregl.Popup | null>(null);
+  const resizeObsRef = useRef<ResizeObserver | null>(null);
   const onSelectRef = useRef(onSelect);
   useEffect(() => {
     onSelectRef.current = onSelect;
   }, [onSelect]);
+  // Latest specialists/t for the popup effect (which depends only on activeId, to avoid
+  // re-opening the popup on every filter change).
+  const specialistsRef = useRef(specialists);
+  useEffect(() => {
+    specialistsRef.current = specialists;
+  }, [specialists]);
+  const tRef = useRef(t);
+  useEffect(() => {
+    tRef.current = t;
+  }, [t]);
+  const suppressCloseRef = useRef(false); // true while we close a popup programmatically
   const initialCenterRef = useRef(center); // captured once for the initial camera
 
   // Init map once.
@@ -88,6 +100,11 @@ export function MapView({
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
     map.addControl(new maplibregl.AttributionControl({ compact: true }));
     mapRef.current = map;
+
+    // Keep the canvas in sync when the container resizes (e.g. sidebar grows/shrinks).
+    const ro = new ResizeObserver(() => map.resize());
+    ro.observe(containerRef.current);
+    resizeObsRef.current = ro;
 
     map.on("load", () => {
       map.addSource("districts", { type: "geojson", data: EMPTY_FC });
@@ -114,6 +131,8 @@ export function MapView({
     });
 
     return () => {
+      resizeObsRef.current?.disconnect();
+      resizeObsRef.current = null;
       map.remove();
       mapRef.current = null;
       loadedRef.current = false;
@@ -203,19 +222,36 @@ export function MapView({
     map.flyTo({ center: [cx, cy], zoom: Math.max(map.getZoom(), 10.3), speed: 0.8 });
   }, [cx, cy]);
 
-  // Open popup / fly to the active specialist.
+  // Open popup / fly to the active specialist. Depends ONLY on activeId so a filter change
+  // (new specialists) never re-opens the popup on the previously-selected pin.
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !activeId) return;
-    const s = specialists.find((x) => x.id === activeId);
+    if (!map) return;
+
+    // Close any existing popup programmatically (don't let it clear the selection).
+    if (popupRef.current) {
+      suppressCloseRef.current = true;
+      popupRef.current.remove();
+      popupRef.current = null;
+      suppressCloseRef.current = false;
+    }
+
+    if (!activeId) return;
+    const s = specialistsRef.current.find((x) => x.id === activeId);
     if (!s) return;
-    popupRef.current?.remove();
-    popupRef.current = new maplibregl.Popup({ offset: 16, closeButton: true, maxWidth: "260px" })
+
+    const popup = new maplibregl.Popup({ offset: 16, closeButton: true, maxWidth: "260px" })
       .setLngLat([s.lng, s.lat])
-      .setHTML(popupHtml(s, t))
+      .setHTML(popupHtml(s, tRef.current))
       .addTo(map);
+    // Closing the popup (X / click-away) deselects the pin so it won't reappear later.
+    popup.on("close", () => {
+      if (suppressCloseRef.current) return;
+      onSelectRef.current?.(null);
+    });
+    popupRef.current = popup;
     map.flyTo({ center: [s.lng, s.lat], zoom: Math.max(map.getZoom(), 12), speed: 0.8 });
-  }, [activeId, specialists, t]);
+  }, [activeId]);
 
   return (
     <div className="relative h-full min-h-[520px] overflow-hidden rounded-panel border border-line-3">

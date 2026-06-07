@@ -151,7 +151,7 @@ export function SearchScreen({
 
         {/* Map + List view */}
         {view === "mapList" && (
-          <div className="grid gap-4 lg:h-[calc(100vh-220px)] lg:grid-cols-[200px_minmax(300px,400px)_1fr]">
+          <div className="grid gap-4 lg:h-[calc(100vh-220px)] lg:grid-rows-[minmax(0,1fr)] lg:grid-cols-[200px_minmax(300px,400px)_1fr]">
             {sidebar}
             <div className="flex flex-col gap-3 overflow-y-auto pr-1">
               {isLoading
@@ -180,7 +180,7 @@ export function SearchScreen({
 
         {/* Map only view */}
         {view === "map" && (
-          <div className="grid gap-4 lg:h-[calc(100vh-220px)] lg:grid-cols-[200px_1fr]">
+          <div className="grid gap-4 lg:h-[calc(100vh-220px)] lg:grid-rows-[minmax(0,1fr)] lg:grid-cols-[200px_1fr]">
             {sidebar}
             <MapView
               specialists={items}
