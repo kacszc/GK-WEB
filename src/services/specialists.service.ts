@@ -70,7 +70,8 @@ export type SpecialistSort = "trust" | "distance" | "rate";
 
 export type SpecialistFilters = {
   q?: string;
-  professions?: string[]; // specialization codes (multi-select / whole-industry), any-of match
+  professions?: string[]; // specific specialization codes (any-of)
+  industries?: string[]; // whole-industry codes (any-of) — selected as a unit, no small codes ticked
   minTrust?: number;
   maxDistanceKm?: number;
   availability?: Availability[];
@@ -145,6 +146,7 @@ export const specialistsService = {
       if (filters.q) params.set("q", filters.q);
       // The rich sidebar filters now run server-side (real SQL), not just in the mock.
       if (filters.professions?.length) params.set("professions", filters.professions.join(","));
+      if (filters.industries?.length) params.set("industries", filters.industries.join(","));
       if (filters.minTrust != null) params.set("minTrust", String(filters.minTrust));
       if (filters.availability?.length) {
         params.set("availability", filters.availability.map((a) => a.toUpperCase()).join(","));

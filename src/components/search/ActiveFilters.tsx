@@ -35,6 +35,12 @@ export function ActiveFilters({
   const chips: { key: string; label: string; remove: () => void }[] = [];
 
   if (filters.q) chips.push({ key: "q", label: filters.q, remove: () => onPatch({ q: undefined }) });
+  for (const code of filters.industries ?? [])
+    chips.push({
+      key: `ind-${code}`,
+      label: schema?.industries.find((i) => i.code === code)?.label ?? code,
+      remove: () => onPatch({ industries: (filters.industries ?? []).filter((c) => c !== code) }),
+    });
   const allSpecs = schema ? Object.values(schema.specializations).flat() : [];
   for (const code of filters.professions ?? [])
     chips.push({

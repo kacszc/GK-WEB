@@ -46,28 +46,26 @@ export function FilterSidebar({
   };
 
   const professions = filters.professions ?? [];
+  const industries = filters.industries ?? [];
   const specsOf = (industryCode: string) => schema?.specializations[industryCode] ?? [];
   const selectedCountIn = (industryCode: string) =>
     specsOf(industryCode).filter((s) => professions.includes(s.code)).length;
 
-  // Which industry to expand: the user's pick, else the one owning the first selected profession.
+  // Which industry's specializations to show: user's open one, else one with picked specs.
   const industryOfFirstSelected =
     professions.length && schema
       ? Object.keys(schema.specializations).find((code) =>
           schema.specializations[code].some((s) => professions.includes(s.code)),
         )
       : undefined;
-  const activeIndustry = openIndustry ?? industryOfFirstSelected ?? null;
+  const activeIndustry = openIndustry ?? industryOfFirstSelected ?? industries[0] ?? null;
   const specializations = activeIndustry ? specsOf(activeIndustry) : [];
-  const allOfIndustrySelected =
-    specializations.length > 0 && specializations.every((s) => professions.includes(s.code));
 
-  const toggleWholeIndustry = () => {
-    const codes = specializations.map((s) => s.code);
-    const set = new Set(professions);
-    if (allOfIndustrySelected) codes.forEach((c) => set.delete(c));
-    else codes.forEach((c) => set.add(c));
-    onPatch({ professions: [...set] });
+  // Clicking an industry selects the WHOLE industry as a unit (no individual codes ticked) and
+  // expands it so you can optionally narrow to specific specializations instead.
+  const toggleIndustry = (industryCode: string) => {
+    onPatch({ industries: toggle(industries, industryCode) });
+    setOpenIndustry(industryCode);
   };
 
   const trust = schema?.trust ?? { min: 0, max: 100, defaultValue: 75 };
@@ -84,43 +82,35 @@ export function FilterSidebar({
     >
       <LocationPicker value={userLocation} onLocate={onLocate} onClear={onClearLocation} />
 
-      {/* Industry → specialization. Multi-select: tick several specializations (even across
-          industries) or add a whole industry at once. */}
+      {/* Industry → specialization. Clicking an industry selects the whole industry; expand to
+          refine by ticking/unticking individual specializations (across industries too). */}
       <Section title={t("results.fIndustry")}>
         <div className="flex flex-wrap gap-1.5">
           {schema?.industries.map((i) => {
-            const n = selectedCountIn(i.code);
+            const n = selectedCountIn(i.code); // specific specs picked in this industry
+            const whole = industries.includes(i.code);
             return (
               <Pill
                 key={i.code}
-                label={n > 0 ? `${i.label} · ${n}` : i.label}
-                selected={activeIndustry === i.code || n > 0}
-                onClick={() => setOpenIndustry(activeIndustry === i.code ? null : i.code)}
+                label={!whole && n > 0 ? `${i.label} · ${n}` : i.label}
+                selected={whole || n > 0 || activeIndustry === i.code}
+                onClick={() => toggleIndustry(i.code)}
               />
             );
           })}
         </div>
 
         {activeIndustry ? (
-          <div className="mt-3">
-            <button
-              type="button"
-              onClick={toggleWholeIndustry}
-              className="mb-2 text-[12px] font-semibold text-brand-violet hover:underline"
-            >
-              {allOfIndustrySelected ? t("results.fWholeIndustryClear") : t("results.fWholeIndustry")}
-            </button>
-            <div className="flex flex-wrap gap-1.5">
-              {specializations.map((s) => (
-                <Pill
-                  key={s.code}
-                  label={s.label}
-                  small
-                  selected={professions.includes(s.code)}
-                  onClick={() => onPatch({ professions: toggle(professions, s.code) })}
-                />
-              ))}
-            </div>
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {specializations.map((s) => (
+              <Pill
+                key={s.code}
+                label={s.label}
+                small
+                selected={professions.includes(s.code)}
+                onClick={() => onPatch({ professions: toggle(professions, s.code) })}
+              />
+            ))}
           </div>
         ) : (
           <p className="mt-2 text-[12px] text-ink-4">{t("results.fPickIndustry")}</p>

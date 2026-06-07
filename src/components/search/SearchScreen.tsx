@@ -46,6 +46,7 @@ export function SearchScreen({
 
   const activeCount =
     (filters.professions?.length ?? 0) +
+    (filters.industries?.length ?? 0) +
     (filters.availability?.length ?? 0) +
     (filters.kyc ? 1 : 0) +
     (filters.minTrust ? 1 : 0) +
