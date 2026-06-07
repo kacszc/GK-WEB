@@ -130,7 +130,7 @@ const en: Dictionary = {
     fAvailability: "AVAILABILITY",
     fAvailNow: "Available NOW",
     fAvailWeek: "This week",
-    fAvailDate: "From a specific date",
+    fAvailDate: "Any date",
     fSpecialization: "SPECIALIZATION",
     fIndustry: "INDUSTRY",
     fPickIndustry: "Pick an industry first",

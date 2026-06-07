@@ -130,7 +130,7 @@ const uk: Dictionary = {
     fAvailability: "ДОСТУПНІСТЬ",
     fAvailNow: "Доступний ЗАРАЗ",
     fAvailWeek: "Цього тижня",
-    fAvailDate: "Від певної дати",
+    fAvailDate: "Будь-яка дата",
     fSpecialization: "СПЕЦІАЛІЗАЦІЯ",
     fIndustry: "ГАЛУЗЬ",
     fPickIndustry: "Спочатку оберіть галузь",
