@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { SearchTopbar } from "@/components/search/SearchTopbar";
+import { AccountTopbar } from "@/components/account/AccountTopbar";
 import { Footer } from "@/components/layout/Footer";
 import { AccountShell } from "@/components/account/AccountShell";
 import { getI18n } from "@/i18n/server";
@@ -9,11 +9,10 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t("meta.tAccount"), robots: { index: false } };
 }
 
-export default async function AccountLayout({ children }: { children: React.ReactNode }) {
-  const { t } = await getI18n();
+export default function AccountLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <SearchTopbar category={t("account.navOverview")} />
+      <AccountTopbar />
       <AccountShell>{children}</AccountShell>
       <Footer />
     </>

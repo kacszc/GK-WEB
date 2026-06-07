@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Bell, BellOff, CheckCheck, Loader2 } from "lucide-react";
+import { ArrowRight, Bell, BellOff, CheckCheck, Loader2 } from "lucide-react";
 import { Popover } from "@/components/ui/Popover";
 import { notificationsService } from "@/services";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -57,13 +59,19 @@ export function NotificationBell() {
         </span>
       )}
     >
-      {() => <NotificationInbox onChange={() => queryClient.invalidateQueries({ queryKey: ["notifications"] })} />}
+      {({ close }) => (
+        <NotificationInbox
+          close={close}
+          onChange={() => queryClient.invalidateQueries({ queryKey: ["notifications"] })}
+        />
+      )}
     </Popover>
   );
 }
 
-function NotificationInbox({ onChange }: { onChange: () => void }) {
+function NotificationInbox({ close, onChange }: { close: () => void; onChange: () => void }) {
   const { t } = useI18n();
+  const router = useRouter();
   const queryClient = useQueryClient();
 
   const { data: items = [], isLoading } = useQuery({
@@ -93,6 +101,15 @@ function NotificationInbox({ onChange }: { onChange: () => void }) {
   });
 
   const hasUnread = items.some((n) => !n.read);
+
+  // Mark read on open, then navigate to the notification's target (if any) and close the popover.
+  function open(n: Notification) {
+    if (!n.read) markRead.mutate(n.id);
+    if (n.link) {
+      close();
+      router.push(n.link);
+    }
+  }
 
   return (
     <div className="flex max-h-[26rem] flex-col">
@@ -124,15 +141,15 @@ function NotificationInbox({ onChange }: { onChange: () => void }) {
           items.map((n) => (
             <button
               key={n.id}
-              onClick={() => !n.read && markRead.mutate(n.id)}
+              onClick={() => open(n)}
               className={cn(
-                "flex w-full gap-3 border-b border-line px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-muted",
+                "group flex w-full items-center gap-3 border-b border-line px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-muted",
                 !n.read && "bg-[#f6f3ff]",
               )}
             >
               <span
                 className={cn(
-                  "mt-1.5 h-2 w-2 shrink-0 rounded-full",
+                  "mt-1.5 h-2 w-2 shrink-0 self-start rounded-full",
                   n.read ? "bg-transparent" : "bg-brand-violet",
                 )}
               />
@@ -141,10 +158,23 @@ function NotificationInbox({ onChange }: { onChange: () => void }) {
                 {n.body && <span className="mt-0.5 block text-[12px] leading-snug text-ink-2">{n.body}</span>}
                 <span className="mt-1 block text-[11px] text-ink-4">{timeAgo(n.createdAt, t)}</span>
               </span>
+              {n.link && (
+                <ArrowRight className="h-4 w-4 shrink-0 text-ink-4 transition-colors group-hover:text-ink-2" />
+              )}
             </button>
           ))
         )}
       </div>
+
+      {items.length > 0 && (
+        <Link
+          href="/account/notifications"
+          onClick={close}
+          className="border-t border-line px-4 py-2.5 text-center text-[12px] font-medium text-brand-violet hover:bg-muted"
+        >
+          {t("notifications.seeAll")}
+        </Link>
+      )}
     </div>
   );
 }

@@ -29,6 +29,7 @@ export type MessageView = {
 type ThreadDetailDto = {
   threadId: string;
   counterpartyId: string;
+  counterpartyName: string | null;
   messages: MessageView[];
 };
 
@@ -119,7 +120,7 @@ export const messagesService = {
       return {
         conversation: {
           id: dto.threadId,
-          name: counterpartyLabel(null, dto.counterpartyId),
+          name: counterpartyLabel(dto.counterpartyName, dto.counterpartyId),
           avatarIndex: 0,
           role: "",
           lastMessage: "",

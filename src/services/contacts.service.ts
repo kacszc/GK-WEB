@@ -2,8 +2,8 @@ import { apiPost } from "@/lib/api-client";
 
 /** Revealed contact details + the wallet balance after spending tokens. */
 export type ContactReveal = {
-  phone: string;
-  email: string;
+  phone: string | null;
+  email: string | null;
   balanceAfter: number;
 };
 

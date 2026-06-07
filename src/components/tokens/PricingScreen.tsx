@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { walletService } from "@/services";
 import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
+import { formatMoney } from "@/lib/money";
 
 export function PricingScreen() {
   const { t } = useI18n();
@@ -51,7 +52,7 @@ export function PricingScreen() {
               <div className="flex items-baseline justify-between">
                 <span className="text-lg font-bold text-ink">{p.name}</span>
                 <span className="text-sm text-ink-2">
-                  <span className="text-xl font-bold text-ink">{p.price} zł</span>{" "}
+                  <span className="text-xl font-bold text-ink">{formatMoney(p.price, p.currency)}</span>{" "}
                   {p.period === "mies." ? t("tokens.perMonth") : t("tokens.oneTime")}
                 </span>
               </div>

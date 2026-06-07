@@ -1,5 +1,5 @@
 import type { SearchSuggestions, Specialization } from "@/lib/types";
-// import { apiGet } from "@/lib/api-client";
+import { apiGet } from "@/lib/api-client";
 import {
   suggestedSpecializations,
   peopleNearby,
@@ -27,10 +27,24 @@ const allSpecializations: Specialization[] = (() => {
 export const searchService = {
   /** Search suggestions (autocomplete). */
   async suggest(query: string): Promise<SearchSuggestions> {
-    // TODO(backend): return apiGet(`/search/suggest?q=${encodeURIComponent(query)}`);
-    await mockDelay();
-
     const q = query.trim().toLowerCase();
+
+    // Real profession suggestions from the catalog; the people preview stays client-side
+    // (there is no people-suggest endpoint — the results page runs the real specialist search).
+    try {
+      const dtos = await apiGet<{ label: string; count: number; live: boolean }[]>(
+        `/api/search/suggest?q=${encodeURIComponent(query)}`,
+      );
+      const specializations: Specialization[] = dtos.map((d) => ({ title: d.label, count: d.count, hint: "arrow" }));
+      const people = !q
+        ? peopleNearby
+        : peopleNearby.filter((p) => p.name.toLowerCase().includes(q) || p.meta.toLowerCase().includes(q));
+      return { query, specializations, people, totalCount: specializations.reduce((sum, s) => sum + s.count, 0) };
+    } catch {
+      // Backend unavailable — fall back to the mock below.
+    }
+
+    await mockDelay();
 
     const specializations = !q
       ? suggestedSpecializations

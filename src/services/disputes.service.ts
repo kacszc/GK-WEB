@@ -1,4 +1,4 @@
-import type { Dispute, DisputeReason, DisputeEvent, DisputeEventType } from "@/lib/types";
+import type { Dispute, DisputeReason, DisputeEvent, DisputeEventType, DisputeSummary } from "@/lib/types";
 import { apiGet, apiPost } from "@/lib/api-client";
 import { mockDelay } from "./mock-data";
 
@@ -129,7 +129,33 @@ function mockDispute(id: string, draft?: OpenDisputeDraft): Dispute {
   };
 }
 
+type DisputeSummaryDto = {
+  id: string;
+  jobId: string;
+  counterpartyId: string;
+  reason: string;
+  status: "OPEN" | "RESOLVED";
+  createdAt: string;
+};
+
 export const disputesService = {
+  /** Current user's disputes (as opener or counterparty). */
+  async getMyDisputes(): Promise<DisputeSummary[]> {
+    try {
+      const dtos = await apiGet<DisputeSummaryDto[]>("/api/disputes");
+      return dtos.map((d) => ({
+        id: d.id,
+        counterpartyId: d.counterpartyId,
+        reasonLabel: reasonLabels[reasonFromEnum(d.reason)],
+        status: d.status === "RESOLVED" ? "resolved" : "open",
+        openedAt: fmtDateTime(d.createdAt),
+      }));
+    } catch {
+      await mockDelay();
+      return [];
+    }
+  },
+
   /** Open a new dispute and return the created mediation case. */
   async open(draft: OpenDisputeDraft): Promise<Dispute> {
     try {

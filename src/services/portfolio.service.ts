@@ -28,6 +28,14 @@ type PortfolioItemView = {
   createdAt: string;
 };
 
+/** Completed-job card from GET /api/me/jobs/completed (subset of the search projection). */
+type JobCardDto = {
+  id: string;
+  title: string;
+  district: string | null;
+  createdAt: string | null;
+};
+
 /** Format an ISO date (YYYY-MM-DD) for display; pass through anything else. */
 function displayDate(date: string | null): string {
   if (!date) return "";
@@ -89,9 +97,20 @@ export const portfolioService = {
 
   /** Completed jobs the worker can link a realisation to (unlocks confirmation). */
   async getLinkableJobs(): Promise<LinkableJob[]> {
-    // TODO(backend): return apiGet("/api/me/jobs/completed");
-    await mockDelay(200, 500);
-    return linkableJobs;
+    try {
+      const views = await apiGet<JobCardDto[]>("/api/me/jobs/completed");
+      // The card projection carries no employer name (cross-schema join would break module
+      // boundaries), so we surface the district as the location hint instead.
+      return views.map((v) => ({
+        id: v.id,
+        title: v.title,
+        employer: v.district ?? "",
+        date: displayDate(v.createdAt),
+      }));
+    } catch {
+      await mockDelay(200, 500);
+      return linkableJobs;
+    }
   },
 
   /**

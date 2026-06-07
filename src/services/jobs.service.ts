@@ -64,11 +64,9 @@ export type JobFilters = {
 };
 
 export const jobsService = {
-  /** Publish a job posting and return how many specialists were notified. */
+  /** Publish a job posting and return its id + how many specialists were notified. */
   async create(draft: JobDraft): Promise<JobResult> {
-    // TODO(backend): return apiPost("/jobs", draft, { locale });
-    await mockDelay(700, 1300);
-
+    // Vanity "notified N specialists" estimate (cosmetic; the backend doesn't compute it).
     const q = draft.profession.trim().toLowerCase();
     const matching = specialists.filter(
       (s) =>
@@ -76,11 +74,27 @@ export const jobsService = {
         (s.role.toLowerCase().includes(q) ||
           s.specialties.some((sp) => sp.label.toLowerCase().includes(q))),
     ).length;
-
-    // Scale the mock count so it feels like a real marketplace.
     const notifiedCount = Math.max(8, matching * 11 + (draft.people - 1) * 3);
 
-    return { id: `job-${Date.now().toString(36)}`, notifiedCount };
+    try {
+      // TODO(geocoder): district → lat/lng. For now default to Warsaw centre (matches profile defaults).
+      const dto = await apiPost<JobDto>("/api/jobs", {
+        title: draft.title,
+        profession: draft.profession,
+        description: draft.description,
+        district: draft.district,
+        latitude: 52.2297,
+        longitude: 21.0122,
+        radiusKm: draft.radiusKm,
+        people: draft.people,
+        rateFrom: draft.rate ?? 0,
+        hours: draft.hours,
+      });
+      return { id: dto.id, notifiedCount };
+    } catch {
+      await mockDelay(700, 1300);
+      return { id: `job-${Date.now().toString(36)}`, notifiedCount };
+    }
   },
 
   /** Browse public job postings (job-seeker side). */

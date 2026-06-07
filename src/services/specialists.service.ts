@@ -178,13 +178,20 @@ export const specialistsService = {
     };
   },
 
-  /** Full profile for a single specialist. */
+  /** Full profile for a single specialist (by user id). */
   async getById(id: string): Promise<SpecialistProfile | null> {
-    // TODO(backend): return apiGet(`/specialists/${id}`, { locale: filters.locale });
-    await mockDelay(500, 1000);
-    const s = specialists.find((x) => x.id === id);
-    if (!s) return null;
-    return { ...s, ...profileExtras(s) };
+    try {
+      const dto = await apiGet<SpecialistDto>(`/api/specialists/${encodeURIComponent(id)}`);
+      const base = toSpecialist(dto, 0);
+      // Core fields are real; structural extras (gallery/certs) are derived until those have a backend.
+      // Real reviews + portfolio are loaded separately by the profile page (reviews/portfolio services).
+      return { ...base, ...profileExtras(base) };
+    } catch {
+      await mockDelay(500, 1000);
+      const s = specialists.find((x) => x.id === id);
+      if (!s) return null;
+      return { ...s, ...profileExtras(s) };
+    }
   },
 };
 

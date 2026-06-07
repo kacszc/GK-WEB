@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, Settings, Briefcase, MessageSquare, Bookmark, Clock, Coins, ImageIcon, CalendarDays, BarChart3 } from "lucide-react";
+import { LayoutGrid, Settings, Briefcase, MessageSquare, Bookmark, Clock, Coins, ImageIcon, CalendarDays, BarChart3, Scale } from "lucide-react";
 import { useAuth } from "@/lib/AuthProvider";
 import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
@@ -15,6 +15,7 @@ const items = [
   { href: "/account/portfolio", key: "portfolio.title", icon: ImageIcon, role: "specialist" as const },
   { href: "/account/availability", key: "availability.eyebrow", icon: CalendarDays, role: "specialist" as const },
   { href: "/account/reports", key: "reports.title", icon: BarChart3, role: "employer" as const },
+  { href: "/account/disputes", key: "dispute.listTitle", icon: Scale },
   { href: "/account/tokens", key: "tokens.walletTitle", icon: Coins },
   { href: "/account/history", key: "account.navHistory", icon: Clock },
   { href: "/account/settings", key: "account.navSettings", icon: Settings },

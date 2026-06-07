@@ -26,3 +26,7 @@ export { employersService } from "./employers.service";
 export { reportsService } from "./reports.service";
 export { disputesService } from "./disputes.service";
 export type { OpenDisputeDraft } from "./disputes.service";
+export { settingsService } from "./settings.service";
+export type { NotificationSettings, ConsentChange } from "./settings.service";
+export { kycService } from "./kyc.service";
+export type { KycStatus } from "./kyc.service";

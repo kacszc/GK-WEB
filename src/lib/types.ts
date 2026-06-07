@@ -195,7 +195,8 @@ export type JobPosting = {
 export type TokenPackage = {
   id: string;
   tokens: number;
-  pricePerToken: number; // zł
+  pricePerToken: number; // in major units of `currency`
+  currency?: string; // ISO 4217, defaults to PLN
   popular?: boolean;
 };
 
@@ -214,7 +215,8 @@ export type WalletTx = {
 export type Plan = {
   id: string;
   name: string;
-  price: number; // zł / period
+  price: number; // in major units of `currency`, per period
+  currency?: string; // ISO 4217, defaults to PLN
   period: "mies." | "jednorazowo";
   perks: string[];
   highlight?: boolean;
@@ -243,6 +245,8 @@ export type Notification = {
   type: string;
   title: string;
   body: string;
+  /** In-app route to open when the notification is clicked (nullable). */
+  link: string | null;
   read: boolean;
   createdAt: string;
 };
@@ -572,4 +576,13 @@ export type Dispute = {
   mediator: string;
   remaining: string;
   events: DisputeEvent[];
+};
+
+/** Row in the current user's dispute list. */
+export type DisputeSummary = {
+  id: string;
+  counterpartyId: string;
+  reasonLabel: string;
+  status: "open" | "resolved";
+  openedAt: string;
 };

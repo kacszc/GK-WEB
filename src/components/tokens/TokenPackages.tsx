@@ -9,6 +9,7 @@ import { walletService } from "@/services";
 import { useWallet } from "@/lib/WalletProvider";
 import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
+import { formatMoney } from "@/lib/money";
 import type { TokenPackage } from "@/lib/types";
 
 const priceOf = (p: TokenPackage) => Math.round(p.tokens * p.pricePerToken);
@@ -40,7 +41,7 @@ export function TokenPackages() {
             <Coins className="h-6 w-6 text-[#e0a400]" />
             <div className="mt-3 text-3xl font-bold text-ink">{p.tokens}</div>
             <div className="text-[12px] text-ink-3">{t("tokens.tokensUnit")}</div>
-            <div className="mt-3 text-sm font-semibold text-ink">{priceOf(p)} zł</div>
+            <div className="mt-3 text-sm font-semibold text-ink">{formatMoney(priceOf(p), p.currency)}</div>
             <div className="text-[12px] text-ink-3">{t("tokens.perToken", { price: p.pricePerToken.toFixed(2) })}</div>
             <div className="mt-1 text-[12px] text-ink-3">
               {t("tokens.contactsApprox", { n: Math.floor(p.tokens / 3) })}

@@ -153,6 +153,7 @@ export const onboardingService = {
           address: data.company.address,
           city: data.location,
           industries: data.industries,
+          monthlyHires: data.teamSize || null,
         });
         return { bonusTokens: 10, companyName: data.company.name };
       },

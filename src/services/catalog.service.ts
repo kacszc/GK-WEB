@@ -23,11 +23,13 @@ export const catalogService = {
     );
   },
 
-  /** Most searched (trending, last 24h). */
+  /** Most in-demand professions (trending). */
   async getTrending(): Promise<Trend[]> {
-    // No backend endpoint yet — keep the mock.
-    // TODO(backend): return apiGet("/api/catalog/trending");
-    await mockDelay();
-    return trending;
+    try {
+      return await apiGet<Trend[]>("/api/catalog/trending");
+    } catch {
+      await mockDelay();
+      return trending;
+    }
   },
 };

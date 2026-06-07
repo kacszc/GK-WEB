@@ -9,6 +9,8 @@ import { QueryProvider } from "@/lib/QueryProvider";
 import { AuthProvider } from "@/lib/AuthProvider";
 import { WalletProvider } from "@/lib/WalletProvider";
 import { ContactProvider } from "@/lib/ContactProvider";
+import { ToastProvider } from "@/lib/ToastProvider";
+import { NotificationToaster } from "@/components/layout/NotificationToaster";
 import { CookieConsentProvider } from "@/lib/CookieConsentProvider";
 import { CookieConsent } from "@/components/legal/CookieConsent";
 
@@ -53,13 +55,16 @@ export default async function RootLayout({
             <AuthProvider>
               <WalletProvider>
                 <ContactProvider>
+                  <ToastProvider>
                   <CookieConsentProvider>
                     {children}
+                    <NotificationToaster />
                     <CookieConsent />
                     <Suspense fallback={null}>
                       <FirebaseAnalytics />
                     </Suspense>
                   </CookieConsentProvider>
+                  </ToastProvider>
                 </ContactProvider>
               </WalletProvider>
             </AuthProvider>

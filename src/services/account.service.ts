@@ -3,13 +3,25 @@ import { apiGet, apiPost } from "@/lib/api-client";
 import { myJobs, savedContacts, activity, applicants } from "./mock-account";
 import { mockDelay } from "./mock-data";
 
-/** Backend applicant DTO (job owner view). */
+/** Backend applicant DTO (job owner view) — bare; enriched client-side from the specialist profile. */
 type ApplicantDto = {
   applicationId: string;
   specialistId: string;
   message: string;
   status: "APPLIED" | "SELECTED" | "REJECTED";
   appliedAt: string;
+};
+
+/** Public specialist profile (subset) used to enrich applicants. */
+type SpecialistProfileDto = {
+  id: string;
+  name: string;
+  headline: string;
+  district: string;
+  trustScore: number;
+  rating: number | null;
+  reviews: number;
+  rateFrom: number;
 };
 
 /** Relative "applied ago" label from an ISO timestamp. */
@@ -23,24 +35,49 @@ function appliedAgo(iso: string): string {
   return `${days} dni temu`;
 }
 
+/** Employer's own job from GET /api/me/jobs. */
+type MyJobDto = {
+  id: string;
+  title: string;
+  profession: string;
+  district: string;
+  status: "active" | "filled" | "expired";
+  applicants: number;
+  rate: number;
+  createdAt: string;
+};
+
+function toMyJob(d: MyJobDto): MyJob {
+  return {
+    id: d.id,
+    title: d.title,
+    profession: d.profession,
+    district: d.district,
+    status: d.status,
+    applicants: d.applicants,
+    rate: d.rate,
+    postedAgo: appliedAgo(d.createdAt),
+  };
+}
+
 /**
  * Adapt a sparse backend applicant DTO to the UI's Applicant. The owner view
  * only knows the specialist id + message; richer profile fields are filled with
  * neutral placeholders (the detail screen links out to the full profile).
  */
-function toApplicant(d: ApplicantDto): Applicant {
+function toApplicant(d: ApplicantDto, p?: SpecialistProfileDto): Applicant {
   return {
     applicationId: d.applicationId,
     status: d.status,
     id: d.specialistId,
-    name: d.specialistId,
+    name: p?.name ?? "Specjalista",
     avatarIndex: 0,
-    role: "",
-    trustScore: 0,
-    rating: 0,
-    reviews: 0,
-    rate: 0,
-    district: "",
+    role: p?.headline ?? "",
+    trustScore: p?.trustScore ?? 0,
+    rating: p?.rating ?? 0,
+    reviews: p?.reviews ?? 0,
+    rate: p?.rateFrom ?? 0,
+    district: p?.district ?? "",
     distanceKm: 0,
     appliedAgo: appliedAgo(d.appliedAt),
     message: d.message,
@@ -49,9 +86,13 @@ function toApplicant(d: ApplicantDto): Applicant {
 
 export const accountService = {
   async getMyJobs(): Promise<MyJob[]> {
-    // TODO(backend): return apiGet("/me/jobs");
-    await mockDelay(400, 900);
-    return myJobs;
+    try {
+      const dtos = await apiGet<MyJobDto[]>("/api/me/jobs");
+      return dtos.map(toMyJob);
+    } catch {
+      await mockDelay(400, 900);
+      return myJobs;
+    }
   },
   async getContacts(): Promise<SavedContact[]> {
     // TODO(backend): return apiGet("/me/contacts");
@@ -72,7 +113,19 @@ export const accountService = {
       const dtos = await apiGet<ApplicantDto[]>(
         `/api/jobs/${encodeURIComponent(jobId)}/applicants`,
       );
-      return dtos.map(toApplicant);
+      // Enrich each applicant with the specialist's public profile (name/trust/rating).
+      const ids = [...new Set(dtos.map((d) => d.specialistId))];
+      const profiles = new Map<string, SpecialistProfileDto>();
+      await Promise.all(
+        ids.map(async (id) => {
+          try {
+            profiles.set(id, await apiGet<SpecialistProfileDto>(`/api/specialists/${encodeURIComponent(id)}`));
+          } catch {
+            /* applicant without a public profile — fall back to placeholders */
+          }
+        }),
+      );
+      return dtos.map((d) => toApplicant(d, profiles.get(d.specialistId)));
     } catch {
       await mockDelay(400, 800);
       return applicants;

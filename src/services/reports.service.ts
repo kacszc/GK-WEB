@@ -1,5 +1,5 @@
 import type { ReportsData } from "@/lib/types";
-// import { apiGet } from "@/lib/api-client";
+import { apiGet } from "@/lib/api-client";
 import { mockDelay } from "./mock-data";
 
 const data: ReportsData = {
@@ -36,8 +36,11 @@ const data: ReportsData = {
 
 export const reportsService = {
   async getReports(): Promise<ReportsData> {
-    // TODO(backend): return apiGet("/reports?range=…"); // localized + date-range params
-    await mockDelay();
-    return data;
+    try {
+      return await apiGet<ReportsData>("/api/me/reports");
+    } catch {
+      await mockDelay();
+      return data;
+    }
   },
 };

@@ -304,3 +304,23 @@ body {
   color: var(--color-ink);
   font-family: var(--font-sans);
 }
+
+/* Print-to-PDF: show only the .print-target subtree (set via printArea()), hide the rest. */
+@media print {
+  body.print-only-target * {
+    visibility: hidden !important;
+  }
+  body.print-only-target .print-target,
+  body.print-only-target .print-target * {
+    visibility: visible !important;
+  }
+  body.print-only-target .print-target {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 24px;
+    background: #fff;
+  }
+}

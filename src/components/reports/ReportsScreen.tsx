@@ -1,18 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Download, Calendar, Star } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Skeleton, SkeletonCard } from "@/components/ui/Skeleton";
+import { CompareModal } from "@/components/reports/CompareModal";
 import { reportsService } from "@/services";
 import { useI18n } from "@/i18n/I18nProvider";
+import { printArea } from "@/lib/print";
 import { cn } from "@/lib/cn";
 
 export function ReportsScreen() {
   const { t } = useI18n();
   const [grain, setGrain] = useState<"weekly" | "monthly" | "quarterly">("monthly");
+  const [compareOpen, setCompareOpen] = useState(false);
+  const printRef = useRef<HTMLDivElement>(null);
   const { data, isLoading } = useQuery({ queryKey: ["reports"], queryFn: reportsService.getReports });
 
   if (isLoading || !data) {
@@ -46,21 +51,22 @@ export function ReportsScreen() {
     );
   }
 
-  const maxBar = Math.max(...data.hiresOverTime.map((b) => b.value));
+  const maxBar = Math.max(1, ...data.hiresOverTime.map((b) => b.value));
 
   return (
-    <div className="flex flex-col gap-5">
+    <div ref={printRef} className="flex flex-col gap-5">
+      <CompareModal candidates={data.history} open={compareOpen} onClose={() => setCompareOpen(false)} />
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-[-0.5px] text-ink">{t("reports.title")}</h1>
           <p className="mt-1 max-w-xl text-[13px] text-ink-3">{t("reports.subtitle")}</p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 print:hidden">
           <span className="inline-flex items-center gap-1.5 rounded-tile border border-line-2 px-3 py-2 text-[13px] text-ink-2">
             <Calendar className="h-3.5 w-3.5 text-ink-4" />
             {t("reports.range")}
           </span>
-          <Button variant="dark" className="rounded-tile px-4 py-2 text-[13px]">
+          <Button variant="dark" onClick={() => printArea(printRef.current)} className="rounded-tile px-4 py-2 text-[13px]">
             <Download className="h-4 w-4" />
             {t("reports.export")}
           </Button>
@@ -128,7 +134,7 @@ export function ReportsScreen() {
           <div className="rounded-panel bg-ink p-4 text-on-dark">
             <p className="text-sm font-bold">{t("reports.compareTitle")}</p>
             <p className="mt-1 text-[12px] text-on-dark/70">{t("reports.compareDesc")}</p>
-            <Button variant="white" className="mt-3 w-full rounded-tile py-2.5 text-[13px]">
+            <Button variant="white" onClick={() => setCompareOpen(true)} className="mt-3 w-full rounded-tile py-2.5 text-[13px]">
               {t("reports.compareCta")}
             </Button>
           </div>
@@ -212,10 +218,13 @@ export function ReportsScreen() {
                 <span className="text-[13px] text-ink-2">{t("reports.repeatHire")}</span>
                 <span className="text-xl font-bold text-success">{data.repeatHireRate}%</span>
               </div>
-              <div className="flex items-center justify-between rounded-panel border border-line-3 p-3">
+              <Link
+                href="/account/disputes"
+                className="flex items-center justify-between rounded-panel border border-line-3 p-3 transition-colors hover:bg-muted"
+              >
                 <span className="text-[13px] text-ink-2">{t("reports.disputes")}</span>
                 <span className="text-xl font-bold text-ink">{data.disputesOpened}</span>
-              </div>
+              </Link>
             </div>
           </div>
         </div>

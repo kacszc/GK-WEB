@@ -54,7 +54,7 @@ function ContactModal({
   const [sent, setSent] = useState(false);
   const [err, setErr] = useState(false);
   const [insufficient, setInsufficient] = useState(false);
-  const [revealed, setRevealed] = useState<{ phone: string; email: string } | null>(null);
+  const [revealed, setRevealed] = useState<{ phone: string | null; email: string | null } | null>(null);
 
   const s = specialist;
   const min = 5;
@@ -110,20 +110,24 @@ function ContactModal({
           {revealed && (
             <div className="mt-4 flex flex-col gap-2 rounded-tile bg-subtle p-3 text-left">
               <p className="text-[12px] font-semibold text-ink-3">{t("contact.revealedTitle")}</p>
-              <a
-                href={`tel:${revealed.phone}`}
-                className="inline-flex items-center gap-2 text-sm font-medium text-ink hover:underline"
-              >
-                <Phone className="h-4 w-4 text-ink-3" />
-                {revealed.phone}
-              </a>
-              <a
-                href={`mailto:${revealed.email}`}
-                className="inline-flex items-center gap-2 text-sm font-medium text-ink hover:underline"
-              >
-                <Mail className="h-4 w-4 text-ink-3" />
-                {revealed.email}
-              </a>
+              {revealed.phone && (
+                <a
+                  href={`tel:${revealed.phone}`}
+                  className="inline-flex items-center gap-2 text-sm font-medium text-ink hover:underline"
+                >
+                  <Phone className="h-4 w-4 text-ink-3" />
+                  {revealed.phone}
+                </a>
+              )}
+              {revealed.email && (
+                <a
+                  href={`mailto:${revealed.email}`}
+                  className="inline-flex items-center gap-2 text-sm font-medium text-ink hover:underline"
+                >
+                  <Mail className="h-4 w-4 text-ink-3" />
+                  {revealed.email}
+                </a>
+              )}
             </div>
           )}
           <Button variant="dark" onClick={onClose} className="mt-5 w-full rounded-tile py-3 text-sm">
