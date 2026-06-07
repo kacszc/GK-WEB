@@ -105,7 +105,7 @@ export function SearchScreen({
     <>
       <SearchTopbar category={category} />
 
-      <main className="mx-auto flex w-full max-w-[1280px] flex-1 flex-col gap-4 px-4 pt-6 pb-20 sm:px-8">
+      <main className="mx-auto mb-8 flex w-full max-w-[1280px] flex-1 flex-col gap-4 px-4 pt-6 pb-20 sm:px-8">
         <ResultsToolbar
           title={title}
           subtitle={subtitle}
