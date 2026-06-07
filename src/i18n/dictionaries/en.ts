@@ -155,6 +155,7 @@ const en: Dictionary = {
     advanced: "Advanced filters",
     filtersToggle: "Filters",
     showResults: "Show results",
+    showResultsCount: "Show {count} results",
     cardAvailNow: "Available now",
     cardAvailWeek: "This week",
     cardAvailDate: "From {date}",

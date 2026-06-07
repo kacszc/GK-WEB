@@ -155,6 +155,7 @@ const uk: Dictionary = {
     advanced: "Розширені фільтри",
     filtersToggle: "Фільтри",
     showResults: "Показати результати",
+    showResultsCount: "Показати {count} результатів",
     cardAvailNow: "Доступний зараз",
     cardAvailWeek: "Цього тижня",
     cardAvailDate: "Від {date}",

@@ -24,6 +24,9 @@ type IndustryDto = { code: string; name: string };
 /** A pickable specialization: stable code (submitted) + localized label (shown). */
 export type SpecializationOption = { code: string; label: string };
 
+/** A pickable language: stable code (submitted, e.g. "pl") + localized name (shown). */
+export type LanguageOption = { code: string; name: string };
+
 // Industries (branże) — shared by both onboarding flows.
 const industries: IndustryOption[] = [
   { id: "gastronomy", label: "Gastronomia" },
@@ -90,16 +93,14 @@ export const onboardingService = {
     );
   },
 
-  /** Spoken languages. Backend returns {code,name}; the picker is cosmetic (not persisted) → labels. */
-  async getLanguages(): Promise<string[]> {
+  /** Spoken languages as {code,name} options: the picker submits codes (stored on the profile,
+   * driving the language filter) and shows localized names. */
+  async getLanguages(): Promise<LanguageOption[]> {
     return withFallback(
-      async () => {
-        const dtos = await apiGet<{ code: string; name: string }[]>("/api/catalog/languages");
-        return dtos.map((d) => d.name);
-      },
+      () => apiGet<LanguageOption[]>("/api/catalog/languages"),
       async () => {
         await mockDelay(120, 300);
-        return languages;
+        return languages.map((name) => ({ code: name, name }));
       },
     );
   },
@@ -146,6 +147,7 @@ export const onboardingService = {
           headline: data.specializations.join(", ") || data.industry, // free-text label list
           district: data.baseLocation,
           specializationCodes: data.specializationCodes, // structured codes → search relation
+          languageCodes: data.languages, // language codes → language filter
         });
         return { trustScore: res.trustScore, firstName };
       },

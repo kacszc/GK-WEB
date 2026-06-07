@@ -152,6 +152,7 @@ export const specialistsService = {
       if (filters.rateMin != null) params.set("rateMin", String(filters.rateMin));
       if (filters.rateMax != null) params.set("rateMax", String(filters.rateMax));
       if (filters.kyc) params.set("kyc", "true");
+      if (filters.languages?.length) params.set("languages", filters.languages.join(","));
       if (filters.sort) params.set("sort", filters.sort);
       const qs = params.toString();
       const dtos = await apiGet<SpecialistDto[]>(
@@ -223,6 +224,7 @@ export type SearchFilterSchema = {
   industries: FilterOption[];
   specializations: Record<string, FilterOption[]>;
   availability: FilterOption[]; // codes: NOW/WEEK/DATE
+  languages: FilterOption[]; // codes: pl/en/uk/de/ru
   sort: FilterOption[]; // codes: trust/distance/rate
   trust: FilterRange;
   distanceKm: FilterRange;
@@ -238,6 +240,11 @@ const FALLBACK_FILTER_SCHEMA: SearchFilterSchema = {
     { code: "NOW", label: "Teraz" },
     { code: "WEEK", label: "W tym tygodniu" },
     { code: "DATE", label: "Konkretny termin" },
+  ],
+  languages: [
+    { code: "pl", label: "Polski" },
+    { code: "en", label: "Angielski" },
+    { code: "uk", label: "Ukraiński" },
   ],
   sort: [
     { code: "trust", label: "Trust Score" },

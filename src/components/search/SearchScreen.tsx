@@ -187,9 +187,27 @@ export function SearchScreen({
         )}
       </main>
 
-      <FiltersModal open={filtersOpen} onClose={() => setFiltersOpen(false)}>
-        <FilterSidebar {...sidebarProps} variant="full" />
-      </FiltersModal>
+      <FiltersModal
+        open={filtersOpen}
+        onClose={() => setFiltersOpen(false)}
+        filters={filters}
+        userLocation={userLocation}
+        onApply={(f) => {
+          setFilters(f);
+          setPage(1);
+        }}
+        renderSidebar={(draft, patchDraft, clearDraft) => (
+          <FilterSidebar
+            filters={draft}
+            onPatch={patchDraft}
+            onClear={clearDraft}
+            userLocation={userLocation}
+            onLocate={setUserLocation}
+            onClearLocation={() => setUserLocation(null)}
+            variant="full"
+          />
+        )}
+      />
     </>
   );
 }

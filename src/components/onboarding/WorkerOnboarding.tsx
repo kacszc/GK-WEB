@@ -168,7 +168,7 @@ export function WorkerOnboarding({
             <p className="mb-2 mt-5 text-[12px] font-semibold text-ink-3">{t("onboarding.wLanguages")}</p>
             <div className="flex flex-wrap gap-2">
               {languages.map((l) => (
-                <Chip key={l} label={l} selected={langs.includes(l)} onClick={() => toggle(langs, setLangs, l)} />
+                <Chip key={l.code} label={l.name} selected={langs.includes(l.code)} onClick={() => toggle(langs, setLangs, l.code)} />
               ))}
             </div>
             <Button variant="dark" onClick={finish} disabled={busy} className="mt-6 w-full rounded-tile py-3 text-sm">

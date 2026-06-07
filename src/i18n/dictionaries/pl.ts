@@ -154,6 +154,7 @@ const pl = {
     advanced: "Filtry zaawansowane",
     filtersToggle: "Filtry",
     showResults: "Pokaż wyniki",
+    showResultsCount: "Pokaż {count} wyników",
     cardAvailNow: "Dostępny teraz",
     cardAvailWeek: "W tym tygodniu",
     cardAvailDate: "Od {date}",

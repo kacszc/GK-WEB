@@ -7,7 +7,6 @@ import { useI18n } from "@/i18n/I18nProvider";
 import { specialistsService, type SpecialistFilters } from "@/services";
 import type { Availability, UserLocation } from "@/lib/types";
 import { LocationButton } from "./LocationButton";
-import { ScrollArea } from "@/components/ui/ScrollArea";
 import { cn } from "@/lib/cn";
 
 type Props = {
@@ -60,11 +59,12 @@ export function FilterSidebar({
   const distance = schema?.distanceKm ?? { min: 1, max: 50, defaultValue: 25 };
 
   return (
-    <ScrollArea
-      className={cn(variant === "full" ? "self-start lg:sticky lg:top-20" : "h-full")}
-      contentClassName={cn(
-        "flex w-full flex-col gap-6 pb-12 pr-3 text-sm",
-        variant === "full" ? "lg:max-h-[calc(100vh-6rem)]" : "h-full",
+    // Plain container so the whole page scrolls naturally (no wheel-trapping). The compact variant
+    // lives inside the height-locked map layout, so it scrolls internally there.
+    <div
+      className={cn(
+        "flex w-full flex-col gap-6 pb-6 text-sm",
+        variant === "full" ? "self-start lg:sticky lg:top-20" : "h-full overflow-y-auto pr-1",
       )}
     >
       <LocationButton value={userLocation} onLocate={onLocate} onClear={onClearLocation} />
@@ -185,6 +185,19 @@ export function FilterSidebar({
                 />
               </Section>
             )}
+
+            {(schema?.languages.length ?? 0) > 0 && (
+              <Section title={t("results.fLanguage")}>
+                {schema?.languages.map((l) => (
+                  <CheckRow
+                    key={l.code}
+                    label={l.label}
+                    checked={filters.languages?.includes(l.code) ?? false}
+                    onChange={() => onPatch({ languages: toggle(filters.languages, l.code) })}
+                  />
+                ))}
+              </Section>
+            )}
           </div>
         )}
       </div>
@@ -196,7 +209,7 @@ export function FilterSidebar({
       >
         {t("results.clear")}
       </button>
-    </ScrollArea>
+    </div>
   );
 }
 
