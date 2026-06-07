@@ -62,9 +62,19 @@ export function FilterSidebar({
   const specializations = activeIndustry ? specsOf(activeIndustry) : [];
 
   // Clicking an industry selects the WHOLE industry as a unit (no individual codes ticked) and
-  // expands it so you can optionally narrow to specific specializations instead.
+  // expands it for optional narrowing. Clicking again clears EVERYTHING for that industry —
+  // both the whole-industry selection and any specific specializations picked within it.
   const toggleIndustry = (industryCode: string) => {
-    onPatch({ industries: toggle(industries, industryCode) });
+    const codes = specsOf(industryCode).map((s) => s.code);
+    const anySelected = industries.includes(industryCode) || codes.some((c) => professions.includes(c));
+    if (anySelected) {
+      onPatch({
+        industries: industries.filter((c) => c !== industryCode),
+        professions: professions.filter((c) => !codes.includes(c)),
+      });
+    } else {
+      onPatch({ industries: [...industries, industryCode] });
+    }
     setOpenIndustry(industryCode);
   };
 
