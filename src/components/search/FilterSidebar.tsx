@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { ChevronDown, SlidersHorizontal } from "lucide-react";
 import { useI18n } from "@/i18n/I18nProvider";
-import { specialistFacets, type SpecialistFilters } from "@/services";
+import { specialistsService, type SpecialistFilters } from "@/services";
 import type { Availability, UserLocation } from "@/lib/types";
 import { LocationButton } from "./LocationButton";
 import { ScrollArea } from "@/components/ui/ScrollArea";
@@ -18,20 +20,6 @@ type Props = {
   variant?: "full" | "compact";
 };
 
-const AVAILABILITY: { id: Availability; key: string }[] = [
-  { id: "now", key: "results.fAvailNow" },
-  { id: "week", key: "results.fAvailWeek" },
-  { id: "date", key: "results.fAvailDate" },
-];
-
-const LANGS: { code: string; key: string }[] = [
-  { code: "pl", key: "results.langPl" },
-  { code: "en", key: "results.langEn" },
-  { code: "uk", key: "results.langUk" },
-  { code: "de", key: "results.langDe" },
-  { code: "ru", key: "results.langRu" },
-];
-
 export function FilterSidebar({
   filters,
   onPatch,
@@ -41,8 +29,15 @@ export function FilterSidebar({
   onClearLocation,
   variant = "full",
 }: Props) {
-  const { t } = useI18n();
-  const [showAllSpec, setShowAllSpec] = useState(false);
+  const { t, locale } = useI18n();
+  const [showMore, setShowMore] = useState(false);
+  const [openIndustry, setOpenIndustry] = useState<string | null>(null);
+
+  // The whole filter schema (options + bounds + localized labels) comes from the backend.
+  const { data: schema } = useQuery({
+    queryKey: ["searchFilters", locale],
+    queryFn: () => specialistsService.getFilters(locale),
+  });
 
   const toggle = <T,>(arr: T[] | undefined, value: T): T[] => {
     const set = new Set(arr ?? []);
@@ -51,8 +46,18 @@ export function FilterSidebar({
     return [...set];
   };
 
-  const specEntries = Object.entries(specialistFacets.specialties).sort((a, b) => b[1] - a[1]);
-  const visibleSpec = showAllSpec ? specEntries : specEntries.slice(0, 4);
+  // Which industry to expand: the user's pick, else the one owning the selected profession.
+  const industryOfProfession =
+    filters.profession && schema
+      ? Object.keys(schema.specializations).find((code) =>
+          schema.specializations[code].some((s) => s.code === filters.profession),
+        )
+      : undefined;
+  const activeIndustry = openIndustry ?? industryOfProfession ?? null;
+  const specializations = (activeIndustry && schema?.specializations[activeIndustry]) || [];
+
+  const trust = schema?.trust ?? { min: 0, max: 100, defaultValue: 75 };
+  const distance = schema?.distanceKm ?? { min: 1, max: 50, defaultValue: 25 };
 
   return (
     <ScrollArea
@@ -64,109 +69,125 @@ export function FilterSidebar({
     >
       <LocationButton value={userLocation} onLocate={onLocate} onClear={onClearLocation} />
 
-      {/* Trust score */}
-      <Section title={t(variant === "full" ? "results.fMinTrust" : "results.fMinTrust")}>
-        <div className="flex items-center justify-between text-[13px] font-bold text-success">
-          <span>{filters.minTrust ?? 0}</span>
-          <span className="text-ink-4">{t("results.fTo100")}</span>
+      {/* Industry → specialization (profession code) */}
+      <Section title={t("results.fIndustry")}>
+        <div className="flex flex-wrap gap-1.5">
+          {schema?.industries.map((i) => (
+            <Pill
+              key={i.code}
+              label={i.label}
+              selected={activeIndustry === i.code}
+              onClick={() => setOpenIndustry(activeIndustry === i.code ? null : i.code)}
+            />
+          ))}
         </div>
-        <input
-          type="range"
-          min={0}
-          max={100}
-          value={filters.minTrust ?? 0}
-          onChange={(e) => onPatch({ minTrust: Number(e.target.value) })}
-          className="mt-1 w-full cursor-pointer accent-brand-violet"
-        />
+
+        {activeIndustry ? (
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {specializations.map((s) => (
+              <Pill
+                key={s.code}
+                label={s.label}
+                small
+                selected={filters.profession === s.code}
+                onClick={() =>
+                  onPatch({ profession: filters.profession === s.code ? undefined : s.code })
+                }
+              />
+            ))}
+          </div>
+        ) : (
+          <p className="mt-2 text-[12px] text-ink-4">{t("results.fPickIndustry")}</p>
+        )}
+      </Section>
+
+      {/* Availability */}
+      <Section title={t("results.fAvailability")}>
+        {schema?.availability.map((a) => {
+          const value = a.code.toLowerCase() as Availability;
+          return (
+            <CheckRow
+              key={a.code}
+              label={a.label}
+              checked={filters.availability?.includes(value) ?? false}
+              onChange={() => onPatch({ availability: toggle(filters.availability, value) })}
+            />
+          );
+        })}
       </Section>
 
       {/* Distance */}
       <Section title={t("results.fDistance")}>
-        <div className="text-[13px] font-bold text-ink">{t("filters.upTo", { km: filters.maxDistanceKm ?? 25 })}</div>
+        <div className="text-[13px] font-bold text-ink">
+          {t("filters.upTo", { km: filters.maxDistanceKm ?? distance.defaultValue })}
+        </div>
         <input
           type="range"
-          min={1}
-          max={50}
-          value={filters.maxDistanceKm ?? 25}
+          min={distance.min}
+          max={distance.max}
+          value={filters.maxDistanceKm ?? distance.defaultValue}
           onChange={(e) => onPatch({ maxDistanceKm: Number(e.target.value) })}
           className="mt-1 w-full cursor-pointer accent-brand-violet"
         />
       </Section>
 
-      {/* Availability */}
-      <Section title={t("results.fAvailability")}>
-        {AVAILABILITY.map((a) => (
-          <CheckRow
-            key={a.id}
-            label={t(a.key)}
-            count={specialistFacets.availability[a.id]}
-            checked={filters.availability?.includes(a.id) ?? false}
-            onChange={() => onPatch({ availability: toggle(filters.availability, a.id) })}
-          />
-        ))}
-      </Section>
-
-      {/* Specialization */}
-      <Section title={t("results.fSpecialization")}>
-        {visibleSpec.map(([label, count]) => (
-          <CheckRow
-            key={label}
-            label={label}
-            count={count}
-            checked={filters.specialties?.includes(label) ?? false}
-            onChange={() => onPatch({ specialties: toggle(filters.specialties, label) })}
-          />
-        ))}
-        {specEntries.length > 4 && (
-          <button
-            type="button"
-            onClick={() => setShowAllSpec((v) => !v)}
-            className="mt-1 text-[12px] font-medium text-brand-violet hover:underline"
-          >
-            {t("results.fShowMore")}
-          </button>
-        )}
-      </Section>
-
-      {/* Hourly rate */}
-      <Section title={t("results.fRate")}>
-        <div className="flex items-center gap-2">
-          <RateInput
-            placeholder={`${t("results.fFrom")} 25`}
-            value={filters.rateMin}
-            onChange={(v) => onPatch({ rateMin: v })}
-          />
-          <RateInput
-            placeholder={`${t("results.fTo")} 80`}
-            value={filters.rateMax}
-            onChange={(v) => onPatch({ rateMax: v })}
-          />
+      {/* Trust */}
+      <Section title={t("results.fMinTrust")}>
+        <div className="flex items-center justify-between text-[13px] font-bold text-success">
+          <span>{filters.minTrust ?? trust.defaultValue}</span>
+          <span className="text-ink-4">{t("results.fTo100")}</span>
         </div>
+        <input
+          type="range"
+          min={trust.min}
+          max={trust.max}
+          value={filters.minTrust ?? trust.defaultValue}
+          onChange={(e) => onPatch({ minTrust: Number(e.target.value) })}
+          className="mt-1 w-full cursor-pointer accent-brand-violet"
+        />
       </Section>
 
-      {variant === "full" && (
-        <Section title={t("results.fVerification")}>
-          <CheckRow
-            label={t("results.fKyc")}
-            count={specialistFacets.kyc}
-            checked={filters.kyc ?? false}
-            onChange={() => onPatch({ kyc: !filters.kyc })}
-          />
-        </Section>
-      )}
+      {/* Advanced — collapsed by default to keep the panel light */}
+      <div>
+        <button
+          type="button"
+          onClick={() => setShowMore((v) => !v)}
+          className="flex items-center gap-2 text-[12px] font-semibold text-ink-2 hover:text-ink"
+        >
+          <SlidersHorizontal className="h-3.5 w-3.5" />
+          {showMore ? t("results.fLess") : t("results.fMore")}
+          <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", showMore && "rotate-180")} />
+        </button>
 
-      {/* Language */}
-      <Section title={t("results.fLanguage")}>
-        {LANGS.map((l) => (
-          <CheckRow
-            key={l.code}
-            label={t(l.key)}
-            count={specialistFacets.languages[l.code] ?? 0}
-            checked={filters.languages?.includes(l.code) ?? false}
-            onChange={() => onPatch({ languages: toggle(filters.languages, l.code) })}
-          />
-        ))}
-      </Section>
+        {showMore && (
+          <div className="mt-4 flex flex-col gap-6">
+            <Section title={t("results.fRate")}>
+              <div className="flex items-center gap-2">
+                <RateInput
+                  placeholder={`${t("results.fFrom")} 25`}
+                  value={filters.rateMin}
+                  onChange={(v) => onPatch({ rateMin: v })}
+                />
+                <RateInput
+                  placeholder={`${t("results.fTo")} 80`}
+                  value={filters.rateMax}
+                  onChange={(v) => onPatch({ rateMax: v })}
+                />
+              </div>
+            </Section>
+
+            {schema?.kyc && (
+              <Section title={t("results.fVerification")}>
+                <CheckRow
+                  label={t("results.fKyc")}
+                  checked={filters.kyc ?? false}
+                  onChange={() => onPatch({ kyc: !filters.kyc })}
+                />
+              </Section>
+            )}
+          </div>
+        )}
+      </div>
 
       <button
         type="button"
@@ -188,14 +209,40 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
+function Pill({
+  label,
+  selected,
+  small,
+  onClick,
+}: {
+  label: string;
+  selected: boolean;
+  small?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "rounded-full border font-medium transition-colors",
+        small ? "px-2.5 py-1 text-[12px]" : "px-3 py-1.5 text-[12px]",
+        selected
+          ? "border-ink bg-ink text-on-dark"
+          : "border-line-2 text-ink hover:bg-muted",
+      )}
+    >
+      {label}
+    </button>
+  );
+}
+
 function CheckRow({
   label,
-  count,
   checked,
   onChange,
 }: {
   label: string;
-  count?: number;
   checked: boolean;
   onChange: () => void;
 }) {
@@ -203,7 +250,6 @@ function CheckRow({
     <label className="flex cursor-pointer items-center gap-2 text-[13px] text-ink">
       <input type="checkbox" checked={checked} onChange={onChange} className="accent-brand-violet" />
       <span className="flex-1">{label}</span>
-      {count != null && <span className="text-[11px] text-ink-4">{count}</span>}
     </label>
   );
 }

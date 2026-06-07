@@ -1,8 +1,9 @@
 "use client";
 
 import { X } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { useI18n } from "@/i18n/I18nProvider";
-import type { SpecialistFilters } from "@/services";
+import { specialistsService, type SpecialistFilters } from "@/services";
 import type { Availability } from "@/lib/types";
 
 const AVAIL_KEY: Record<Availability, string> = {
@@ -25,10 +26,21 @@ export function ActiveFilters({
   filters: SpecialistFilters;
   onPatch: (patch: Partial<SpecialistFilters>) => void;
 }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  // Reuses the sidebar's cached schema (same query key) to label the profession chip.
+  const { data: schema } = useQuery({
+    queryKey: ["searchFilters", locale],
+    queryFn: () => specialistsService.getFilters(locale),
+  });
   const chips: { key: string; label: string; remove: () => void }[] = [];
 
   if (filters.q) chips.push({ key: "q", label: filters.q, remove: () => onPatch({ q: undefined }) });
+  if (filters.profession) {
+    const label =
+      (schema && Object.values(schema.specializations).flat().find((s) => s.code === filters.profession)?.label) ||
+      filters.profession;
+    chips.push({ key: "prof", label, remove: () => onPatch({ profession: undefined }) });
+  }
   if (filters.minTrust)
     chips.push({ key: "trust", label: `Trust ≥ ${filters.minTrust}`, remove: () => onPatch({ minTrust: 0 }) });
   if (filters.maxDistanceKm != null)

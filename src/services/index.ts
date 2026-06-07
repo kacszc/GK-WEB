@@ -6,7 +6,7 @@ export { catalogService } from "./catalog.service";
 export { statsService } from "./stats.service";
 export { landingService } from "./landing.service";
 export { specialistsService, specialistFacets } from "./specialists.service";
-export type { SpecialistFilters, SpecialistSort } from "./specialists.service";
+export type { SpecialistFilters, SpecialistSort, SearchFilterSchema, FilterOption, FilterRange } from "./specialists.service";
 export { jobsService } from "./jobs.service";
 export type { JobFilters } from "./jobs.service";
 export { authService } from "./auth.service";

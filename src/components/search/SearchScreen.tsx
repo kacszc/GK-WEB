@@ -36,7 +36,6 @@ export function SearchScreen({
     minTrust: 75,
     maxDistanceKm: 25,
     availability: ["now", "week"],
-    languages: ["pl"],
     sort: "trust",
   });
   const [view, setView] = useState<ResultsView>(initialView);
@@ -46,9 +45,8 @@ export function SearchScreen({
   const [filtersOpen, setFiltersOpen] = useState(false); // mobile filters toggle
 
   const activeCount =
+    (filters.profession ? 1 : 0) +
     (filters.availability?.length ?? 0) +
-    (filters.specialties?.length ?? 0) +
-    (filters.languages?.length ?? 0) +
     (filters.kyc ? 1 : 0) +
     (filters.minTrust ? 1 : 0) +
     (filters.maxDistanceKm != null ? 1 : 0);

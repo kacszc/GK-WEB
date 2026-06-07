@@ -204,6 +204,50 @@ export const specialistsService = {
       return { ...s, ...profileExtras(s) };
     }
   },
+
+  /** The backend-defined filter schema (industries → specializations, availability, sort, ranges). */
+  async getFilters(locale?: string): Promise<SearchFilterSchema> {
+    try {
+      return await apiGet<SearchFilterSchema>("/api/specialists/filters", { locale });
+    } catch {
+      return FALLBACK_FILTER_SCHEMA;
+    }
+  },
+};
+
+export type FilterOption = { code: string; label: string };
+export type FilterRange = { min: number; max: number; defaultValue: number };
+
+/** Backend-defined search filters; the frontend renders these (no hardcoded option lists). */
+export type SearchFilterSchema = {
+  industries: FilterOption[];
+  specializations: Record<string, FilterOption[]>;
+  availability: FilterOption[]; // codes: NOW/WEEK/DATE
+  sort: FilterOption[]; // codes: trust/distance/rate
+  trust: FilterRange;
+  distanceKm: FilterRange;
+  rate: FilterRange;
+  kyc: boolean;
+};
+
+/** Minimal offline fallback so the sidebar still renders when the backend is down. */
+const FALLBACK_FILTER_SCHEMA: SearchFilterSchema = {
+  industries: [],
+  specializations: {},
+  availability: [
+    { code: "NOW", label: "Teraz" },
+    { code: "WEEK", label: "W tym tygodniu" },
+    { code: "DATE", label: "Konkretny termin" },
+  ],
+  sort: [
+    { code: "trust", label: "Trust Score" },
+    { code: "distance", label: "Najbliżej" },
+    { code: "rate", label: "Najtańsi" },
+  ],
+  trust: { min: 0, max: 100, defaultValue: 75 },
+  distanceKm: { min: 1, max: 50, defaultValue: 25 },
+  rate: { min: 0, max: 200, defaultValue: 0 },
+  kyc: true,
 };
 
 // --- Mock profile detail (deterministic per specialist) ---
