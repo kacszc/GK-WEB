@@ -7,6 +7,7 @@ import { notificationsService } from "@/services";
 import { useAuth } from "@/lib/AuthProvider";
 import { useToast } from "@/lib/ToastProvider";
 import { useNotificationSocket } from "@/lib/useNotificationSocket";
+import { enablePush } from "@/lib/push";
 import type { Notification } from "@/lib/types";
 
 /**
@@ -41,6 +42,15 @@ export function NotificationToaster() {
 
   // Instant: live push on the personal topic.
   useNotificationSocket(me?.id ?? null, (n) => surface(n, true));
+
+  // Register Web Push (FCM) once per sign-in (OS-level push when the tab is closed). Best-effort.
+  const pushTried = useRef(false);
+  useEffect(() => {
+    if (user && !pushTried.current) {
+      pushTried.current = true;
+      void enablePush();
+    }
+  }, [user]);
 
   // Fallback: slow poll, diffed against the seen set (first load only seeds, no toast spam).
   const { data: items = [] } = useQuery({

@@ -24,6 +24,11 @@ export const firebaseApp: FirebaseApp = getApps().length ? getApp() : initialize
 
 export const firebaseAuth: Auth = getAuth(firebaseApp);
 
+// Web Push (FCM) public VAPID key — the browser-facing applicationServerKey (not a secret).
+export const firebaseVapidKey =
+  process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY ??
+  "BEsNtOmUWXlIZIvF8WFD97GnPW78SUvsaulsX3FMUKEOocTOFxdlL4IU3rQbIE5dlaAzc8Y1SPpfPXVjN4EOoyc";
+
 let analyticsInstance: Analytics | null = null;
 
 /**

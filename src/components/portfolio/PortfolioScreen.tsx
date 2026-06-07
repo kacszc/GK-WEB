@@ -74,26 +74,24 @@ function PortfolioCard({ item }: { item: PortfolioItem }) {
         verified ? "border-success-badge" : "border-line-3",
       )}
     >
-      {/* Photo strip */}
-      <div className="flex h-36 gap-0.5">
+      {/* Photo strip with the provenance badge overlaid top-right */}
+      <div className="relative flex h-36 gap-0.5">
         {item.colors.slice(0, 3).map((c, i) => (
           <div key={i} className="flex-1" style={{ background: c }} />
         ))}
+        <span
+          className={cn(
+            "absolute right-2 top-2 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold shadow-sm backdrop-blur",
+            verified ? "bg-success-chip/95 text-success-chip-text" : "bg-surface/90 text-ink-2",
+          )}
+        >
+          {verified ? <BadgeCheck className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
+          {t(verified ? "portfolio.verified" : "portfolio.selfAdded")}
+        </span>
       </div>
 
       <div className="p-4">
-        <div className="flex items-start justify-between gap-2">
-          <h2 className="text-[15px] font-semibold text-ink">{item.title}</h2>
-          <span
-            className={cn(
-              "inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold",
-              verified ? "bg-success-chip text-success-chip-text" : "bg-pill text-ink-3",
-            )}
-          >
-            {verified ? <BadgeCheck className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
-            {t(verified ? "portfolio.verified" : "portfolio.pending")}
-          </span>
-        </div>
+        <h2 className="text-[15px] font-semibold text-ink">{item.title}</h2>
         <p className="mt-1 line-clamp-2 text-[13px] text-ink-2">{item.description}</p>
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-ink-3">
           <span className="inline-flex items-center gap-1">
@@ -103,12 +101,6 @@ function PortfolioCard({ item }: { item: PortfolioItem }) {
           <span>{item.date}</span>
           <span>· {t("portfolio.photos", { n: item.photoCount })}</span>
         </div>
-        {verified && item.linkedJob && (
-          <p className="mt-2 inline-flex items-center gap-1 text-[12px] font-medium text-success-chip-text">
-            <BadgeCheck className="h-3.5 w-3.5" />
-            {t("portfolio.confirmedBy", { employer: item.linkedJob })}
-          </p>
-        )}
       </div>
     </div>
   );
