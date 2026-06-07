@@ -17,9 +17,13 @@ export type AlertDraft = {
 };
 
 export const alertsService = {
-  /** The signed-in specialist's job alerts. */
+  /** The signed-in specialist's job alerts. Returns [] when unauthenticated/unreachable (no crash). */
   async getAlerts(): Promise<JobAlert[]> {
-    return apiGet<JobAlert[]>("/api/me/job-alerts");
+    try {
+      return await apiGet<JobAlert[]>("/api/me/job-alerts");
+    } catch {
+      return [];
+    }
   },
 
   async create(draft: AlertDraft): Promise<JobAlert> {

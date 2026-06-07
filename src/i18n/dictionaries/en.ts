@@ -109,6 +109,8 @@ const en: Dictionary = {
     active: "Active",
     paused: "Paused",
     delete: "Delete",
+    errorTitle: "Something went wrong",
+    errorBody: "Please try again. If it keeps failing, check that you're signed in.",
   },
   results: {
     edit: "Edit",

@@ -6,11 +6,14 @@ import { BellRing, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { alertsService, specialistsService, type JobAlert } from "@/services";
 import { useI18n } from "@/i18n/I18nProvider";
+import { useToast } from "@/lib/ToastProvider";
 import { cn } from "@/lib/cn";
 
 export function AlertsScreen() {
   const { t, locale } = useI18n();
+  const { show } = useToast();
   const qc = useQueryClient();
+  const onError = () => show({ title: t("alerts.errorTitle"), body: t("alerts.errorBody") });
 
   const { data: alerts = [], isLoading } = useQuery({ queryKey: ["alerts"], queryFn: alertsService.getAlerts });
   const { data: schema } = useQuery({
@@ -46,18 +49,28 @@ export function AlertsScreen() {
       setMinRate("");
       setOpenIndustry(null);
       qc.invalidateQueries({ queryKey: ["alerts"] });
+    } catch {
+      onError();
     } finally {
       setBusy(false);
     }
   }
 
   async function toggleActive(a: JobAlert) {
-    await alertsService.toggle(a.id, !a.active);
-    qc.invalidateQueries({ queryKey: ["alerts"] });
+    try {
+      await alertsService.toggle(a.id, !a.active);
+      qc.invalidateQueries({ queryKey: ["alerts"] });
+    } catch {
+      onError();
+    }
   }
   async function remove(id: string) {
-    await alertsService.remove(id);
-    qc.invalidateQueries({ queryKey: ["alerts"] });
+    try {
+      await alertsService.remove(id);
+      qc.invalidateQueries({ queryKey: ["alerts"] });
+    } catch {
+      onError();
+    }
   }
 
   return (

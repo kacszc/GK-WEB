@@ -108,6 +108,8 @@ const pl = {
     active: "Aktywny",
     paused: "Wstrzymany",
     delete: "Usuń",
+    errorTitle: "Nie udało się",
+    errorBody: "Spróbuj ponownie. Jeśli problem się powtarza, sprawdź czy jesteś zalogowany.",
   },
   results: {
     edit: "Edytuj",
