@@ -167,6 +167,7 @@ const uk: Dictionary = {
     fSpecialization: "СПЕЦІАЛІЗАЦІЯ",
     fIndustry: "ГАЛУЗЬ",
     fPickIndustry: "Спочатку оберіть галузь",
+    fOther: "Інше",
     fWholeIndustry: "Обрати всю галузь",
     fWholeIndustryClear: "Зняти всю галузь",
     fMore: "Більше фільтрів",
@@ -488,6 +489,7 @@ const uk: Dictionary = {
     wSpecSubtitle: "Що ви вмієте? Кожну спеціалізацію підтверджують роботодавці, з якими ви працюєте.",
     wSpecLabel: "Спеціалізації — {industry}",
     wLanguages: "Мови",
+    wOtherPlaceholder: "Інше — введіть свою професію (необов'язково)",
     // worker · step 4 success
     wDoneTitle: "Привіт, {name}! Профіль активний ✨",
     wDoneDesc: "Ваш акаунт готовий. Роботодавці у {city} вже бачать вас у результатах.",

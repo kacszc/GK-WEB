@@ -62,6 +62,7 @@ export const onboardingService = {
       headline: data.specializations.join(", ") || data.industry, // free-text label list
       district: data.baseLocation,
       specializationCodes: data.specializationCodes, // structured codes → search relation
+      customSpecializations: data.customSpecializations, // "Inne" → industry + free-text role
       languageCodes: data.languages, // language codes → language filter
     });
     return { trustScore: res.trustScore, firstName };

@@ -166,6 +166,7 @@ const pl = {
     fSpecialization: "SPECJALIZACJA",
     fIndustry: "BRANŻA",
     fPickIndustry: "Najpierw wybierz branżę",
+    fOther: "Inne",
     fWholeIndustry: "Zaznacz całą branżę",
     fWholeIndustryClear: "Odznacz całą branżę",
     fMore: "Więcej filtrów",
@@ -487,6 +488,7 @@ const pl = {
     wSpecSubtitle: "Co umiesz robić? Każdą specjalizację potwierdzą pracodawcy z którymi pracujesz.",
     wSpecLabel: "Specjalizacje — {industry}",
     wLanguages: "Języki",
+    wOtherPlaceholder: "Inne — wpisz swój zawód (opcjonalnie)",
     // worker · step 4 success
     wDoneTitle: "Cześć {name}! Profil aktywny ✨",
     wDoneDesc: "Twoje konto jest gotowe. Pracodawcy w {city} już widzą Cię w wynikach.",

@@ -349,6 +349,7 @@ export type WorkerOnboardingData = {
   radiusKm: number;
   specializations: string[]; // labels (compose the free-text headline)
   specializationCodes: string[]; // stable codes → specialist's specialization relation
+  customSpecializations: { industryCode: string; label: string }[]; // "Inne" — custom role(s), no catalog code
   languages: string[];
 };
 

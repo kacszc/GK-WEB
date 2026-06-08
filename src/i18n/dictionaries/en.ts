@@ -167,6 +167,7 @@ const en: Dictionary = {
     fSpecialization: "SPECIALIZATION",
     fIndustry: "INDUSTRY",
     fPickIndustry: "Pick an industry first",
+    fOther: "Other",
     fWholeIndustry: "Select whole industry",
     fWholeIndustryClear: "Clear whole industry",
     fMore: "More filters",
@@ -488,6 +489,7 @@ const en: Dictionary = {
     wSpecSubtitle: "What can you do? Each specialization is confirmed by the employers you work with.",
     wSpecLabel: "Specializations — {industry}",
     wLanguages: "Languages",
+    wOtherPlaceholder: "Other — type your role (optional)",
     // worker · step 4 success
     wDoneTitle: "Hi {name}! Profile active ✨",
     wDoneDesc: "Your account is ready. Employers in {city} can already see you in results.",

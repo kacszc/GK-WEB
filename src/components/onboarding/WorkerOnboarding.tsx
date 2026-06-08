@@ -33,6 +33,7 @@ export function WorkerOnboarding({
   const [baseLocation, setBaseLocation] = useState("");
   const [radiusKm, setRadiusKm] = useState(25);
   const [specs, setSpecs] = useState<string[]>([]);
+  const [otherText, setOtherText] = useState(""); // "Inne" — custom role in the chosen industry
   const [langs, setLangs] = useState<string[]>(["Polski"]);
   const [result, setResult] = useState<WorkerOnboardingResult | null>(null);
   const [busy, setBusy] = useState(false);
@@ -62,6 +63,9 @@ export function WorkerOnboarding({
     try {
       // `specs` holds codes; map back to labels for the (free-text) headline, send codes for the relation.
       const specLabels = specs.map((c) => specializations.find((o) => o.code === c)?.label ?? c);
+      const custom = otherText.trim()
+        ? [{ industryCode: industry, label: otherText.trim() }]
+        : [];
       const res = await onboardingService.completeWorker({
         name,
         email,
@@ -69,8 +73,9 @@ export function WorkerOnboarding({
         industry,
         baseLocation,
         radiusKm,
-        specializations: specLabels,
+        specializations: otherText.trim() ? [...specLabels, otherText.trim()] : specLabels,
         specializationCodes: specs,
+        customSpecializations: custom,
         languages: langs,
       });
       setResult(res);
@@ -130,7 +135,7 @@ export function WorkerOnboarding({
             <p className="mb-2 text-[12px] font-semibold text-ink-3">{t("onboarding.wChooseIndustry")}</p>
             <div className="flex flex-wrap gap-2">
               {industries.map((i) => (
-                <Chip key={i.id} label={i.label} selected={industry === i.id} onClick={() => { setIndustry(i.id); setSpecs([]); }} />
+                <Chip key={i.id} label={i.label} selected={industry === i.id} onClick={() => { setIndustry(i.id); setSpecs([]); setOtherText(""); }} />
               ))}
             </div>
             <div className="mt-5">
@@ -163,6 +168,13 @@ export function WorkerOnboarding({
                 <Chip key={s.code} label={s.label} selected={specs.includes(s.code)} check onClick={() => toggle(specs, setSpecs, s.code)} />
               ))}
             </div>
+            {/* "Inne" — a role outside the catalog; type it and you're still findable by industry. */}
+            <input
+              value={otherText}
+              onChange={(e) => setOtherText(e.target.value)}
+              placeholder={t("onboarding.wOtherPlaceholder")}
+              className={`${fieldInput} mt-3`}
+            />
             <p className="mb-2 mt-5 text-[12px] font-semibold text-ink-3">{t("onboarding.wLanguages")}</p>
             <div className="flex flex-wrap gap-2">
               {languages.map((l) => (

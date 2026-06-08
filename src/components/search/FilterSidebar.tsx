@@ -124,6 +124,14 @@ export function FilterSidebar({
                 onClick={() => onPatch({ professions: toggle(professions, s.code) })}
               />
             ))}
+            {/* "Inne" — matches specialists who registered a custom role in this industry. */}
+            <Pill
+              key="__other__"
+              label={t("results.fOther")}
+              small
+              selected={(filters.customIndustries ?? []).includes(activeIndustry)}
+              onClick={() => onPatch({ customIndustries: toggle(filters.customIndustries, activeIndustry) })}
+            />
           </div>
         ) : (
           <p className="mt-2 text-[12px] text-ink-4">{t("results.fPickIndustry")}</p>
