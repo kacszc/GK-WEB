@@ -247,7 +247,37 @@
   --rdp-today-color: #7c3aed;
   --rdp-day-width: 38px;
   --rdp-day-height: 38px;
-  font-size: 14px;
+  --rdp-day_button-border-radius: 9999px;
+  --rdp-day_button-width: 36px;
+  --rdp-day_button-height: 36px;
+  --rdp-selected-border: none;
+  --rdp-range_start-color: #fff;
+  --rdp-range_end-color: #fff;
+  --rdp-range_middle-color: var(--color-ink);
+  --rdp-range_middle-background-color: #ede9fe;
+  --rdp-range_start-date-background-color: #7c3aed;
+  --rdp-range_end-date-background-color: #7c3aed;
+  font-size: 13px;
+}
+.rdp-skill .rdp-month_caption {
+  font-weight: 600;
+  color: var(--color-ink);
+  text-transform: capitalize;
+}
+.rdp-skill .rdp-weekday {
+  color: var(--color-ink-4);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: none;
+}
+.rdp-skill .rdp-chevron {
+  fill: var(--color-ink-3);
+}
+.rdp-skill .rdp-day_button:hover {
+  background: var(--color-muted);
+}
+.rdp-skill .rdp-today:not(.rdp-selected) .rdp-day_button {
+  font-weight: 700;
 }
 
 /* Hide the native scrollbar (we render a custom always-visible one). */

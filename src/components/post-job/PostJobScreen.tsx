@@ -38,6 +38,7 @@ const emptyDraft: JobDraft = {
   description: "",
   duration: "",
   date: null,
+  dateTo: null,
   district: "",
   lat: null,
   lng: null,
@@ -109,9 +110,10 @@ export function PostJobScreen() {
     ? draft.customProfession || "—"
     : specializations.find((s) => s.code === draft.profession)?.label || "—";
 
+  const fmtDate = (d: Date) => d.toLocaleDateString(intlTags[locale], { day: "numeric", month: "long" });
+  const dateStr = draft.date ? (draft.dateTo ? `${fmtDate(draft.date)} – ${fmtDate(draft.dateTo)}` : fmtDate(draft.date)) : "";
   const whenLabel = draft.duration
-    ? t(`postJob.dur.${draft.duration}`) +
-      (draft.date ? ` · ${draft.date.toLocaleDateString(intlTags[locale], { day: "numeric", month: "long" })}` : "")
+    ? t(`postJob.dur.${draft.duration}`) + (dateStr ? ` · ${dateStr}` : "")
     : "—";
   const rateLabel =
     draft.rate != null
@@ -313,15 +315,16 @@ export function PostJobScreen() {
                 {t("postJob.withDate")}
               </label>
               {withDate && (
-                <div className="rdp-skill mt-2 inline-block">
+                <div className="rdp-skill mt-2 inline-block rounded-panel border border-line-3 bg-surface p-2">
+                  {/* Range mode: one click = a single start day; a second click sets the end. */}
                   <DayPicker
-                    mode="single"
+                    mode="range"
                     locale={dpLocales[locale]}
                     month={month}
                     onMonthChange={setMonth}
-                    selected={draft.date ?? undefined}
+                    selected={{ from: draft.date ?? undefined, to: draft.dateTo ?? undefined }}
                     disabled={{ before: new Date() }}
-                    onSelect={(d) => set({ date: d ?? null })}
+                    onSelect={(range) => set({ date: range?.from ?? null, dateTo: range?.to ?? null })}
                   />
                 </div>
               )}
@@ -346,35 +349,42 @@ export function PostJobScreen() {
                   {t("postJob.pickOnMap")}
                 </button>
               </div>
-              <Label>{t("postJob.districtLabel")}</Label>
-              <select
-                value={draft.district}
-                onChange={(e) => set({ district: e.target.value })}
-                className={cn(inputCls(showErrors && errors.district), "cursor-pointer")}
-              >
-                <option value="">{t("postJob.districtPlaceholder")}</option>
-                {warsawDistricts.map((d) => (
-                  <option key={d.name} value={d.name}>
-                    {d.name}
-                  </option>
-                ))}
-              </select>
-              {showErrors && errors.district && <ErrText>{t("postJob.errDistrict")}</ErrText>}
-              {draft.lat != null && (
-                <p className="mt-1.5 text-[12px] text-success">{t("postJob.pinSet")}</p>
+              {/* District + radius only make sense once a location is set (via geolocation or map). */}
+              {draft.lat != null ? (
+                <>
+                  <p className="mb-2 text-[12px] text-success">{t("postJob.pinSet")}</p>
+                  <Label>{t("postJob.districtLabel")}</Label>
+                  <select
+                    value={draft.district}
+                    onChange={(e) => set({ district: e.target.value })}
+                    className={cn(inputCls(showErrors && errors.district), "cursor-pointer")}
+                  >
+                    <option value="">{t("postJob.districtPlaceholder")}</option>
+                    {warsawDistricts.map((d) => (
+                      <option key={d.name} value={d.name}>
+                        {d.name}
+                      </option>
+                    ))}
+                  </select>
+                  {showErrors && errors.district && <ErrText>{t("postJob.errDistrict")}</ErrText>}
+                  <div className="mt-4 flex items-center justify-between text-[12px] font-semibold text-ink-3">
+                    <span>{t("postJob.radiusLabel")}</span>
+                    <span className="text-ink">{t("filters.upTo", { km: draft.radiusKm })}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={1}
+                    max={50}
+                    value={draft.radiusKm}
+                    onChange={(e) => set({ radiusKm: Number(e.target.value) })}
+                    className="mt-1 w-full cursor-pointer accent-brand-violet"
+                  />
+                </>
+              ) : (
+                <p className={cn("text-[12px]", showErrors && errors.district ? "text-[#b07400]" : "text-ink-3")}>
+                  {t("postJob.locationPrompt")}
+                </p>
               )}
-              <div className="mt-4 flex items-center justify-between text-[12px] font-semibold text-ink-3">
-                <span>{t("postJob.radiusLabel")}</span>
-                <span className="text-ink">{t("filters.upTo", { km: draft.radiusKm })}</span>
-              </div>
-              <input
-                type="range"
-                min={1}
-                max={50}
-                value={draft.radiusKm}
-                onChange={(e) => set({ radiusKm: Number(e.target.value) })}
-                className="mt-1 w-full cursor-pointer accent-brand-violet"
-              />
             </SectionCard>
 
             {/* Details — people, workload type, rate range */}

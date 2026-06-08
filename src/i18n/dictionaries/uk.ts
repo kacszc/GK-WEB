@@ -250,7 +250,7 @@ const uk: Dictionary = {
     titlePlaceholder: "напр. Бармен на весілля в суботу",
     descLabel: "Опис",
     descPlaceholder: "Опишіть обсяг робіт, вимоги, години…",
-    sWhen: "Коли",
+    sWhen: "Тривалість замовлення",
     sWhere: "Де",
     districtLabel: "Район",
     districtPlaceholder: "Оберіть район",
@@ -271,6 +271,7 @@ const uk: Dictionary = {
     withDate: "Вказати конкретну дату (необов'язково)",
     pickOnMap: "Обрати на карті",
     pinSet: "Точку обрано на карті ✓",
+    locationPrompt: "Вкажіть локацію: скористайтеся своєю локацією або оберіть точку на карті.",
     engagementLabel: "Зайнятість",
     eng: {
       full_time: "Повна зайнятість",

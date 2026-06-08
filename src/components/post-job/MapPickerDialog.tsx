@@ -46,6 +46,11 @@ export function MapPickerDialog({
     });
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
     map.on("load", () => map.resize());
+    // The dialog animates in, so the container often has 0 size at init → the map renders blank.
+    // Observe it and resize once it has real dimensions; also nudge a resize on the next frame.
+    const ro = new ResizeObserver(() => map.resize());
+    ro.observe(containerRef.current);
+    requestAnimationFrame(() => map.resize());
     map.on("click", (e) => {
       const { lng, lat } = e.lngLat;
       setPicked({ lat, lng });
@@ -63,6 +68,7 @@ export function MapPickerDialog({
     });
     mapRef.current = map;
     return () => {
+      ro.disconnect();
       map.remove();
       mapRef.current = null;
       markerRef.current = null;

@@ -191,8 +191,9 @@ export type JobDraft = {
   customProfession: string; // required free-text role when "Inne" is chosen
   title: string;
   description: string;
-  duration: JobDuration | ""; // "Kiedy" — required
-  date: Date | null; // optional concrete date (toggle)
+  duration: JobDuration | ""; // job length — required
+  date: Date | null; // optional concrete start date (toggle)
+  dateTo: Date | null; // optional end date (range); null = single day / open
   district: string;
   lat: number | null; // set when picked on the map
   lng: number | null;

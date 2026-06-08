@@ -249,7 +249,7 @@ const pl = {
     titlePlaceholder: "np. Barman na wesele w sobotę",
     descLabel: "Opis",
     descPlaceholder: "Opisz zakres prac, wymagania, godziny…",
-    sWhen: "Kiedy",
+    sWhen: "Długość zlecenia",
     sWhere: "Gdzie",
     districtLabel: "Dzielnica",
     districtPlaceholder: "Wybierz dzielnicę",
@@ -270,6 +270,7 @@ const pl = {
     withDate: "Wskaż konkretną datę (opcjonalnie)",
     pickOnMap: "Wybierz z mapy",
     pinSet: "Punkt wybrany na mapie ✓",
+    locationPrompt: "Wskaż lokalizację: użyj swojej lokalizacji lub wybierz punkt z mapy.",
     engagementLabel: "Wymiar",
     eng: {
       full_time: "Pełny etat",

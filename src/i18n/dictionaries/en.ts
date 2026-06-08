@@ -250,7 +250,7 @@ const en: Dictionary = {
     titlePlaceholder: "e.g. Bartender for a Saturday wedding",
     descLabel: "Description",
     descPlaceholder: "Describe the scope, requirements, hours…",
-    sWhen: "When",
+    sWhen: "Job length",
     sWhere: "Where",
     districtLabel: "District",
     districtPlaceholder: "Choose a district",
@@ -271,6 +271,7 @@ const en: Dictionary = {
     withDate: "Set a specific date (optional)",
     pickOnMap: "Pick on the map",
     pinSet: "Point picked on the map ✓",
+    locationPrompt: "Set a location: use your location or pick a point on the map.",
     engagementLabel: "Workload",
     eng: {
       full_time: "Full-time",

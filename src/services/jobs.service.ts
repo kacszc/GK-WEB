@@ -84,6 +84,7 @@ export const jobsService = {
       engagement: draft.engagement,
       duration: draft.duration || null,
       workDate: draft.date ? draft.date.toISOString().slice(0, 10) : null,
+      workDateTo: draft.dateTo ? draft.dateTo.toISOString().slice(0, 10) : null,
     });
     // Cosmetic estimate (the backend doesn't compute reach yet).
     const notifiedCount = Math.max(8, draft.people * 11);
