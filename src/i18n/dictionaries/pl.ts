@@ -116,14 +116,14 @@ const pl = {
     body: "Spróbuj ponownie.",
   },
   verify: {
-    bannerTitle: "Konto nieaktywne",
-    bannerDesc: "Potwierdź adres e-mail, aby aktywować konto — bez tego nie dodasz ogłoszeń ani nie skontaktujesz się ze specjalistami.",
-    noticeTitle: "Konto nieaktywne",
+    bannerTitle: "Twoje konto jest nieaktywne",
+    bannerDesc: "Potwierdź adres e-mail, aby aktywować konto.",
+    noticeTitle: "Twoje konto jest nieaktywne",
     noticePostJob: "Potwierdź adres e-mail, aby dodawać ogłoszenia. Wysłaliśmy link aktywacyjny na Twój adres.",
     noticeContact: "Potwierdź adres e-mail, aby kontaktować się ze specjalistami. Wysłaliśmy link aktywacyjny na Twój adres.",
     resend: "Wyślij link ponownie",
     resent: "Wysłano — sprawdź skrzynkę",
-    recheck: "Już potwierdziłem",
+    recheck: "Odśwież",
     checking: "Sprawdzam…",
   },
   results: {

@@ -343,21 +343,25 @@ export function PostJobScreen() {
                 <p className="mt-3 text-[13px] text-ink-3">{t("postJob.summaryEmpty")}</p>
               )}
 
-              {notVerified && (
+              {notVerified ? (
+                // Inactive account: hide the publish button entirely, show only the notice.
                 <VerifyNotice variant="panel" message={t("verify.noticePostJob")} className="mt-5" />
+              ) : (
+                <>
+                  <Button
+                    variant="gradient"
+                    onClick={submit}
+                    disabled={isPending}
+                    className="mt-5 w-full rounded-tile py-3 text-sm"
+                  >
+                    {isPending ? t("postJob.publishing") : t("postJob.submit")}
+                  </Button>
+                  <p className="mt-2 flex items-center justify-center gap-1 text-center text-[12px] text-ink-3">
+                    <CalendarCheck className="h-3.5 w-3.5" />
+                    {t("postJob.free")}
+                  </p>
+                </>
               )}
-              <Button
-                variant="gradient"
-                onClick={submit}
-                disabled={isPending || notVerified}
-                className="mt-5 w-full rounded-tile py-3 text-sm"
-              >
-                {isPending ? t("postJob.publishing") : t("postJob.submit")}
-              </Button>
-              <p className="mt-2 flex items-center justify-center gap-1 text-center text-[12px] text-ink-3">
-                <CalendarCheck className="h-3.5 w-3.5" />
-                {t("postJob.free")}
-              </p>
             </div>
           </aside>
         </div>
