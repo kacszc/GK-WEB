@@ -86,12 +86,13 @@ export function VerifyNotice({
           <p className="flex items-start gap-2 text-[13px] text-ink">
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[#b07400]" />
             <span>
+              {/* Mobile: title on line 1, description on line 2. Desktop: inline with a dash. */}
               <span className="font-semibold">{t("verify.bannerTitle")}</span>
-              {" — "}
-              {t("verify.bannerDesc")}
+              <span className="hidden sm:inline">{" — "}</span>
+              <span className="block sm:inline">{t("verify.bannerDesc")}</span>
             </span>
           </p>
-          <div className="flex shrink-0 items-center gap-2 pl-6 sm:pl-0">{actions}</div>
+          <div className="flex shrink-0 items-center justify-center gap-2 sm:justify-start">{actions}</div>
         </div>
       </div>
     );

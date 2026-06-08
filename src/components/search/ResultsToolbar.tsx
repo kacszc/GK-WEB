@@ -15,9 +15,10 @@ import type { SpecialistSort } from "@/services";
 
 export type ResultsView = "list" | "mapList" | "map";
 
-const VIEWS: { id: ResultsView; key: string; icon: React.ReactNode }[] = [
+const VIEWS: { id: ResultsView; key: string; icon: React.ReactNode; className?: string }[] = [
   { id: "list", key: "results.viewList", icon: <List className="h-4 w-4" /> },
-  { id: "mapList", key: "results.viewMapList", icon: <Columns2 className="h-4 w-4" /> },
+  // Split (map + list) is a desktop-only layout — hidden on mobile, where only list/map are offered.
+  { id: "mapList", key: "results.viewMapList", icon: <Columns2 className="h-4 w-4" />, className: "hidden lg:flex" },
   { id: "map", key: "results.viewMap", icon: <MapIcon className="h-4 w-4" /> },
 ];
 
@@ -65,6 +66,7 @@ export function ResultsToolbar({
               className={cn(
                 "flex items-center gap-1.5 rounded-[10px] px-3 py-1.5 text-[13px] font-medium transition-colors cursor-pointer",
                 view === v.id ? "bg-ink text-on-dark" : "text-ink-2 hover:text-ink",
+                v.className,
               )}
             >
               {v.icon}

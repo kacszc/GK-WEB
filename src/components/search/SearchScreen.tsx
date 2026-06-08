@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { Loader2 } from "lucide-react";
 import { SearchTopbar } from "./SearchTopbar";
 import { FilterSidebar } from "./FilterSidebar";
@@ -19,6 +19,19 @@ const PAGE_SIZE = 9;
 const CITY = "Warszawa";
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+/** True at >= lg (1024px). Lets us drop the desktop-only split view on mobile. */
+function useIsDesktop() {
+  return useSyncExternalStore(
+    (cb) => {
+      const m = window.matchMedia("(min-width: 1024px)");
+      m.addEventListener("change", cb);
+      return () => m.removeEventListener("change", cb);
+    },
+    () => window.matchMedia("(min-width: 1024px)").matches,
+    () => true, // SSR snapshot: desktop-first design
+  );
+}
 
 export function SearchScreen({
   initialQuery,
@@ -39,6 +52,9 @@ export function SearchScreen({
     sort: "trust",
   });
   const [view, setView] = useState<ResultsView>(initialView);
+  const isDesktop = useIsDesktop();
+  // The split (map + list) is a desktop-only layout; on mobile fall back to the list.
+  const effectiveView = !isDesktop && view === "mapList" ? "list" : view;
   const [page, setPage] = useState(1);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
@@ -98,7 +114,7 @@ export function SearchScreen({
   // Inline sidebar — desktop only; mobile uses the fullscreen modal.
   const sidebar = (
     <div className="hidden lg:block">
-      <FilterSidebar {...sidebarProps} variant={view === "list" ? "full" : "compact"} />
+      <FilterSidebar {...sidebarProps} variant={effectiveView === "list" ? "full" : "compact"} />
     </div>
   );
 
@@ -110,7 +126,7 @@ export function SearchScreen({
         <ResultsToolbar
           title={title}
           subtitle={subtitle}
-          view={view}
+          view={effectiveView}
           onView={setView}
           sort={filters.sort ?? "trust"}
           onSort={(s) => patch({ sort: s })}
@@ -121,7 +137,7 @@ export function SearchScreen({
         <ActiveFilters filters={filters} onPatch={patch} />
 
         {/* List view */}
-        {view === "list" && (
+        {effectiveView === "list" && (
           <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
             {sidebar}
             <div>
@@ -149,8 +165,8 @@ export function SearchScreen({
           </div>
         )}
 
-        {/* Map + List view */}
-        {view === "mapList" && (
+        {/* Map + List view (desktop only — coerced to list on mobile) */}
+        {effectiveView === "mapList" && (
           <div className="grid gap-4 lg:h-[calc(100vh-220px)] lg:grid-rows-[minmax(0,1fr)] lg:grid-cols-[200px_minmax(300px,400px)_1fr]">
             {sidebar}
             <div className="flex flex-col gap-3 overflow-y-auto pr-1">
@@ -179,7 +195,7 @@ export function SearchScreen({
         )}
 
         {/* Map only view */}
-        {view === "map" && (
+        {effectiveView === "map" && (
           <div className="grid gap-4 lg:h-[calc(100vh-220px)] lg:grid-rows-[minmax(0,1fr)] lg:grid-cols-[200px_1fr]">
             {sidebar}
             <MapView

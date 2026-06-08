@@ -6,6 +6,7 @@ import {
   createUserWithEmailAndPassword,
   onAuthStateChanged,
   sendEmailVerification,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut as fbSignOut,
@@ -28,6 +29,8 @@ type AuthContextValue = {
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signUpWithEmail: (email: string, password: string, displayName?: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
+  /** Send a password-reset email (Firebase). */
+  sendPasswordReset: (email: string) => Promise<void>;
   /** Get a fresh ID token for API calls. `forceRefresh` re-reads custom claims. */
   getIdToken: (forceRefresh?: boolean) => Promise<string | null>;
   /**
@@ -142,6 +145,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // onAuthStateChanged updates `user`.
   }, []);
 
+  const sendPasswordReset = useCallback(async (email: string) => {
+    await sendPasswordResetEmail(firebaseAuth, email);
+  }, []);
+
   const getIdToken = useCallback(async (forceRefresh = false) => {
     const fb = firebaseAuth.currentUser;
     if (!fb) return null;
@@ -203,6 +210,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signInWithEmail,
         signUpWithEmail,
         signInWithGoogle,
+        sendPasswordReset,
         getIdToken,
         refreshUser,
         sendVerificationEmail,
