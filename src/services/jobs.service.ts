@@ -64,9 +64,13 @@ export const jobsService = {
   /** Publish a job posting and return its id + a cosmetic "notified N specialists" estimate. */
   async create(draft: JobDraft): Promise<JobResult> {
     // TODO(geocoder): district → lat/lng. For now default to Warsaw centre (matches profile defaults).
+    // One role per job: either a catalog specialization code, or "Inne" with a custom label.
+    const isOther = !draft.profession;
     const dto = await apiPost<JobDto>("/api/jobs", {
       title: draft.title,
-      profession: draft.profession,
+      professionCode: isOther ? null : draft.profession,
+      industryCode: draft.industry,
+      customProfession: isOther ? draft.customProfession.trim() : null,
       description: draft.description,
       district: draft.district,
       latitude: 52.2297,

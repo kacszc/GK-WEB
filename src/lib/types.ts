@@ -181,7 +181,9 @@ export type Specialist = {
 
 /** A job posting draft (employer side). */
 export type JobDraft = {
-  profession: string;
+  industry: string; // branża code (always set)
+  profession: string; // specialization code; "" when "Inne" (custom) is chosen
+  customProfession: string; // required free-text role when "Inne" is chosen
   title: string;
   description: string;
   date: Date | null;

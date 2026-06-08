@@ -16,7 +16,7 @@ import { presetDate } from "@/components/landing/WhenFilter";
 import { useCreateJob } from "@/hooks/useCreateJob";
 import { useAuth } from "@/lib/AuthProvider";
 import { VerifyNotice } from "@/components/layout/VerifyNotice";
-import { catalogService } from "@/services";
+import { onboardingService } from "@/services";
 import { warsawDistricts } from "@/services/warsaw-districts";
 import { useI18n } from "@/i18n/I18nProvider";
 import type { Locale } from "@/i18n/config";
@@ -28,7 +28,9 @@ const intlTags: Record<Locale, string> = { pl: "pl-PL", en: "en-GB", uk: "uk-UA"
 const PRESETS: WhenPreset[] = ["today", "tomorrow", "weekend"];
 
 const emptyDraft: JobDraft = {
+  industry: "",
   profession: "",
+  customProfession: "",
   title: "",
   description: "",
   date: null,
@@ -46,6 +48,7 @@ export function PostJobScreen() {
   const { t, locale } = useI18n();
   const { user } = useAuth();
   const [draft, setDraft] = useState<JobDraft>(emptyDraft);
+  const [otherMode, setOtherMode] = useState(false); // "Inne" — custom role with required text
   const [showErrors, setShowErrors] = useState(false);
   const [month, setMonth] = useState<Date>(new Date());
   const { mutate, isPending, data: result, isSuccess, reset } = useCreateJob();
@@ -53,20 +56,45 @@ export function PostJobScreen() {
   // Unverified ("inactive") accounts can't publish — the backend would reject it too.
   const notVerified = !!user && !user.emailVerified;
 
-  const { data: professions = [] } = useQuery({
-    queryKey: ["professions"],
-    queryFn: () => catalogService.getPopularProfessions(),
+  // Branża → specjalizacja, on codes (consistent with search + onboarding).
+  const { data: industries = [] } = useQuery({
+    queryKey: ["industries"],
+    queryFn: onboardingService.getIndustries,
+  });
+  const { data: specializations = [] } = useQuery({
+    queryKey: ["specializations", draft.industry],
+    queryFn: () => onboardingService.getSpecializations(draft.industry),
+    enabled: !!draft.industry,
   });
 
   const set = (patch: Partial<JobDraft>) => setDraft((d) => ({ ...d, ...patch }));
 
+  function pickIndustry(code: string) {
+    set({ industry: code, profession: "", customProfession: "" });
+    setOtherMode(false);
+  }
+  function pickSpecialization(code: string) {
+    set({ profession: code, customProfession: "" });
+    setOtherMode(false);
+  }
+  function pickOther() {
+    set({ profession: "" });
+    setOtherMode(true);
+  }
+
   const errors = {
-    profession: !draft.profession.trim(),
+    industry: !draft.industry,
+    profession: !otherMode && !draft.profession,
+    customProfession: otherMode && !draft.customProfession.trim(),
     title: !draft.title.trim(),
     date: !draft.date,
     district: !draft.district,
   };
   const hasErrors = Object.values(errors).some(Boolean);
+
+  const professionLabel = otherMode
+    ? draft.customProfession || "—"
+    : specializations.find((s) => s.code === draft.profession)?.label || "—";
 
   const dateLabel = draft.preset
     ? t(`filters.${draft.preset}`)
@@ -98,7 +126,7 @@ export function PostJobScreen() {
             </p>
             <div className="mt-6 flex flex-col gap-2">
               <Link
-                href={`/search?q=${encodeURIComponent(draft.profession)}`}
+                href={`/search?q=${encodeURIComponent(draft.profession || draft.industry)}`}
                 className="inline-flex w-full items-center justify-center rounded-tile bg-ink px-4 py-3 text-sm font-bold text-on-dark hover:bg-ink/90"
               >
                 {t("postJob.successCta")}
@@ -106,6 +134,7 @@ export function PostJobScreen() {
               <button
                 onClick={() => {
                   setDraft(emptyDraft);
+                  setOtherMode(false);
                   setShowErrors(false);
                   reset();
                 }}
@@ -139,36 +168,77 @@ export function PostJobScreen() {
 
         <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
           <div className="flex flex-col gap-6">
-            {/* Profession */}
+            {/* Profession: branża → specjalizacja (codes), with an "Inne" custom option */}
             <SectionCard title={t("postJob.sProfession")} hint={t("postJob.sProfessionHint")}>
+              <p className="mb-2 text-[12px] font-semibold text-ink-3">{t("postJob.industryLabel")}</p>
               <div className="flex flex-wrap gap-2">
-                {professions.slice(0, 10).map((p) => {
-                  const code = p.code ?? p.label; // value we submit; falls back to label offline
-                  return (
+                {industries.map((i) => (
+                  <button
+                    key={i.id}
+                    onClick={() => pickIndustry(i.id)}
+                    className={cn(
+                      "rounded-full border px-3.5 py-2 text-[13px] font-medium transition-colors",
+                      draft.industry === i.id
+                        ? "border-ink bg-ink text-on-dark"
+                        : "border-line-2 text-ink hover:bg-muted",
+                    )}
+                  >
+                    {i.label}
+                  </button>
+                ))}
+              </div>
+              {showErrors && errors.industry && <ErrText>{t("postJob.errIndustry")}</ErrText>}
+
+              {draft.industry && (
+                <>
+                  <p className="mb-2 mt-4 text-[12px] font-semibold text-ink-3">
+                    {t("postJob.specializationLabel")}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {specializations.map((s) => (
+                      <button
+                        key={s.code}
+                        onClick={() => pickSpecialization(s.code)}
+                        className={cn(
+                          "rounded-full border px-3.5 py-2 text-[13px] font-medium transition-colors",
+                          draft.profession === s.code
+                            ? "border-ink bg-ink text-on-dark"
+                            : "border-line-2 text-ink hover:bg-muted",
+                        )}
+                      >
+                        {s.label}
+                      </button>
+                    ))}
+                    {/* "Inne" — a role outside the catalog; requires a typed name. */}
                     <button
-                      key={code}
-                      onClick={() => set({ profession: code })}
+                      onClick={pickOther}
                       className={cn(
                         "rounded-full border px-3.5 py-2 text-[13px] font-medium transition-colors",
-                        draft.profession === code
+                        otherMode
                           ? "border-ink bg-ink text-on-dark"
                           : "border-line-2 text-ink hover:bg-muted",
                       )}
                     >
-                      {p.label}
+                      {t("postJob.otherProfession")}
                     </button>
-                  );
-                })}
-              </div>
-              {/* Free-text fallback for a profession not in the catalog. When a chip (code) is
-                  picked, the input clears so it never surfaces the raw code. */}
-              <input
-                value={professions.some((p) => (p.code ?? p.label) === draft.profession) ? "" : draft.profession}
-                onChange={(e) => set({ profession: e.target.value })}
-                placeholder={t("postJob.professionPlaceholder")}
-                className={inputCls(showErrors && errors.profession)}
-              />
-              {showErrors && errors.profession && <ErrText>{t("postJob.errProfession")}</ErrText>}
+                  </div>
+                  {showErrors && errors.profession && <ErrText>{t("postJob.errProfession")}</ErrText>}
+
+                  {otherMode && (
+                    <>
+                      <input
+                        value={draft.customProfession}
+                        onChange={(e) => set({ customProfession: e.target.value })}
+                        placeholder={t("postJob.professionPlaceholder")}
+                        className={inputCls(showErrors && errors.customProfession)}
+                      />
+                      {showErrors && errors.customProfession && (
+                        <ErrText>{t("postJob.errCustomProfession")}</ErrText>
+                      )}
+                    </>
+                  )}
+                </>
+              )}
             </SectionCard>
 
             {/* Details */}
@@ -328,9 +398,9 @@ export function PostJobScreen() {
           <aside className="lg:sticky lg:top-20 lg:self-start">
             <div className="rounded-panel border border-line-3 bg-surface p-5">
               <h2 className="text-[15px] font-semibold text-ink">{t("postJob.summary")}</h2>
-              {draft.profession || draft.title || draft.date || draft.district ? (
+              {draft.industry || draft.title || draft.date || draft.district ? (
                 <dl className="mt-3 space-y-2 text-[13px]">
-                  <SumRow label={t("postJob.sProfession")} value={draft.profession || "—"} />
+                  <SumRow label={t("postJob.sProfession")} value={professionLabel} />
                   <SumRow label={t("postJob.titleLabel")} value={draft.title || "—"} />
                   <SumRow label={t("postJob.sWhen")} value={dateLabel} />
                   <SumRow label={t("postJob.districtLabel")} value={draft.district || "—"} />
