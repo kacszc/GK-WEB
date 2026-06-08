@@ -240,7 +240,9 @@ export function MapView({
     const s = specialistsRef.current.find((x) => x.id === activeId);
     if (!s) return;
 
-    const popup = new maplibregl.Popup({ offset: 16, closeButton: true, maxWidth: "260px" })
+    // maxWidth must fit the fixed 240px content + the popup-content padding (14+18) so the right
+    // padding isn't squeezed out (see .maplibregl-popup-content in globals.css).
+    const popup = new maplibregl.Popup({ offset: 16, closeButton: true, maxWidth: "280px" })
       .setLngLat([s.lng, s.lat])
       .setHTML(popupHtml(s, tRef.current))
       .addTo(map);
