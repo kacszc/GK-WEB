@@ -48,11 +48,6 @@ export const onboardingService = {
     return teamSizes;
   },
 
-  /** Verify the SMS/email one-time code. Accepts any 6-digit code until a verify endpoint exists. */
-  async verifyCode(code: string): Promise<boolean> {
-    return /^\d{6}$/.test(code);
-  },
-
   /** Look up a company in the GUS registry by NIP. */
   async lookupGus(nip: string): Promise<GusCompany> {
     const clean = nip.replace(/\s+/g, "");

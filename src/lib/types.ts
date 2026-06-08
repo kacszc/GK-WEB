@@ -149,6 +149,8 @@ export type AuthUser = {
   name: string;
   email: string;
   role: UserRole;
+  /** Whether the account's email has been verified (Firebase email-link flow). */
+  emailVerified: boolean;
 };
 
 /** Availability of a specialist. */

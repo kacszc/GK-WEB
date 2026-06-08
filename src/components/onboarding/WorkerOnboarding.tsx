@@ -6,10 +6,11 @@ import { useQuery } from "@tanstack/react-query";
 import { MailCheck, Loader2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
+import { useAuth } from "@/lib/AuthProvider";
 import { onboardingService } from "@/services";
 import { useI18n } from "@/i18n/I18nProvider";
 import type { WorkerOnboardingResult } from "@/lib/types";
-import { OnboardingCard, StepHeading, Field, fieldInput, Chip, CodeInput } from "./parts";
+import { OnboardingCard, StepHeading, Field, fieldInput, Chip } from "./parts";
 
 type Step = "basics" | "verify" | "industry" | "spec" | "done";
 const emailOk = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
@@ -224,7 +225,7 @@ function VerifyStep({
   onVerified: () => void;
 }) {
   const { t } = useI18n();
-  const [code, setCode] = useState("");
+  const { reloadUser, sendVerificationEmail } = useAuth();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
   const [seconds, setSeconds] = useState(45);
@@ -235,16 +236,29 @@ function VerifyStep({
     return () => clearTimeout(id);
   }, [seconds]);
 
-  async function verify() {
+  // Poll quietly for a clicked verification link so the user advances without
+  // pressing the button if they verify in another tab.
+  useEffect(() => {
+    const id = setInterval(async () => {
+      if (await reloadUser()) onVerified();
+    }, 4000);
+    return () => clearInterval(id);
+  }, [reloadUser, onVerified]);
+
+  async function check() {
     setBusy(true);
     setError(false);
     try {
-      const ok = await onboardingService.verifyCode(code);
-      if (ok) onVerified();
+      if (await reloadUser()) onVerified();
       else setError(true);
     } finally {
       setBusy(false);
     }
+  }
+
+  async function resend() {
+    setSeconds(45);
+    await sendVerificationEmail();
   }
 
   return (
@@ -258,18 +272,17 @@ function VerifyStep({
           {t("onboarding.verifyDesc", { email })}
         </p>
       </div>
-      <CodeInput value={code} onChange={setCode} />
-      {error && <p className="mt-3 text-center text-[12px] text-[#b07400]">{t("onboarding.verifyError")}</p>}
-      <p className="mt-3 text-center text-[12px] text-ink-4">
+      {error && <p className="mb-1 text-center text-[12px] text-[#b07400]">{t("onboarding.verifyError")}</p>}
+      <p className="text-center text-[12px] text-ink-4">
         {seconds > 0 ? (
           t("onboarding.resendIn", { s: seconds })
         ) : (
-          <button onClick={() => setSeconds(45)} className="font-semibold text-brand-violet hover:underline">
+          <button onClick={resend} className="font-semibold text-brand-violet hover:underline">
             {t("onboarding.resend")}
           </button>
         )}
       </p>
-      <Button variant="dark" onClick={verify} disabled={code.length < 6 || busy} className="mt-5 w-full rounded-tile py-3 text-sm disabled:opacity-40">
+      <Button variant="dark" onClick={check} disabled={busy} className="mt-5 w-full rounded-tile py-3 text-sm disabled:opacity-40">
         {busy ? <><Loader2 className="h-4 w-4 animate-spin" />{t("onboarding.verifying")}</> : t("onboarding.verifyCta")}
       </Button>
       <button onClick={onBack} className="mt-3 block w-full text-center text-[13px] font-medium text-ink-3 hover:text-ink">

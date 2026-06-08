@@ -444,12 +444,12 @@ const pl = {
     // worker · step 1.5 verification
     verifyStep: "Krok 1 → Weryfikacja",
     verifyTitle: "Sprawdź swoją skrzynkę",
-    verifyDesc: "Wysłaliśmy 6-cyfrowy kod na {email}. Wpisz go poniżej.",
-    verifyCta: "Zweryfikuj",
-    verifying: "Weryfikuję…",
-    resendIn: "Nie dostałaś kodu? Wyślij ponownie ({s}s)",
-    resend: "Wyślij kod ponownie",
-    verifyError: "Nieprawidłowy kod. Wpisz 6 cyfr.",
+    verifyDesc: "Wysłaliśmy link weryfikacyjny na {email}. Kliknij go, a potem wróć tutaj.",
+    verifyCta: "Sprawdziłem — kontynuuj",
+    verifying: "Sprawdzam…",
+    resendIn: "Nie dostałaś maila? Wyślij ponownie ({s}s)",
+    resend: "Wyślij link ponownie",
+    verifyError: "Jeszcze nie potwierdzono. Kliknij link w mailu i spróbuj ponownie.",
     help: "Pomoc",
     // worker · step 2 industry + location
     wIndustryTitle: "Branża i lokalizacja",

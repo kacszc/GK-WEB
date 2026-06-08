@@ -445,12 +445,12 @@ const en: Dictionary = {
     // worker · step 1.5 verification
     verifyStep: "Step 1 → Verification",
     verifyTitle: "Check your inbox",
-    verifyDesc: "We sent a 6-digit code to {email}. Enter it below.",
-    verifyCta: "Verify",
-    verifying: "Verifying…",
-    resendIn: "Didn't get the code? Resend ({s}s)",
-    resend: "Resend code",
-    verifyError: "Invalid code. Enter 6 digits.",
+    verifyDesc: "We sent a verification link to {email}. Click it, then come back here.",
+    verifyCta: "I've verified — continue",
+    verifying: "Checking…",
+    resendIn: "Didn't get the email? Resend ({s}s)",
+    resend: "Resend link",
+    verifyError: "Not verified yet. Click the link in the email and try again.",
     help: "Help",
     // worker · step 2 industry + location
     wIndustryTitle: "Industry and location",

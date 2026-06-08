@@ -5,6 +5,7 @@ import {
   GoogleAuthProvider,
   createUserWithEmailAndPassword,
   onAuthStateChanged,
+  sendEmailVerification,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut as fbSignOut,
@@ -35,6 +36,13 @@ type AuthContextValue = {
    * sets the `role` claim) so the new role is reflected without a page reload.
    */
   refreshUser: () => Promise<void>;
+  /** Send (or resend) the email-verification link to the current user. */
+  sendVerificationEmail: () => Promise<void>;
+  /**
+   * Reload the Firebase user (so `emailVerified` reflects a just-clicked link),
+   * update the app user, and return the current verification status.
+   */
+  reloadUser: () => Promise<boolean>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -54,7 +62,7 @@ async function deriveUser(fb: FirebaseUser, forceRefresh = false): Promise<AuthU
     // If claims can't be read, default to employer; backend register fixes it.
   }
   const name = fb.displayName?.trim() || fb.email?.split("@")[0] || "Użytkownik";
-  return { name, email: fb.email ?? "", role };
+  return { name, email: fb.email ?? "", role, emailVerified: fb.emailVerified };
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -156,6 +164,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const sendVerificationEmail = useCallback(async () => {
+    const fb = firebaseAuth.currentUser;
+    if (!fb || fb.emailVerified) return;
+    await sendEmailVerification(fb);
+  }, []);
+
+  const reloadUser = useCallback(async () => {
+    const fb = firebaseAuth.currentUser;
+    if (!fb) return false;
+    await fb.reload();
+    const derived = await deriveUser(fb);
+    // Only update state when something actually changed, so polling for the
+    // verification link doesn't re-render the app every few seconds.
+    setUser((prev) =>
+      prev &&
+      prev.name === derived.name &&
+      prev.email === derived.email &&
+      prev.role === derived.role &&
+      prev.emailVerified === derived.emailVerified
+        ? prev
+        : derived,
+    );
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(derived));
+    } catch {
+      // ignore
+    }
+    return fb.emailVerified;
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
@@ -167,6 +205,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signInWithGoogle,
         getIdToken,
         refreshUser,
+        sendVerificationEmail,
+        reloadUser,
       }}
     >
       {children}

@@ -1,6 +1,5 @@
 "use client";
 
-import { useRef } from "react";
 import Link from "next/link";
 import { Check } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
@@ -91,59 +90,5 @@ export function Chip({
       {check && selected && <Check className="h-3.5 w-3.5" />}
       {label}
     </button>
-  );
-}
-
-/** Six-box one-time-code input. */
-export function CodeInput({
-  value,
-  onChange,
-  length = 6,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  length?: number;
-}) {
-  const refs = useRef<Array<HTMLInputElement | null>>([]);
-
-  function setDigit(i: number, digit: string) {
-    const d = digit.replace(/\D/g, "").slice(-1);
-    const next = value.split("");
-    next[i] = d;
-    const joined = next.join("").slice(0, length);
-    onChange(joined);
-    if (d && i < length - 1) refs.current[i + 1]?.focus();
-  }
-
-  function onKeyDown(i: number, e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Backspace" && !value[i] && i > 0) refs.current[i - 1]?.focus();
-  }
-
-  function onPaste(e: React.ClipboardEvent) {
-    const digits = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, length);
-    if (digits) {
-      e.preventDefault();
-      onChange(digits);
-      refs.current[Math.min(digits.length, length - 1)]?.focus();
-    }
-  }
-
-  return (
-    <div className="flex justify-center gap-2" onPaste={onPaste}>
-      {Array.from({ length }).map((_, i) => (
-        <input
-          key={i}
-          ref={(el) => {
-            refs.current[i] = el;
-          }}
-          inputMode="numeric"
-          maxLength={1}
-          value={value[i] ?? ""}
-          onChange={(e) => setDigit(i, e.target.value)}
-          onKeyDown={(e) => onKeyDown(i, e)}
-          className="h-12 w-11 rounded-tile border border-line-2 bg-surface text-center text-lg font-bold text-ink outline-none transition-colors focus:border-ink"
-        />
-      ))}
-    </div>
   );
 }

@@ -17,7 +17,7 @@ const emailOk = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
 export function AuthScreen({ mode }: { mode: "login" | "register" }) {
   const { t } = useI18n();
-  const { signInWithEmail, signUpWithEmail, refreshUser } = useAuth();
+  const { signInWithEmail, signUpWithEmail, refreshUser, sendVerificationEmail } = useAuth();
   const router = useRouter();
 
   const [role, setRole] = useState<UserRole>("employer");
@@ -50,6 +50,7 @@ export function AuthScreen({ mode }: { mode: "login" | "register" }) {
         // (sets the `role` custom claim) and re-derive the app user so the new
         // role is reflected. Then continue into role-specific onboarding.
         await signUpWithEmail(email, password, name);
+        await sendVerificationEmail(); // email-link verification; confirmed in onboarding
         await authService.registerFinalize(role);
         await refreshUser(); // force-refresh token + re-derive so the role claim is visible
         const base = role === "specialist" ? "/onboarding/specialist" : "/onboarding/employer";
