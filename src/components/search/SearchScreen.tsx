@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Loader2 } from "lucide-react";
 import { SearchTopbar } from "./SearchTopbar";
 import { FilterSidebar } from "./FilterSidebar";
@@ -12,6 +12,7 @@ import { MapView } from "./MapView";
 import { FiltersModal } from "./FiltersModal";
 import { useSpecialistSearch } from "@/hooks/useSpecialistSearch";
 import { useI18n } from "@/i18n/I18nProvider";
+import { serializeSearchFilters } from "./searchParams";
 import type { SpecialistFilters } from "@/services";
 import type { UserLocation } from "@/lib/types";
 
@@ -34,25 +35,28 @@ function useIsDesktop() {
 }
 
 export function SearchScreen({
-  initialQuery,
-  initialProfession,
+  initialFilters,
   initialView = "list",
 }: {
-  initialQuery: string;
-  initialProfession?: string;
+  initialFilters: SpecialistFilters;
   initialView?: ResultsView;
 }) {
   const { t } = useI18n();
-  const [filters, setFilters] = useState<SpecialistFilters>({
-    q: initialQuery || undefined,
-    professions: initialProfession ? [initialProfession] : undefined,
-    minTrust: 75,
-    maxDistanceKm: 25,
-    availability: ["now", "week"],
-    sort: "trust",
-  });
+  const [filters, setFilters] = useState<SpecialistFilters>(initialFilters);
   const [view, setView] = useState<ResultsView>(initialView);
   const isDesktop = useIsDesktop();
+
+  // Keep the URL query in sync so a search is shareable and survives reload. Skip the first run so
+  // a clean incoming link (e.g. ?q=barman) isn't immediately rewritten with defaults.
+  const firstSync = useRef(true);
+  useEffect(() => {
+    if (firstSync.current) {
+      firstSync.current = false;
+      return;
+    }
+    const qs = serializeSearchFilters(filters, view);
+    window.history.replaceState(null, "", qs ? `/search?${qs}` : "/search");
+  }, [filters, view]);
   // The split (map + list) is a desktop-only layout; on mobile fall back to the list.
   const effectiveView = !isDesktop && view === "mapList" ? "list" : view;
   const [page, setPage] = useState(1);

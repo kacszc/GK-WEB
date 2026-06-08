@@ -1,18 +1,18 @@
 import { SearchScreen } from "@/components/search/SearchScreen";
+import { parseSearchFilters } from "@/components/search/searchParams";
 import { pageMetadata } from "@/i18n/metadata";
 import { Footer } from "@/components/layout/Footer";
 
 export default async function SearchPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; profession?: string; view?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const { q, profession, view } = await searchParams;
-  const initialView =
-    view === "map" || view === "mapList" || view === "list" ? view : undefined;
+  // The whole filter set lives in the URL (shareable + restored on reload).
+  const { filters, view } = parseSearchFilters(await searchParams);
   return (
     <>
-      <SearchScreen initialQuery={q ?? ""} initialProfession={profession} initialView={initialView} />
+      <SearchScreen initialFilters={filters} initialView={view} />
       <Footer />
     </>
   );
