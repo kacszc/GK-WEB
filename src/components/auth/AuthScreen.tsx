@@ -17,8 +17,7 @@ const emailOk = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
 export function AuthScreen({ mode }: { mode: "login" | "register" }) {
   const { t } = useI18n();
-  const { signInWithEmail, signUpWithEmail, refreshUser, sendVerificationEmail, sendPasswordReset } =
-    useAuth();
+  const { signInWithEmail, signUpWithEmail, refreshUser, sendVerificationEmail } = useAuth();
   const router = useRouter();
 
   const [role, setRole] = useState<UserRole>("employer");
@@ -29,7 +28,6 @@ export function AuthScreen({ mode }: { mode: "login" | "register" }) {
   const [submitting, setSubmitting] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  const [resetMsg, setResetMsg] = useState<string | null>(null);
 
   const errors = {
     name: mode === "register" && !name.trim(),
@@ -66,23 +64,6 @@ export function AuthScreen({ mode }: { mode: "login" | "register" }) {
       setFormError(t("auth.errGeneric"));
     } finally {
       setSubmitting(false);
-    }
-  }
-
-  // Password reset — needs a valid email; sends the Firebase reset link.
-  async function forgotPassword() {
-    setResetMsg(null);
-    if (!emailOk(email)) {
-      setShowErrors(true);
-      setFormError(t("auth.resetNeedEmail"));
-      return;
-    }
-    setFormError(null);
-    try {
-      await sendPasswordReset(email);
-      setResetMsg(t("auth.resetSent", { email }));
-    } catch {
-      setFormError(t("auth.errGeneric"));
     }
   }
 
@@ -159,13 +140,12 @@ export function AuthScreen({ mode }: { mode: "login" | "register" }) {
             />
 
             {mode === "login" && (
-              <button
-                type="button"
-                onClick={forgotPassword}
+              <Link
+                href="/forgot-password"
                 className="-mt-1 self-end text-[12px] font-semibold text-brand-violet hover:underline"
               >
                 {t("auth.forgot")}
-              </button>
+              </Link>
             )}
 
             {mode === "register" && (
@@ -188,12 +168,6 @@ export function AuthScreen({ mode }: { mode: "login" | "register" }) {
             {formError && (
               <p className="text-[12px] text-[#b07400]" role="alert">
                 {formError}
-              </p>
-            )}
-
-            {resetMsg && (
-              <p className="text-[12px] text-success-chip-text" role="status">
-                {resetMsg}
               </p>
             )}
 
