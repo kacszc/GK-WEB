@@ -1,4 +1,4 @@
-import type { JobDraft, JobResult, JobPosting, Availability } from "@/lib/types";
+import type { JobDraft, JobResult, JobPosting, JobDuration, JobEngagement } from "@/lib/types";
 import { apiGet, apiPost } from "@/lib/api-client";
 
 /** Backend job DTO (list + detail). */
@@ -12,6 +12,8 @@ type JobDto = {
   status: string;
   createdAt: string;
   distanceKm: number;
+  lat?: number;
+  lng?: number;
   promoted?: boolean;
   // Detail-only (optional) fields.
   description?: string;
@@ -48,15 +50,22 @@ function toJobPosting(d: JobDto): JobPosting {
     postedAgo: formatPosted(d.createdAt),
     description: d.description ?? "",
     promoted: d.promoted ?? false,
+    lat: d.lat,
+    lng: d.lng,
   };
 }
 
 export type JobFilters = {
   q?: string;
-  profession?: string;
+  professions?: string[]; // specialization codes (any-of)
+  industries?: string[]; // whole-industry codes (any-of)
+  customIndustries?: string[]; // "Inne" jobs in these industries
+  durations?: JobDuration[];
+  engagements?: JobEngagement[];
   district?: string;
-  when?: Availability[];
   rateMin?: number;
+  near?: { lat: number; lng: number };
+  maxDistanceKm?: number;
   locale?: string;
 };
 
@@ -91,10 +100,19 @@ export const jobsService = {
     return { id: dto.id, notifiedCount };
   },
 
-  /** Browse public job postings (job-seeker side). */
+  /** Browse public job postings (job-seeker side) — mirrors the specialist search filters. */
   async searchJobs(filters: JobFilters = {}): Promise<JobPosting[]> {
     const params = new URLSearchParams();
-    if (filters.profession) params.set("profession", filters.profession);
+    if (filters.near) {
+      params.set("lat", String(filters.near.lat));
+      params.set("lng", String(filters.near.lng));
+    }
+    if (filters.maxDistanceKm != null) params.set("radiusKm", String(filters.maxDistanceKm));
+    if (filters.professions?.length) params.set("professions", filters.professions.join(","));
+    if (filters.industries?.length) params.set("industries", filters.industries.join(","));
+    if (filters.customIndustries?.length) params.set("customIndustries", filters.customIndustries.join(","));
+    if (filters.durations?.length) params.set("durations", filters.durations.join(","));
+    if (filters.engagements?.length) params.set("engagements", filters.engagements.join(","));
     if (filters.district) params.set("district", filters.district);
     if (filters.q) params.set("q", filters.q);
     if (filters.rateMin != null) params.set("rateMin", String(filters.rateMin));

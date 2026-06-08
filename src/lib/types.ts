@@ -229,6 +229,8 @@ export type JobPosting = {
   postedAgo: string;
   description: string;
   promoted?: boolean; // paid promotion (boost) — sorts to the top
+  lat?: number;
+  lng?: number;
 };
 
 /** A token package available for purchase. */

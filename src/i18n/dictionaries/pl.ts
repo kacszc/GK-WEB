@@ -807,6 +807,7 @@ const pl = {
   jobs: {
     title: "Oferty pracy",
     titleCount: "{count} ofert w {city}",
+    fMinRate: "Stawka od (zł/h)",
     subtitle: "Dopasowane do Twojej okolicy · aktualizowane na bieżąco",
     searchPlaceholder: "Szukaj ofert, zawodów, firm…",
     allProfessions: "Wszystkie zawody",

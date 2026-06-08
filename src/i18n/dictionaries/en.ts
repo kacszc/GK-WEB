@@ -808,6 +808,7 @@ const en: Dictionary = {
   jobs: {
     title: "Jobs",
     titleCount: "{count} jobs in {city}",
+    fMinRate: "Rate from (zł/h)",
     subtitle: "Matched to your area · updated live",
     searchPlaceholder: "Search jobs, professions, companies…",
     allProfessions: "All professions",

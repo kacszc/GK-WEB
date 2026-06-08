@@ -808,6 +808,7 @@ const uk: Dictionary = {
   jobs: {
     title: "Вакансії",
     titleCount: "{count} вакансій у {city}",
+    fMinRate: "Ставка від (zł/h)",
     subtitle: "Підібрані для вашого району · оновлюються наживо",
     searchPlaceholder: "Шукати вакансії, професії, компанії…",
     allProfessions: "Усі професії",

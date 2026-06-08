@@ -1,28 +1,36 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Search, MapPin, Clock, Coins, BadgeCheck, Check, Loader2 } from "lucide-react";
+import { useState, useSyncExternalStore } from "react";
+import { MapPin, Clock, Coins, BadgeCheck, Check, Loader2 } from "lucide-react";
 import { SearchTopbar } from "@/components/search/SearchTopbar";
+import { ResultsToolbar, type ResultsView } from "@/components/search/ResultsToolbar";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
 import { SpecialistCardSkeleton } from "@/components/search/SpecialistCard";
+import { JobsFilterSidebar } from "./JobsFilterSidebar";
+import { JobsMapView } from "./JobsMapView";
 import { useJobSearch } from "@/hooks/useJobSearch";
-import { catalogService, jobsService, type JobFilters } from "@/services";
-import { warsawDistricts } from "@/services/warsaw-districts";
+import { jobsService, type JobFilters } from "@/services";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useAuth } from "@/lib/AuthProvider";
 import { VerifyNotice } from "@/components/layout/VerifyNotice";
 import { cn } from "@/lib/cn";
-import type { JobPosting, Availability } from "@/lib/types";
+import type { JobPosting, UserLocation } from "@/lib/types";
 
 const CITY = "Warszawa";
-const AVAIL: Availability[] = ["now", "week", "date"];
-const AVAIL_KEY: Record<Availability, string> = {
-  now: "results.fAvailNow",
-  week: "results.fAvailWeek",
-  date: "results.fAvailDate",
-};
+
+/** True at >= lg (1024px). Drops the desktop-only split view on mobile. */
+function useIsDesktop() {
+  return useSyncExternalStore(
+    (cb) => {
+      const m = window.matchMedia("(min-width: 1024px)");
+      m.addEventListener("change", cb);
+      return () => m.removeEventListener("change", cb);
+    },
+    () => window.matchMedia("(min-width: 1024px)").matches,
+    () => true,
+  );
+}
 
 export function JobsScreen({
   initialQuery,
@@ -34,117 +42,157 @@ export function JobsScreen({
   const { t } = useI18n();
   const [filters, setFilters] = useState<JobFilters>({
     q: initialQuery || undefined,
-    profession: initialProfession || undefined,
+    professions: initialProfession ? [initialProfession] : undefined,
+    maxDistanceKm: 25,
   });
+  const [view, setView] = useState<ResultsView>("mapList");
+  const isDesktop = useIsDesktop();
+  const effectiveView = !isDesktop && view === "mapList" ? "list" : view;
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [applyJob, setApplyJob] = useState<JobPosting | null>(null);
 
-  const { data: jobs = [], isLoading } = useJobSearch(filters);
-  const { data: professions = [] } = useQuery({
-    queryKey: ["professions"],
-    queryFn: () => catalogService.getPopularProfessions(),
-  });
+  const queryFilters: JobFilters = {
+    ...filters,
+    near: userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : undefined,
+  };
+  const { data: jobs = [], isLoading } = useJobSearch(queryFilters);
+  const noResults = !isLoading && jobs.length === 0;
 
   const patch = (p: Partial<JobFilters>) => setFilters((f) => ({ ...f, ...p }));
-  const toggleWhen = (a: Availability) => {
-    const set = new Set(filters.when ?? []);
-    if (set.has(a)) set.delete(a);
-    else set.add(a);
-    patch({ when: [...set] });
-  };
+  const clear = () => setFilters((f) => ({ q: f.q, maxDistanceKm: 25 }));
 
-  const selectCls =
-    "rounded-tile border border-line-2 bg-surface px-3 py-2.5 text-sm text-ink outline-none focus:border-ink cursor-pointer";
+  const activeCount =
+    (filters.professions?.length ?? 0) +
+    (filters.industries?.length ?? 0) +
+    (filters.customIndustries?.length ?? 0) +
+    (filters.durations?.length ?? 0) +
+    (filters.rateMin != null ? 1 : 0);
+
+  const city = userLocation?.city ?? CITY;
+  const sidebarProps = {
+    filters,
+    onPatch: patch,
+    onClear: clear,
+    userLocation,
+    onLocate: setUserLocation,
+    onClearLocation: () => setUserLocation(null),
+  };
+  const sidebar = (
+    <div className="hidden lg:block">
+      <JobsFilterSidebar {...sidebarProps} variant={effectiveView === "list" ? "full" : "compact"} />
+    </div>
+  );
+  const skeletons = Array.from({ length: 6 }).map((_, i) => <SpecialistCardSkeleton key={i} />);
+  const mapCenter: [number, number] | undefined = userLocation ? [userLocation.lng, userLocation.lat] : undefined;
 
   return (
     <>
       <SearchTopbar category={t("jobs.title")} />
 
-      <main className="mx-auto flex w-full max-w-[1280px] flex-1 flex-col gap-5 px-4 pt-6 pb-20 sm:px-8">
-        <div>
-          <h1 className="text-2xl font-bold tracking-[-0.5px] text-ink">
-            {t("jobs.titleCount", { count: jobs.length, city: CITY })}
-          </h1>
-          <p className="mt-1 text-[13px] text-ink-3">{t("jobs.subtitle")}</p>
-        </div>
+      <main className="mx-auto mb-8 flex w-full max-w-[1280px] flex-1 flex-col gap-4 px-4 pt-6 pb-20 sm:px-8">
+        <ResultsToolbar
+          title={t("jobs.titleCount", { count: jobs.length, city })}
+          subtitle={t("jobs.subtitle")}
+          view={effectiveView}
+          onView={setView}
+          onOpenFilters={() => setFiltersOpen(true)}
+          filterCount={activeCount}
+        />
 
-        {/* Filter bar */}
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex min-w-[200px] flex-1 items-center gap-2 rounded-tile border border-line-2 bg-surface px-3">
-            <Search className="h-4 w-4 text-ink-4" />
-            <input
-              value={filters.q ?? ""}
-              onChange={(e) => patch({ q: e.target.value || undefined })}
-              placeholder={t("jobs.searchPlaceholder")}
-              className="w-full bg-transparent py-2.5 text-sm text-ink outline-none placeholder:text-ink-4"
-            />
-          </div>
-          <select
-            value={filters.profession ?? ""}
-            onChange={(e) => patch({ profession: e.target.value || undefined })}
-            className={selectCls}
-          >
-            <option value="">{t("jobs.allProfessions")}</option>
-            {professions.map((p) => (
-              <option key={p.code ?? p.label} value={p.code ?? p.label}>
-                {p.label}
-              </option>
-            ))}
-          </select>
-          <select
-            value={filters.district ?? ""}
-            onChange={(e) => patch({ district: e.target.value || undefined })}
-            className={selectCls}
-          >
-            <option value="">{t("jobs.allDistricts")}</option>
-            {warsawDistricts.map((d) => (
-              <option key={d.name} value={d.name}>
-                {d.name}
-              </option>
-            ))}
-          </select>
-          <div className="flex gap-1.5">
-            {AVAIL.map((a) => (
-              <button
-                key={a}
-                onClick={() => toggleWhen(a)}
-                className={cn(
-                  "rounded-full border px-3 py-2 text-[13px] font-medium transition-colors",
-                  filters.when?.includes(a)
-                    ? "border-ink bg-ink text-on-dark"
-                    : "border-line-2 text-ink hover:bg-muted",
-                )}
-              >
-                {t(AVAIL_KEY[a])}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Results */}
-        {isLoading ? (
-          <div className="grid gap-4 md:grid-cols-2">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <SpecialistCardSkeleton key={i} />
-            ))}
-          </div>
-        ) : jobs.length === 0 ? (
-          <div className="grid min-h-[240px] place-items-center text-center">
+        {/* List (also the empty-state fallback for the map views) */}
+        {(effectiveView === "list" || noResults) && (
+          <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
+            {sidebar}
             <div>
-              <p className="text-sm font-semibold text-ink">{t("jobs.empty")}</p>
-              <p className="mt-1 text-[13px] text-ink-3">{t("results.emptyHint")}</p>
+              {isLoading ? (
+                <div className="grid gap-4 sm:grid-cols-2">{skeletons}</div>
+              ) : jobs.length === 0 ? (
+                <Empty t={t} />
+              ) : (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {jobs.map((j) => (
+                    <JobCard key={j.id} job={j} onApply={() => setApplyJob(j)} />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
-        ) : (
-          <div className="grid gap-4 md:grid-cols-2">
-            {jobs.map((j) => (
-              <JobCard key={j.id} job={j} onApply={() => setApplyJob(j)} />
-            ))}
+        )}
+
+        {/* Map + list (desktop only) */}
+        {effectiveView === "mapList" && !noResults && (
+          <div className="grid gap-4 lg:h-[calc(100vh-220px)] lg:grid-rows-[minmax(0,1fr)] lg:grid-cols-[200px_minmax(300px,400px)_1fr]">
+            {sidebar}
+            <div className="flex flex-col gap-3 overflow-y-auto pr-1">
+              {isLoading
+                ? skeletons
+                : jobs.map((j) => (
+                    <div
+                      key={j.id}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => setActiveId(j.id)}
+                      className={cn(
+                        "rounded-panel transition-shadow",
+                        activeId === j.id && "ring-2 ring-ink",
+                      )}
+                    >
+                      <JobCard job={j} onApply={() => setApplyJob(j)} />
+                    </div>
+                  ))}
+            </div>
+            <JobsMapView
+              jobs={jobs}
+              activeId={activeId}
+              onSelect={setActiveId}
+              onApply={setApplyJob}
+              center={mapCenter}
+            />
+          </div>
+        )}
+
+        {/* Map only */}
+        {effectiveView === "map" && !noResults && (
+          <div className="grid gap-4 lg:h-[calc(100vh-220px)] lg:grid-rows-[minmax(0,1fr)] lg:grid-cols-[200px_1fr]">
+            {sidebar}
+            <JobsMapView
+              jobs={jobs}
+              activeId={activeId}
+              onSelect={setActiveId}
+              onApply={setApplyJob}
+              center={mapCenter}
+            />
           </div>
         )}
       </main>
 
+      {/* Mobile filters */}
+      <Dialog open={filtersOpen} onClose={() => setFiltersOpen(false)} title={t("results.filtersToggle")} size="lg">
+        <JobsFilterSidebar {...sidebarProps} variant="full" />
+        <Button
+          variant="dark"
+          onClick={() => setFiltersOpen(false)}
+          className="mt-2 w-full rounded-tile py-3 text-sm"
+        >
+          {t("results.showResultsCount", { count: jobs.length })}
+        </Button>
+      </Dialog>
+
       <ApplyDialog key={applyJob?.id ?? "none"} job={applyJob} onClose={() => setApplyJob(null)} />
     </>
+  );
+}
+
+function Empty({ t }: { t: (k: string) => string }) {
+  return (
+    <div className="grid min-h-[240px] place-items-center text-center">
+      <div>
+        <p className="text-sm font-semibold text-ink">{t("jobs.empty")}</p>
+        <p className="mt-1 text-[13px] text-ink-3">{t("results.emptyHint")}</p>
+      </div>
+    </div>
   );
 }
 
