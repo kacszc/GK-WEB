@@ -76,6 +76,8 @@ export function SearchScreen({
   const items = data?.items ?? [];
   const total = data?.total ?? 0;
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  // No results: showing a map makes no sense — fall back to the list layout with the empty message.
+  const noResults = !isLoading && total === 0;
   const pageItems = items.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const patch = (p: Partial<SpecialistFilters>) => {
@@ -136,8 +138,8 @@ export function SearchScreen({
 
         <ActiveFilters filters={filters} onPatch={patch} />
 
-        {/* List view */}
-        {effectiveView === "list" && (
+        {/* List view — also used as the fallback for map/split when there are no results. */}
+        {(effectiveView === "list" || noResults) && (
           <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
             {sidebar}
             <div>
@@ -165,8 +167,8 @@ export function SearchScreen({
           </div>
         )}
 
-        {/* Map + List view (desktop only — coerced to list on mobile) */}
-        {effectiveView === "mapList" && (
+        {/* Map + List view (desktop only — coerced to list on mobile; hidden when no results) */}
+        {effectiveView === "mapList" && !noResults && (
           <div className="grid gap-4 lg:h-[calc(100vh-220px)] lg:grid-rows-[minmax(0,1fr)] lg:grid-cols-[200px_minmax(300px,400px)_1fr]">
             {sidebar}
             <div className="flex flex-col gap-3 overflow-y-auto pr-1">
@@ -194,8 +196,8 @@ export function SearchScreen({
           </div>
         )}
 
-        {/* Map only view */}
-        {effectiveView === "map" && (
+        {/* Map only view (hidden when no results — no point showing an empty map) */}
+        {effectiveView === "map" && !noResults && (
           <div className="grid gap-4 lg:h-[calc(100vh-220px)] lg:grid-rows-[minmax(0,1fr)] lg:grid-cols-[200px_1fr]">
             {sidebar}
             <MapView
