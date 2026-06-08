@@ -73,12 +73,16 @@ export const jobsService = {
       customProfession: isOther ? draft.customProfession.trim() : null,
       description: draft.description,
       district: draft.district,
-      latitude: 52.2297,
-      longitude: 21.0122,
+      // Picked on the map when available; otherwise default to Warsaw centre (no geocoder yet).
+      latitude: draft.lat ?? 52.2297,
+      longitude: draft.lng ?? 21.0122,
       radiusKm: draft.radiusKm,
       people: draft.people,
       rateFrom: draft.rate ?? 0,
+      rateTo: draft.rateTo,
       hours: draft.hours,
+      engagement: draft.engagement,
+      duration: draft.duration || null,
       workDate: draft.date ? draft.date.toISOString().slice(0, 10) : null,
     });
     // Cosmetic estimate (the backend doesn't compute reach yet).

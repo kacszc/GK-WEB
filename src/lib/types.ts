@@ -180,19 +180,28 @@ export type Specialist = {
 };
 
 /** A job posting draft (employer side). */
+/** How long the engagement runs ("Kiedy"). */
+export type JobDuration = "one_day" | "few_days" | "few_weeks" | "long_term";
+/** Workload type. hours_per_day uses an explicit hours value; full/part-time auto-fill hours. */
+export type JobEngagement = "full_time" | "part_time" | "hours_per_day";
+
 export type JobDraft = {
   industry: string; // branża code (always set)
   profession: string; // specialization code; "" when "Inne" (custom) is chosen
   customProfession: string; // required free-text role when "Inne" is chosen
   title: string;
   description: string;
-  date: Date | null;
-  preset: WhenPreset | null;
+  duration: JobDuration | ""; // "Kiedy" — required
+  date: Date | null; // optional concrete date (toggle)
   district: string;
+  lat: number | null; // set when picked on the map
+  lng: number | null;
   radiusKm: number;
   people: number;
-  rate: number | null;
-  hours: number | null;
+  rate: number | null; // hourly rate "od"
+  rateTo: number | null; // hourly rate "do" (optional → "od X w górę")
+  engagement: JobEngagement; // pełny / pół etatu / godziny dziennie
+  hours: number | null; // hours per day (auto for full/part time)
   contactMethod: "app" | "phone";
   phone: string;
 };

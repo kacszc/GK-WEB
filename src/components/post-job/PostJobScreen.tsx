@@ -7,12 +7,12 @@ import { DayPicker } from "react-day-picker";
 import { pl, enUS, uk } from "react-day-picker/locale";
 import type { Locale as DateFnsLocale } from "react-day-picker/locale";
 import "react-day-picker/style.css";
-import { ArrowLeft, Minus, Plus, CalendarCheck, PartyPopper } from "lucide-react";
+import { ArrowLeft, Minus, Plus, CalendarCheck, PartyPopper, MapPin } from "lucide-react";
 import { SearchTopbar } from "@/components/search/SearchTopbar";
 import { Button } from "@/components/ui/Button";
 import { inputClass } from "@/components/ui/Input";
 import { LocationButton } from "@/components/search/LocationButton";
-import { presetDate } from "@/components/landing/WhenFilter";
+import { MapPickerDialog } from "./MapPickerDialog";
 import { useCreateJob } from "@/hooks/useCreateJob";
 import { useAuth } from "@/lib/AuthProvider";
 import { VerifyNotice } from "@/components/layout/VerifyNotice";
@@ -21,11 +21,14 @@ import { warsawDistricts } from "@/services/warsaw-districts";
 import { useI18n } from "@/i18n/I18nProvider";
 import type { Locale } from "@/i18n/config";
 import { cn } from "@/lib/cn";
-import type { JobDraft, WhenPreset, UserLocation } from "@/lib/types";
+import type { JobDraft, JobDuration, JobEngagement, UserLocation } from "@/lib/types";
 
 const dpLocales: Record<Locale, DateFnsLocale> = { pl, en: enUS, uk };
 const intlTags: Record<Locale, string> = { pl: "pl-PL", en: "en-GB", uk: "uk-UA" };
-const PRESETS: WhenPreset[] = ["today", "tomorrow", "weekend"];
+const DURATIONS: JobDuration[] = ["long_term", "few_weeks", "few_days", "one_day"];
+const ENGAGEMENTS: JobEngagement[] = ["full_time", "part_time", "hours_per_day"];
+// Default hours/day used to auto-fill the workload (and a cosmetic weekly estimate).
+const AUTO_HOURS: Record<JobEngagement, number | null> = { full_time: 8, part_time: 4, hours_per_day: null };
 
 const emptyDraft: JobDraft = {
   industry: "",
@@ -33,13 +36,17 @@ const emptyDraft: JobDraft = {
   customProfession: "",
   title: "",
   description: "",
+  duration: "",
   date: null,
-  preset: null,
   district: "",
+  lat: null,
+  lng: null,
   radiusKm: 10,
   people: 1,
   rate: null,
-  hours: null,
+  rateTo: null,
+  engagement: "full_time",
+  hours: 8,
   contactMethod: "app",
   phone: "",
 };
@@ -50,6 +57,8 @@ export function PostJobScreen() {
   const [draft, setDraft] = useState<JobDraft>(emptyDraft);
   const [otherMode, setOtherMode] = useState(false); // "Inne" — custom role with required text
   const [showErrors, setShowErrors] = useState(false);
+  const [withDate, setWithDate] = useState(false); // optional concrete date toggle
+  const [mapOpen, setMapOpen] = useState(false);
   const [month, setMonth] = useState<Date>(new Date());
   const { mutate, isPending, data: result, isSuccess, reset } = useCreateJob();
 
@@ -81,13 +90,17 @@ export function PostJobScreen() {
     set({ profession: "" });
     setOtherMode(true);
   }
+  // Engagement drives the auto-filled hours/day (explicit only for hours_per_day).
+  function pickEngagement(e: JobEngagement) {
+    set({ engagement: e, hours: AUTO_HOURS[e] ?? draft.hours ?? 8 });
+  }
 
   const errors = {
     industry: !draft.industry,
     profession: !otherMode && !draft.profession,
     customProfession: otherMode && !draft.customProfession.trim(),
     title: !draft.title.trim(),
-    date: !draft.date,
+    duration: !draft.duration,
     district: !draft.district,
   };
   const hasErrors = Object.values(errors).some(Boolean);
@@ -96,10 +109,15 @@ export function PostJobScreen() {
     ? draft.customProfession || "—"
     : specializations.find((s) => s.code === draft.profession)?.label || "—";
 
-  const dateLabel = draft.preset
-    ? t(`filters.${draft.preset}`)
-    : draft.date
-      ? draft.date.toLocaleDateString(intlTags[locale], { day: "numeric", month: "long" })
+  const whenLabel = draft.duration
+    ? t(`postJob.dur.${draft.duration}`) +
+      (draft.date ? ` · ${draft.date.toLocaleDateString(intlTags[locale], { day: "numeric", month: "long" })}` : "")
+    : "—";
+  const rateLabel =
+    draft.rate != null
+      ? draft.rateTo != null
+        ? `${draft.rate}–${draft.rateTo} zł/h`
+        : t("postJob.rateFromValue", { rate: draft.rate })
       : "—";
 
   function submit() {
@@ -135,6 +153,7 @@ export function PostJobScreen() {
                 onClick={() => {
                   setDraft(emptyDraft);
                   setOtherMode(false);
+                  setWithDate(false);
                   setShowErrors(false);
                   reset();
                 }}
@@ -261,46 +280,71 @@ export function PostJobScreen() {
               />
             </SectionCard>
 
-            {/* When */}
+            {/* When — engagement duration + optional concrete date */}
             <SectionCard title={t("postJob.sWhen")}>
-              <div className="mb-3 flex flex-wrap gap-2">
-                {PRESETS.map((id) => (
+              <div className="flex flex-wrap gap-2">
+                {DURATIONS.map((id) => (
                   <button
                     key={id}
-                    onClick={() => set({ preset: id, date: presetDate(id) })}
+                    onClick={() => set({ duration: id })}
                     className={cn(
                       "rounded-full border px-3.5 py-1.5 text-[13px] font-semibold transition-colors",
-                      draft.preset === id
+                      draft.duration === id
                         ? "border-ink bg-ink text-on-dark"
                         : "border-line-2 text-ink hover:bg-muted",
                     )}
                   >
-                    {t(`filters.${id}`)}
+                    {t(`postJob.dur.${id}`)}
                   </button>
                 ))}
               </div>
-              <div className="rdp-skill inline-block">
-                <DayPicker
-                  mode="single"
-                  locale={dpLocales[locale]}
-                  month={month}
-                  onMonthChange={setMonth}
-                  selected={draft.date ?? undefined}
-                  disabled={{ before: new Date() }}
-                  onSelect={(d) => d && set({ date: d, preset: null })}
+              {showErrors && errors.duration && <ErrText>{t("postJob.errDuration")}</ErrText>}
+
+              <label className="mt-4 flex cursor-pointer items-center gap-2 text-[13px] text-ink">
+                <input
+                  type="checkbox"
+                  checked={withDate}
+                  onChange={(e) => {
+                    setWithDate(e.target.checked);
+                    if (!e.target.checked) set({ date: null });
+                  }}
+                  className="accent-brand-violet"
                 />
-              </div>
-              {showErrors && errors.date && <ErrText>{t("postJob.errDate")}</ErrText>}
+                {t("postJob.withDate")}
+              </label>
+              {withDate && (
+                <div className="rdp-skill mt-2 inline-block">
+                  <DayPicker
+                    mode="single"
+                    locale={dpLocales[locale]}
+                    month={month}
+                    onMonthChange={setMonth}
+                    selected={draft.date ?? undefined}
+                    disabled={{ before: new Date() }}
+                    onSelect={(d) => set({ date: d ?? null })}
+                  />
+                </div>
+              )}
             </SectionCard>
 
-            {/* Where */}
+            {/* Where — same location picking as the filters, plus a map pin */}
             <SectionCard title={t("postJob.sWhere")}>
-              <div className="mb-3">
+              <div className="mb-3 flex flex-wrap gap-2">
                 <LocationButton
                   value={null}
-                  onLocate={(loc: UserLocation) => loc.district && set({ district: loc.district })}
+                  onLocate={(loc: UserLocation) =>
+                    set({ district: loc.district ?? draft.district, lat: loc.lat, lng: loc.lng })
+                  }
                   onClear={() => {}}
                 />
+                <button
+                  type="button"
+                  onClick={() => setMapOpen(true)}
+                  className="inline-flex items-center gap-1.5 rounded-tile border border-line-2 bg-surface px-3 py-2 text-[13px] font-medium text-ink hover:bg-muted"
+                >
+                  <MapPin className="h-4 w-4 text-brand-violet" />
+                  {t("postJob.pickOnMap")}
+                </button>
               </div>
               <Label>{t("postJob.districtLabel")}</Label>
               <select
@@ -316,6 +360,9 @@ export function PostJobScreen() {
                 ))}
               </select>
               {showErrors && errors.district && <ErrText>{t("postJob.errDistrict")}</ErrText>}
+              {draft.lat != null && (
+                <p className="mt-1.5 text-[12px] text-success">{t("postJob.pinSet")}</p>
+              )}
               <div className="mt-4 flex items-center justify-between text-[12px] font-semibold text-ink-3">
                 <span>{t("postJob.radiusLabel")}</span>
                 <span className="text-ink">{t("filters.upTo", { km: draft.radiusKm })}</span>
@@ -330,15 +377,59 @@ export function PostJobScreen() {
               />
             </SectionCard>
 
-            {/* Extra */}
+            {/* Details — people, workload type, rate range */}
             <SectionCard title={t("postJob.sExtra")}>
-              <div className="grid gap-4 sm:grid-cols-3">
+              <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <Label>{t("postJob.peopleLabel")}</Label>
                   <Stepper value={draft.people} onChange={(v) => set({ people: v })} />
                 </div>
                 <div>
-                  <Label>{t("postJob.rateLabel")}</Label>
+                  <Label>{t("postJob.engagementLabel")}</Label>
+                  <div className="mt-1.5 flex flex-wrap gap-2">
+                    {ENGAGEMENTS.map((e) => (
+                      <button
+                        key={e}
+                        onClick={() => pickEngagement(e)}
+                        className={cn(
+                          "rounded-full border px-3 py-1.5 text-[12px] font-medium transition-colors",
+                          draft.engagement === e
+                            ? "border-ink bg-ink text-on-dark"
+                            : "border-line-2 text-ink hover:bg-muted",
+                        )}
+                      >
+                        {t(`postJob.eng.${e}`)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Hours: explicit per-day for hours_per_day; auto-estimate for full/part time */}
+              <div className="mt-4">
+                {draft.engagement === "hours_per_day" ? (
+                  <>
+                    <Label>{t("postJob.hoursLabel")}</Label>
+                    <input
+                      type="number"
+                      inputMode="numeric"
+                      value={draft.hours ?? ""}
+                      onChange={(e) => set({ hours: e.target.value ? Number(e.target.value) : null })}
+                      placeholder={t("postJob.hoursPlaceholder")}
+                      className={inputCls(false)}
+                    />
+                  </>
+                ) : (
+                  <p className="text-[12px] text-ink-3">
+                    {t("postJob.hoursAuto", { h: draft.hours ?? 0, week: (draft.hours ?? 0) * 5 })}
+                  </p>
+                )}
+              </div>
+
+              {/* Rate range: "od" + optional "do" */}
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <div>
+                  <Label>{t("postJob.rateFromLabel")}</Label>
                   <input
                     type="number"
                     inputMode="numeric"
@@ -349,17 +440,18 @@ export function PostJobScreen() {
                   />
                 </div>
                 <div>
-                  <Label>{t("postJob.hoursLabel")}</Label>
+                  <Label>{t("postJob.rateToLabel")}</Label>
                   <input
                     type="number"
                     inputMode="numeric"
-                    value={draft.hours ?? ""}
-                    onChange={(e) => set({ hours: e.target.value ? Number(e.target.value) : null })}
-                    placeholder={t("postJob.hoursPlaceholder")}
+                    value={draft.rateTo ?? ""}
+                    onChange={(e) => set({ rateTo: e.target.value ? Number(e.target.value) : null })}
+                    placeholder={t("postJob.rateToPlaceholder")}
                     className={inputCls(false)}
                   />
                 </div>
               </div>
+              <p className="mt-1.5 text-[12px] text-ink-3">{t("postJob.rateHint")}</p>
             </SectionCard>
 
             {/* Contact */}
@@ -398,16 +490,15 @@ export function PostJobScreen() {
           <aside className="lg:sticky lg:top-20 lg:self-start">
             <div className="rounded-panel border border-line-3 bg-surface p-5">
               <h2 className="text-[15px] font-semibold text-ink">{t("postJob.summary")}</h2>
-              {draft.industry || draft.title || draft.date || draft.district ? (
+              {draft.industry || draft.title || draft.duration || draft.district ? (
                 <dl className="mt-3 space-y-2 text-[13px]">
                   <SumRow label={t("postJob.sProfession")} value={professionLabel} />
                   <SumRow label={t("postJob.titleLabel")} value={draft.title || "—"} />
-                  <SumRow label={t("postJob.sWhen")} value={dateLabel} />
+                  <SumRow label={t("postJob.sWhen")} value={whenLabel} />
                   <SumRow label={t("postJob.districtLabel")} value={draft.district || "—"} />
+                  <SumRow label={t("postJob.engagementLabel")} value={t(`postJob.eng.${draft.engagement}`)} />
                   <SumRow label={t("postJob.peopleLabel")} value={String(draft.people)} />
-                  {draft.rate != null && (
-                    <SumRow label={t("postJob.rateLabel")} value={t("results.perHour", { rate: draft.rate })} />
-                  )}
+                  {draft.rate != null && <SumRow label={t("postJob.rateLabel")} value={rateLabel} />}
                 </dl>
               ) : (
                 <p className="mt-3 text-[13px] text-ink-3">{t("postJob.summaryEmpty")}</p>
@@ -436,6 +527,13 @@ export function PostJobScreen() {
           </aside>
         </div>
       </main>
+
+      <MapPickerDialog
+        open={mapOpen}
+        onClose={() => setMapOpen(false)}
+        center={draft.lat != null && draft.lng != null ? [draft.lng, draft.lat] : null}
+        onPick={(loc) => set({ district: loc.district || draft.district, lat: loc.lat, lng: loc.lng })}
+      />
     </>
   );
 }
