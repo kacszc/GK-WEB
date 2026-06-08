@@ -12,6 +12,7 @@ import { catalogService, jobsService, type JobFilters } from "@/services";
 import { warsawDistricts } from "@/services/warsaw-districts";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useAuth } from "@/lib/AuthProvider";
+import { VerifyNotice } from "@/components/layout/VerifyNotice";
 import { cn } from "@/lib/cn";
 import type { JobPosting, Availability } from "@/lib/types";
 
@@ -264,6 +265,8 @@ function ApplyDialog({ job, onClose }: { job: JobPosting | null; onClose: () => 
                 {t("contact.loginCta")}
               </a>
             </div>
+          ) : !user.emailVerified ? (
+            <VerifyNotice variant="panel" message={t("verify.noticeContact")} className="mt-4" />
           ) : (
             <>
               <label className="mb-1.5 mt-4 block text-[12px] font-semibold text-ink-3">
