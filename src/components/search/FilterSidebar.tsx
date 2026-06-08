@@ -58,19 +58,26 @@ export function FilterSidebar({
           schema.specializations[code].some((s) => professions.includes(s.code)),
         )
       : undefined;
-  const activeIndustry = openIndustry ?? industryOfFirstSelected ?? industries[0] ?? null;
+  const activeIndustry =
+    openIndustry ?? industryOfFirstSelected ?? (filters.customIndustries ?? [])[0] ?? industries[0] ?? null;
   const specializations = activeIndustry ? specsOf(activeIndustry) : [];
 
   // Clicking an industry selects the WHOLE industry as a unit (no individual codes ticked) and
   // expands it for optional narrowing. Clicking again clears EVERYTHING for that industry —
   // both the whole-industry selection and any specific specializations picked within it.
+  const customIndustries = filters.customIndustries ?? [];
   const toggleIndustry = (industryCode: string) => {
     const codes = specsOf(industryCode).map((s) => s.code);
-    const anySelected = industries.includes(industryCode) || codes.some((c) => professions.includes(c));
+    const anySelected =
+      industries.includes(industryCode) ||
+      codes.some((c) => professions.includes(c)) ||
+      customIndustries.includes(industryCode);
     if (anySelected) {
+      // Re-click clears EVERYTHING for that industry: whole-industry, specific specs, and "Inne".
       onPatch({
         industries: industries.filter((c) => c !== industryCode),
         professions: professions.filter((c) => !codes.includes(c)),
+        customIndustries: customIndustries.filter((c) => c !== industryCode),
       });
     } else {
       onPatch({ industries: [...industries, industryCode] });
@@ -99,14 +106,16 @@ export function FilterSidebar({
           {schema?.industries.map((i) => {
             const n = selectedCountIn(i.code); // specific specs picked in this industry
             const whole = industries.includes(i.code);
+            const customSel = customIndustries.includes(i.code); // "Inne" picked for this industry
+            const narrowed = n + (customSel ? 1 : 0); // specific sub-selections (specs + "Inne")
             return (
               <Pill
                 key={i.code}
-                label={!whole && n > 0 ? `${i.label} · ${n}` : i.label}
+                label={!whole && narrowed > 0 ? `${i.label} · ${narrowed}` : i.label}
                 // "selected" reflects the actual selection only; being expanded is shown by the
                 // specializations appearing below (a ring marks the open-but-unselected one).
-                selected={whole || n > 0}
-                ring={!whole && n === 0 && activeIndustry === i.code}
+                selected={whole || narrowed > 0}
+                ring={!whole && narrowed === 0 && activeIndustry === i.code}
                 onClick={() => toggleIndustry(i.code)}
               />
             );
@@ -121,16 +130,28 @@ export function FilterSidebar({
                 label={s.label}
                 small
                 selected={professions.includes(s.code)}
-                onClick={() => onPatch({ professions: toggle(professions, s.code) })}
+                // Picking a specific specialization narrows away from the whole-industry selection
+                // (branża bez podbranży = wszystko; konkretna podbranża = tylko ona).
+                onClick={() =>
+                  onPatch({
+                    professions: toggle(professions, s.code),
+                    industries: industries.filter((c) => c !== activeIndustry),
+                  })
+                }
               />
             ))}
-            {/* "Inne" — matches specialists who registered a custom role in this industry. */}
+            {/* "Inne" — matches specialists with a custom role in this industry; also narrows. */}
             <Pill
               key="__other__"
               label={t("results.fOther")}
               small
               selected={(filters.customIndustries ?? []).includes(activeIndustry)}
-              onClick={() => onPatch({ customIndustries: toggle(filters.customIndustries, activeIndustry) })}
+              onClick={() =>
+                onPatch({
+                  customIndustries: toggle(filters.customIndustries, activeIndustry),
+                  industries: industries.filter((c) => c !== activeIndustry),
+                })
+              }
             />
           </div>
         ) : (
