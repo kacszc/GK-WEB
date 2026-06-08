@@ -201,6 +201,8 @@ export type JobDraft = {
   people: number;
   rate: number | null; // hourly rate "od"
   rateTo: number | null; // hourly rate "do" (optional → "od X w górę")
+  rateUndisclosed: boolean; // "do ustalenia" — hide the figure
+  currency: string; // ISO 4217 (PLN/EUR/USD…)
   engagement: JobEngagement; // pełny / pół etatu / godziny dziennie
   hours: number | null; // hours per day (auto for full/part time)
   contactMethod: "app" | "phone";
@@ -231,6 +233,8 @@ export type JobPosting = {
   promoted?: boolean; // paid promotion (boost) — sorts to the top
   lat?: number;
   lng?: number;
+  rateDisclosed?: boolean; // false → "to be agreed" (no figure)
+  currency?: string; // ISO 4217 (default PLN)
 };
 
 /** A token package available for purchase. */

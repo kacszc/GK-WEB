@@ -46,6 +46,8 @@ const emptyDraft: JobDraft = {
   people: 1,
   rate: null,
   rateTo: null,
+  rateUndisclosed: false,
+  currency: "PLN",
   engagement: "full_time",
   hours: 8,
   contactMethod: "app",
@@ -115,11 +117,12 @@ export function PostJobScreen() {
   const whenLabel = draft.duration
     ? t(`postJob.dur.${draft.duration}`) + (dateStr ? ` · ${dateStr}` : "")
     : "—";
-  const rateLabel =
-    draft.rate != null
+  const rateLabel = draft.rateUndisclosed
+    ? t("jobs.rateToAgree")
+    : draft.rate != null
       ? draft.rateTo != null
-        ? `${draft.rate}–${draft.rateTo} zł/h`
-        : t("postJob.rateFromValue", { rate: draft.rate })
+        ? `${draft.rate}–${draft.rateTo} ${draft.currency}/h`
+        : t("jobs.rateFromCur", { rate: draft.rate, cur: draft.currency })
       : "—";
 
   function submit() {
@@ -436,32 +439,59 @@ export function PostJobScreen() {
                 )}
               </div>
 
-              {/* Rate range: "od" + optional "do" */}
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <div>
-                  <Label>{t("postJob.rateFromLabel")}</Label>
-                  <input
-                    type="number"
-                    inputMode="numeric"
-                    value={draft.rate ?? ""}
-                    onChange={(e) => set({ rate: e.target.value ? Number(e.target.value) : null })}
-                    placeholder={t("postJob.ratePlaceholder")}
-                    className={inputCls(false)}
-                  />
-                </div>
-                <div>
-                  <Label>{t("postJob.rateToLabel")}</Label>
-                  <input
-                    type="number"
-                    inputMode="numeric"
-                    value={draft.rateTo ?? ""}
-                    onChange={(e) => set({ rateTo: e.target.value ? Number(e.target.value) : null })}
-                    placeholder={t("postJob.rateToPlaceholder")}
-                    className={inputCls(false)}
-                  />
-                </div>
-              </div>
-              <p className="mt-1.5 text-[12px] text-ink-3">{t("postJob.rateHint")}</p>
+              {/* Rate: "to be agreed" toggle, else currency + range ("od" + optional "do") */}
+              <label className="mt-4 flex cursor-pointer items-center gap-2 text-[13px] text-ink">
+                <input
+                  type="checkbox"
+                  checked={draft.rateUndisclosed}
+                  onChange={(e) => set({ rateUndisclosed: e.target.checked })}
+                  className="accent-brand-violet"
+                />
+                {t("postJob.rateUndisclosed")}
+              </label>
+              {!draft.rateUndisclosed && (
+                <>
+                  <div className="mt-3 grid gap-4 sm:grid-cols-3">
+                    <div>
+                      <Label>{t("postJob.currencyLabel")}</Label>
+                      <select
+                        value={draft.currency}
+                        onChange={(e) => set({ currency: e.target.value })}
+                        className={cn(inputCls(false), "cursor-pointer")}
+                      >
+                        {["PLN", "EUR", "USD", "GBP", "UAH"].map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <Label>{t("postJob.rateFromLabel")}</Label>
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        value={draft.rate ?? ""}
+                        onChange={(e) => set({ rate: e.target.value ? Number(e.target.value) : null })}
+                        placeholder={t("postJob.ratePlaceholder")}
+                        className={inputCls(false)}
+                      />
+                    </div>
+                    <div>
+                      <Label>{t("postJob.rateToLabel")}</Label>
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        value={draft.rateTo ?? ""}
+                        onChange={(e) => set({ rateTo: e.target.value ? Number(e.target.value) : null })}
+                        placeholder={t("postJob.rateToPlaceholder")}
+                        className={inputCls(false)}
+                      />
+                    </div>
+                  </div>
+                  <p className="mt-1.5 text-[12px] text-ink-3">{t("postJob.rateHint")}</p>
+                </>
+              )}
             </SectionCard>
 
             {/* Contact */}
@@ -508,7 +538,9 @@ export function PostJobScreen() {
                   <SumRow label={t("postJob.districtLabel")} value={draft.district || "—"} />
                   <SumRow label={t("postJob.engagementLabel")} value={t(`postJob.eng.${draft.engagement}`)} />
                   <SumRow label={t("postJob.peopleLabel")} value={String(draft.people)} />
-                  {draft.rate != null && <SumRow label={t("postJob.rateLabel")} value={rateLabel} />}
+                  {(draft.rate != null || draft.rateUndisclosed) && (
+                    <SumRow label={t("postJob.rateLabel")} value={rateLabel} />
+                  )}
                 </dl>
               ) : (
                 <p className="mt-3 text-[13px] text-ink-3">{t("postJob.summaryEmpty")}</p>

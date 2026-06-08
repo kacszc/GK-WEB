@@ -14,6 +14,7 @@ import { jobsService, type JobFilters } from "@/services";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useAuth } from "@/lib/AuthProvider";
 import { VerifyNotice } from "@/components/layout/VerifyNotice";
+import { jobRateLabel } from "@/lib/jobRate";
 import { cn } from "@/lib/cn";
 import type { JobPosting, UserLocation } from "@/lib/types";
 
@@ -240,7 +241,7 @@ function JobCard({ job, onApply }: { job: JobPosting; onApply: () => void }) {
       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-ink-2">
         <span className="inline-flex items-center gap-1 font-bold text-ink">
           <Coins className="h-3.5 w-3.5 text-[#e0a400]" />
-          {t("results.perHour", { rate: job.rate })}
+          {jobRateLabel(job, t)}
         </span>
         {job.hours > 0 && (
           <span className="inline-flex items-center gap-1">

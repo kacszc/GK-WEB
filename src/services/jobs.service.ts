@@ -8,6 +8,8 @@ type JobDto = {
   profession: string;
   district: string;
   rateFrom: number;
+  rateDisclosed?: boolean;
+  currency?: string;
   people: number;
   status: string;
   createdAt: string;
@@ -52,6 +54,8 @@ function toJobPosting(d: JobDto): JobPosting {
     promoted: d.promoted ?? false,
     lat: d.lat,
     lng: d.lng,
+    rateDisclosed: d.rateDisclosed ?? true,
+    currency: d.currency ?? "PLN",
   };
 }
 
@@ -87,8 +91,10 @@ export const jobsService = {
       longitude: draft.lng ?? 21.0122,
       radiusKm: draft.radiusKm,
       people: draft.people,
-      rateFrom: draft.rate ?? 0,
-      rateTo: draft.rateTo,
+      rateFrom: draft.rateUndisclosed ? 0 : (draft.rate ?? 0),
+      rateTo: draft.rateUndisclosed ? null : draft.rateTo,
+      rateDisclosed: !draft.rateUndisclosed,
+      currency: draft.currency,
       hours: draft.hours,
       engagement: draft.engagement,
       duration: draft.duration || null,

@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useI18n } from "@/i18n/I18nProvider";
+import { jobRateLabel } from "@/lib/jobRate";
 import type { JobPosting } from "@/lib/types";
 
 const WARSAW: [number, number] = [21.0122, 52.2297];
@@ -15,7 +16,7 @@ function popupHtml(j: JobPosting, t: TFunction): string {
     <div class="w-[230px]">
       <p class="text-[13px] font-semibold text-ink pr-5">${escapeHtml(j.title)}</p>
       <p class="mt-0.5 text-[12px] text-ink-3">${escapeHtml(j.profession)} · ${escapeHtml(j.district)}</p>
-      <p class="mt-1 text-[12px] text-ink-2">${t("results.perHour", { rate: j.rate })} · ${t("results.km", { km: j.distanceKm })}</p>
+      <p class="mt-1 text-[12px] text-ink-2">${jobRateLabel(j, t)} · ${t("results.km", { km: j.distanceKm })}</p>
       <button data-apply="${j.id}" class="mt-2.5 w-full rounded-tile bg-ink px-3 py-1.5 text-[12px] font-semibold text-white">${t("jobs.apply")}</button>
     </div>`;
 }
@@ -93,7 +94,8 @@ export function JobsMapView({
         const el = document.createElement("button");
         el.className =
           "rounded-full border border-line-2 bg-surface px-2 py-1 text-[11px] font-bold text-ink shadow-sm transition-colors hover:bg-ink hover:text-on-dark";
-        el.textContent = `${j.rate} zł`;
+        el.textContent =
+          j.rateDisclosed === false ? tRef.current("jobs.rateToAgreeShort") : `${j.rate} ${j.currency || "PLN"}`;
         el.addEventListener("click", (e) => {
           e.stopPropagation();
           onSelect?.(j.id);
