@@ -1,7 +1,7 @@
 import type { Specialist, SpecialistSearch, Availability, SpecialistProfile } from "@/lib/types";
 import { apiGet } from "@/lib/api-client";
 
-/** Backend specialist DTO (search results + detail; detail adds completedJobs). */
+/** Backend specialist DTO (search results + detail; detail adds the optional fields). */
 type SpecialistDto = {
   id: string;
   name: string;
@@ -15,7 +15,11 @@ type SpecialistDto = {
   distanceKm: number;
   lat: number;
   lng: number;
+  // Detail-only fields.
   completedJobs?: number;
+  memberSince?: number; // year, e.g. 2026 (0 when unknown)
+  specializations?: { code: string; label: string }[]; // localized labels
+  languages?: string[]; // codes, e.g. ["pl","en"] — localized in the UI
 };
 
 /** Map backend availability enum casing to the frontend lowercase union. */
@@ -57,16 +61,21 @@ function toSpecialist(d: SpecialistDto, i: number): Specialist {
   };
 }
 
-/** Profile fields the backend doesn't expose yet — neutral defaults (no fabricated data). Real
+/** Profile fields beyond the base card. `completedJobs` and `memberSince` come from the backend
+ * detail DTO; the rest have no data source yet (the UI hides those sections when empty). Real
  * reviews/portfolio are loaded separately by the profile page. */
-function profileExtras(base: Specialist, completedJobs: number): Omit<SpecialistProfile, keyof Specialist> {
+function profileExtras(
+  base: Specialist,
+  completedJobs: number,
+  memberSince: number,
+): Omit<SpecialistProfile, keyof Specialist> {
   return {
     bio: base.role ? `${base.role}. Dyspozycyjność w okolicy: ${base.district}.` : "",
     completedJobs,
-    responseTimeMin: 0,
-    memberSince: "",
-    repeatClientsPct: 0,
-    certifications: [],
+    responseTimeMin: 0, // no source yet → section hidden in the UI
+    memberSince: memberSince > 0 ? String(memberSince) : "",
+    repeatClientsPct: 0, // no source yet → section hidden in the UI
+    certifications: [], // no source yet → section hidden in the UI
     reviewList: [],
   };
 }
@@ -127,8 +136,14 @@ export const specialistsService = {
   /** Full profile for a single specialist (by user id). */
   async getById(id: string): Promise<SpecialistProfile> {
     const dto = await apiGet<SpecialistDto>(`/api/specialists/${encodeURIComponent(id)}`);
-    const base = toSpecialist(dto, 0);
-    return { ...base, ...profileExtras(base, dto.completedJobs ?? 0) };
+    const base: Specialist = {
+      ...toSpecialist(dto, 0),
+      // Detail endpoint provides the real specialization labels + language codes (the search
+      // card DTO doesn't), so override the empty defaults from toSpecialist.
+      specialties: (dto.specializations ?? []).map((s) => ({ label: s.label, count: 0 })),
+      languages: dto.languages ?? [],
+    };
+    return { ...base, ...profileExtras(base, dto.completedJobs ?? 0, dto.memberSince ?? 0) };
   },
 
   /** The backend-defined filter schema (industries → specializations, availability, sort, ranges). */

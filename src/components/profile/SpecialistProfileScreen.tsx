@@ -67,8 +67,7 @@ export function SpecialistProfileScreen({ id }: { id: string }) {
 
 function Profile({ s, t }: { s: SpecialistProfile; t: (k: string, p?: Record<string, string | number>) => string }) {
   const { open } = useContact();
-  // Prefer real backend reviews when available; otherwise fall back to the
-  // profile's bundled (mock) review list.
+  // Reviews come from the backend; `s.reviewList` is an empty fallback (no mock data).
   const { data: backendReviews = [] } = useQuery({
     queryKey: ["reviews", s.id],
     queryFn: () => reviewsService.listForSubject(s.id),
@@ -118,10 +117,12 @@ function Profile({ s, t }: { s: SpecialistProfile; t: (k: string, p?: Record<str
                 {s.rating.toFixed(1)} ({s.reviews})
               </span>
             )}
-            <span className="inline-flex items-center gap-1">
-              <Globe className="h-3.5 w-3.5 text-ink-4" />
-              {s.languages.map((l) => t(LANG_KEY[l] ?? l)).join(", ")}
-            </span>
+            {s.languages.length > 0 && (
+              <span className="inline-flex items-center gap-1">
+                <Globe className="h-3.5 w-3.5 text-ink-4" />
+                {s.languages.map((l) => t(LANG_KEY[l] ?? l)).join(", ")}
+              </span>
+            )}
           </div>
         </div>
 
@@ -150,44 +151,55 @@ function Profile({ s, t }: { s: SpecialistProfile; t: (k: string, p?: Record<str
             <p className="text-sm leading-relaxed text-ink-2">{s.bio}</p>
           </Section>
 
-          <Section title={t("profile.specializations")}>
-            <div className="flex flex-wrap gap-2">
-              {s.specialties.map((sp) => (
-                <span
-                  key={sp.label}
-                  className="inline-flex items-center gap-1 rounded-tile bg-pill px-2.5 py-1.5 text-[12px] text-ink-2"
-                >
-                  {sp.label}
-                  {sp.count > 0 && <span className="text-ink-4">✓{sp.count}</span>}
-                </span>
-              ))}
-            </div>
-          </Section>
+          {s.specialties.length > 0 && (
+            <Section title={t("profile.specializations")}>
+              <div className="flex flex-wrap gap-2">
+                {s.specialties.map((sp) => (
+                  <span
+                    key={sp.label}
+                    className="inline-flex items-center gap-1 rounded-tile bg-pill px-2.5 py-1.5 text-[12px] text-ink-2"
+                  >
+                    {sp.label}
+                    {sp.count > 0 && <span className="text-ink-4">✓{sp.count}</span>}
+                  </span>
+                ))}
+              </div>
+            </Section>
+          )}
 
           <Section title={t("profile.stats")}>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <Stat icon={<Briefcase className="h-4 w-4" />} value={String(s.completedJobs)} label={t("profile.completedJobs")} />
-              <Stat icon={<Clock className="h-4 w-4" />} value={t("profile.responseValue", { min: s.responseTimeMin })} label={t("profile.responseTime")} />
-              <Stat icon={<Repeat className="h-4 w-4" />} value={`${s.repeatClientsPct}%`} label={t("profile.repeatClients")} />
-              <Stat icon={<CalendarCheck className="h-4 w-4" />} value={s.memberSince} label={t("profile.memberSince", { year: s.memberSince })} />
+              {/* Hidden until the backend computes these (no fabricated zeros). */}
+              {s.responseTimeMin > 0 && (
+                <Stat icon={<Clock className="h-4 w-4" />} value={t("profile.responseValue", { min: s.responseTimeMin })} label={t("profile.responseTime")} />
+              )}
+              {s.repeatClientsPct > 0 && (
+                <Stat icon={<Repeat className="h-4 w-4" />} value={`${s.repeatClientsPct}%`} label={t("profile.repeatClients")} />
+              )}
+              {s.memberSince && (
+                <Stat icon={<CalendarCheck className="h-4 w-4" />} value={s.memberSince} label={t("profile.memberSince", { year: s.memberSince })} />
+              )}
             </div>
           </Section>
 
-          <Section title={t("profile.verification")}>
-            <div className="flex flex-wrap gap-2">
-              {s.kyc && (
-                <Tag className="bg-[#e7efff] text-[#1158ed]">
-                  <ShieldCheck className="h-3 w-3" />
-                  {t("results.fKyc")}
-                </Tag>
-              )}
-              {s.certifications.map((c) => (
-                <Tag key={c} className="bg-pill text-ink-2">
-                  {c}
-                </Tag>
-              ))}
-            </div>
-          </Section>
+          {(s.kyc || s.certifications.length > 0) && (
+            <Section title={t("profile.verification")}>
+              <div className="flex flex-wrap gap-2">
+                {s.kyc && (
+                  <Tag className="bg-[#e7efff] text-[#1158ed]">
+                    <ShieldCheck className="h-3 w-3" />
+                    {t("results.fKyc")}
+                  </Tag>
+                )}
+                {s.certifications.map((c) => (
+                  <Tag key={c} className="bg-pill text-ink-2">
+                    {c}
+                  </Tag>
+                ))}
+              </div>
+            </Section>
+          )}
 
           {portfolio.length > 0 && (
             <Section title={t("profile.portfolio")}>
@@ -199,6 +211,7 @@ function Profile({ s, t }: { s: SpecialistProfile; t: (k: string, p?: Record<str
             </Section>
           )}
 
+          {reviews.length > 0 && (
           <Section title={`${t("profile.reviews")} · ${t("profile.reviewsCount", { count: s.reviews })}`}>
             <div className="flex flex-col gap-3">
               {reviews.map((r, i) => (
@@ -216,6 +229,7 @@ function Profile({ s, t }: { s: SpecialistProfile; t: (k: string, p?: Record<str
               ))}
             </div>
           </Section>
+          )}
         </div>
 
         {/* Contact sidebar */}
@@ -230,9 +244,11 @@ function Profile({ s, t }: { s: SpecialistProfile; t: (k: string, p?: Record<str
               {t("results.contact")}
               <span className="font-normal opacity-80">{t("results.tok", { n: 3 })}</span>
             </Button>
-            <p className="mt-2 text-center text-[12px] text-ink-3">
-              {t("profile.contactNote", { min: s.responseTimeMin })}
-            </p>
+            {s.responseTimeMin > 0 && (
+              <p className="mt-2 text-center text-[12px] text-ink-3">
+                {t("profile.contactNote", { min: s.responseTimeMin })}
+              </p>
+            )}
 
             <hr className="my-4 border-line" />
 
@@ -244,11 +260,13 @@ function Profile({ s, t }: { s: SpecialistProfile; t: (k: string, p?: Record<str
                 {s.district} · {t("results.km", { km: s.distanceKm })}
               </span>
             </Row>
-            <Row label={t("profile.languages")}>
-              <span className="text-[13px] font-medium text-ink">
-                {s.languages.map((l) => t(LANG_KEY[l] ?? l)).join(", ")}
-              </span>
-            </Row>
+            {s.languages.length > 0 && (
+              <Row label={t("profile.languages")}>
+                <span className="text-[13px] font-medium text-ink">
+                  {s.languages.map((l) => t(LANG_KEY[l] ?? l)).join(", ")}
+                </span>
+              </Row>
+            )}
           </div>
         </aside>
       </div>
