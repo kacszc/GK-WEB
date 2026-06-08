@@ -14,6 +14,8 @@ import { inputClass } from "@/components/ui/Input";
 import { LocationButton } from "@/components/search/LocationButton";
 import { presetDate } from "@/components/landing/WhenFilter";
 import { useCreateJob } from "@/hooks/useCreateJob";
+import { useAuth } from "@/lib/AuthProvider";
+import { VerifyNotice } from "@/components/layout/VerifyNotice";
 import { catalogService } from "@/services";
 import { warsawDistricts } from "@/services/warsaw-districts";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -42,10 +44,14 @@ const emptyDraft: JobDraft = {
 
 export function PostJobScreen() {
   const { t, locale } = useI18n();
+  const { user } = useAuth();
   const [draft, setDraft] = useState<JobDraft>(emptyDraft);
   const [showErrors, setShowErrors] = useState(false);
   const [month, setMonth] = useState<Date>(new Date());
   const { mutate, isPending, data: result, isSuccess, reset } = useCreateJob();
+
+  // Unverified ("inactive") accounts can't publish — the backend would reject it too.
+  const notVerified = !!user && !user.emailVerified;
 
   const { data: professions = [] } = useQuery({
     queryKey: ["professions"],
@@ -69,6 +75,7 @@ export function PostJobScreen() {
       : "—";
 
   function submit() {
+    if (notVerified) return;
     if (hasErrors) {
       setShowErrors(true);
       return;
@@ -336,10 +343,13 @@ export function PostJobScreen() {
                 <p className="mt-3 text-[13px] text-ink-3">{t("postJob.summaryEmpty")}</p>
               )}
 
+              {notVerified && (
+                <VerifyNotice variant="panel" message={t("verify.noticePostJob")} className="mt-5" />
+              )}
               <Button
                 variant="gradient"
                 onClick={submit}
-                disabled={isPending}
+                disabled={isPending || notVerified}
                 className="mt-5 w-full rounded-tile py-3 text-sm"
               >
                 {isPending ? t("postJob.publishing") : t("postJob.submit")}

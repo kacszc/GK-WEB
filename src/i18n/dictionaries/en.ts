@@ -116,6 +116,17 @@ const en: Dictionary = {
     title: "Something went wrong",
     body: "Please try again.",
   },
+  verify: {
+    bannerTitle: "Account inactive",
+    bannerDesc: "Confirm your email to activate your account — until then you can't post jobs or contact specialists.",
+    noticeTitle: "Account inactive",
+    noticePostJob: "Confirm your email to post jobs. We've sent an activation link to your address.",
+    noticeContact: "Confirm your email to contact specialists. We've sent an activation link to your address.",
+    resend: "Resend link",
+    resent: "Sent — check your inbox",
+    recheck: "I've confirmed",
+    checking: "Checking…",
+  },
   results: {
     edit: "Edit",
     breadcrumbHome: "Home",

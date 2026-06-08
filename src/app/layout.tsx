@@ -12,6 +12,7 @@ import { ContactProvider } from "@/lib/ContactProvider";
 import { ToastProvider } from "@/lib/ToastProvider";
 import { NotificationToaster } from "@/components/layout/NotificationToaster";
 import { ErrorToaster } from "@/components/layout/ErrorToaster";
+import { VerifyNotice } from "@/components/layout/VerifyNotice";
 import { CookieConsentProvider } from "@/lib/CookieConsentProvider";
 import { CookieConsent } from "@/components/legal/CookieConsent";
 
@@ -58,6 +59,7 @@ export default async function RootLayout({
                 <ContactProvider>
                   <ToastProvider>
                   <CookieConsentProvider>
+                    <VerifyNotice variant="banner" />
                     {children}
                     <NotificationToaster />
                     <ErrorToaster />

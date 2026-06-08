@@ -8,6 +8,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useAuth } from "@/lib/AuthProvider";
+import { VerifyNotice } from "@/components/layout/VerifyNotice";
 import { useWallet } from "@/lib/WalletProvider";
 import { messagesService, contactsService } from "@/services";
 import { ApiError } from "@/lib/api-client";
@@ -159,6 +160,8 @@ function ContactModal({
                 {t("contact.loginCta")}
               </Link>
             </div>
+          ) : !user.emailVerified ? (
+            <VerifyNotice variant="panel" message={t("verify.noticeContact")} className="mt-4" />
           ) : showGate ? (
             <div className="mt-4 rounded-tile border border-brand-violet/30 bg-[#f6f3ff] p-4 text-center">
               <span className="mx-auto grid h-10 w-10 place-items-center rounded-full bg-white">
