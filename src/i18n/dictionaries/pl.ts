@@ -296,6 +296,7 @@ const pl = {
     },
     errDuration: "Wybierz czas trwania",
     withDate: "Wskaż konkretną datę (opcjonalnie)",
+    withDateRange: "Wskaż termin / przedział dat (opcjonalnie)",
     pickOnMap: "Wybierz z mapy",
     pinSet: "Punkt wybrany na mapie ✓",
     locationPrompt: "Wskaż lokalizację: użyj swojej lokalizacji lub wybierz punkt z mapy.",

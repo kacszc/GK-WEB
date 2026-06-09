@@ -291,7 +291,7 @@ export function PostJobScreen() {
                 {DURATIONS.map((id) => (
                   <button
                     key={id}
-                    onClick={() => set({ duration: id })}
+                    onClick={() => set(id === "one_day" ? { duration: id, dateTo: null } : { duration: id })}
                     className={cn(
                       "rounded-full border px-3.5 py-1.5 text-[13px] font-semibold transition-colors",
                       draft.duration === id
@@ -311,24 +311,37 @@ export function PostJobScreen() {
                   checked={withDate}
                   onChange={(e) => {
                     setWithDate(e.target.checked);
-                    if (!e.target.checked) set({ date: null });
+                    if (!e.target.checked) set({ date: null, dateTo: null });
                   }}
                   className="accent-brand-violet"
                 />
-                {t("postJob.withDate")}
+                {/* "Jeden dzień" → a single date; longer durations → a date range. */}
+                {t(draft.duration === "one_day" ? "postJob.withDate" : "postJob.withDateRange")}
               </label>
               {withDate && (
                 <div className="rdp-skill mt-2 inline-block rounded-panel border border-line-3 bg-surface p-2">
-                  {/* Range mode: one click = a single start day; a second click sets the end. */}
-                  <DayPicker
-                    mode="range"
-                    locale={dpLocales[locale]}
-                    month={month}
-                    onMonthChange={setMonth}
-                    selected={{ from: draft.date ?? undefined, to: draft.dateTo ?? undefined }}
-                    disabled={{ before: new Date() }}
-                    onSelect={(range) => set({ date: range?.from ?? null, dateTo: range?.to ?? null })}
-                  />
+                  {draft.duration === "one_day" ? (
+                    <DayPicker
+                      mode="single"
+                      locale={dpLocales[locale]}
+                      month={month}
+                      onMonthChange={setMonth}
+                      selected={draft.date ?? undefined}
+                      disabled={{ before: new Date() }}
+                      onSelect={(d) => set({ date: d ?? null, dateTo: null })}
+                    />
+                  ) : (
+                    /* Range: first click = start, second = end. */
+                    <DayPicker
+                      mode="range"
+                      locale={dpLocales[locale]}
+                      month={month}
+                      onMonthChange={setMonth}
+                      selected={{ from: draft.date ?? undefined, to: draft.dateTo ?? undefined }}
+                      disabled={{ before: new Date() }}
+                      onSelect={(range) => set({ date: range?.from ?? null, dateTo: range?.to ?? null })}
+                    />
+                  )}
                 </div>
               )}
             </SectionCard>
