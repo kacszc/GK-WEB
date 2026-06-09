@@ -20,7 +20,7 @@ export async function HowItWorksScreen() {
       </header>
 
       {/* Two tracks */}
-      <div className="mt-12 grid gap-6 lg:grid-cols-2">
+      <div className="mt-16 grid gap-6 lg:grid-cols-2">
         <Track icon={Briefcase} title={hiw.employerTitle} steps={hiw.employerSteps} />
         <Track icon={UserPlus} title={hiw.specialistTitle} steps={hiw.specialistSteps} />
       </div>
@@ -29,7 +29,7 @@ export async function HowItWorksScreen() {
       <section className="mt-16 text-center">
         <h2 className="text-2xl font-bold tracking-[-0.5px] text-ink">{hiw.trustTitle}</h2>
         <p className="mx-auto mt-2 max-w-[560px] text-[14px] text-ink-2">{hiw.trustSubtitle}</p>
-        <div className="mt-8 grid gap-4 sm:grid-cols-3">
+        <div className="mt-10 grid gap-4 sm:grid-cols-3">
           {hiw.trust.map((it, i) => {
             const Icon = trustIcons[i] ?? Gauge;
             return (
@@ -46,9 +46,9 @@ export async function HowItWorksScreen() {
       </section>
 
       {/* CTA */}
-      <section className="mt-16 rounded-card bg-gradient-to-r from-brand-violet to-brand-blue px-6 py-10 text-center text-on-dark">
+      <section className="mt-16 rounded-card bg-gradient-to-r from-brand-violet to-brand-blue px-6 py-14 text-center text-on-dark sm:px-10">
         <h2 className="text-2xl font-bold tracking-[-0.5px]">{hiw.ctaTitle}</h2>
-        <div className="mt-5 flex flex-col items-center justify-center gap-3 sm:flex-row">
+        <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
             href="/post-job"
             className="inline-flex items-center justify-center gap-1.5 rounded-tile bg-on-dark px-5 py-3 text-sm font-bold text-ink transition-transform hover:-translate-y-0.5"
