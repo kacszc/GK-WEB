@@ -905,10 +905,10 @@ const en: Dictionary = {
     description:
       "A trusted platform connecting employers with verified specialists in Poland.",
     columns: [
-      { title: "PLATFORM", links: ["How it works", "Pricing", "Trust Score"] },
+      { title: "PLATFORM", links: ["How it works", "Pricing"] },
       { title: "FOR EMPLOYERS", links: ["Post a job", "Find a specialist", "Job boosts", "Enterprise plans"] },
       { title: "FOR SPECIALISTS", links: ["Create a profile", "PRO subscription", "Profile boosts", "KYC verification"] },
-      { title: "COMPANY", links: ["About us", "Contact", "Careers at skill.com", "Blog", "Help"] },
+      { title: "COMPANY", links: ["About us", "Contact", "Help"] },
     ],
     legal: ["Terms", "Privacy policy", "Cookies", "GDPR"],
     copyright: "© 2026 skill.com sp. z o.o. · VAT PL5252999999 · Marszałkowska 1, Warsaw",

@@ -8,10 +8,15 @@ const columnHrefs: Record<string, string> = {
   "0:1": "/pricing", // PLATFORMA · Cennik
   "1:0": "/post-job", // DLA PRACODAWCÓW · Dodaj zlecenie
   "1:1": "/search", // DLA PRACODAWCÓW · Szukaj specjalisty
+  "1:2": "/pricing", // DLA PRACODAWCÓW · Boosty zleceń
+  "1:3": "/pricing", // DLA PRACODAWCÓW · Pakiety enterprise
   "2:0": "/register", // DLA SPECJALISTÓW · Załóż profil
+  "2:1": "/pricing", // DLA SPECJALISTÓW · Subskrypcja PRO
+  "2:2": "/pricing", // DLA SPECJALISTÓW · Boosty profilu
+  "2:3": "/how-it-works", // DLA SPECJALISTÓW · Weryfikacja KYC
   "3:0": "/about", // FIRMA · O nas
   "3:1": "/contact", // FIRMA · Kontakt
-  "3:4": "/help", // FIRMA · Pomoc
+  "3:2": "/help", // FIRMA · Pomoc
 };
 const legalHrefs = ["/terms", "/privacy", "/cookies", "/privacy"];
 

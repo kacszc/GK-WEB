@@ -904,10 +904,10 @@ const pl = {
     description:
       "Zaufana platforma łącząca pracodawców ze zweryfikowanymi specjalistami w Polsce.",
     columns: [
-      { title: "PLATFORMA", links: ["Jak działa", "Cennik", "Trust Score"] },
+      { title: "PLATFORMA", links: ["Jak działa", "Cennik"] },
       { title: "DLA PRACODAWCÓW", links: ["Dodaj zlecenie", "Szukaj specjalisty", "Boosty zleceń", "Pakiety enterprise"] },
       { title: "DLA SPECJALISTÓW", links: ["Załóż profil", "Subskrypcja PRO", "Boosty profilu", "Weryfikacja KYC"] },
-      { title: "FIRMA", links: ["O nas", "Kontakt", "Praca w skill.com", "Blog", "Pomoc"] },
+      { title: "FIRMA", links: ["O nas", "Kontakt", "Pomoc"] },
     ],
     legal: ["Regulamin", "Polityka prywatności", "Pliki cookies", "RODO"],
     copyright: "© 2026 skill.com sp. z o.o. · NIP 5252999999 · ul. Marszałkowska 1, Warszawa",
