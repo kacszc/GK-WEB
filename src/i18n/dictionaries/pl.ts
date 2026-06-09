@@ -904,7 +904,7 @@ const pl = {
     description:
       "Zaufana platforma łącząca pracodawców ze zweryfikowanymi specjalistami w Polsce.",
     columns: [
-      { title: "PLATFORMA", links: ["Jak działa", "Cennik", "Trust Score", "Bezpieczeństwo", "API"] },
+      { title: "PLATFORMA", links: ["Jak działa", "Cennik", "Trust Score"] },
       { title: "DLA PRACODAWCÓW", links: ["Dodaj zlecenie", "Szukaj specjalisty", "Boosty zleceń", "Pakiety enterprise"] },
       { title: "DLA SPECJALISTÓW", links: ["Załóż profil", "Subskrypcja PRO", "Boosty profilu", "Weryfikacja KYC"] },
       { title: "FIRMA", links: ["O nas", "Kontakt", "Praca w skill.com", "Blog", "Pomoc"] },

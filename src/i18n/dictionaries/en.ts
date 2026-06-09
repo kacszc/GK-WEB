@@ -905,7 +905,7 @@ const en: Dictionary = {
     description:
       "A trusted platform connecting employers with verified specialists in Poland.",
     columns: [
-      { title: "PLATFORM", links: ["How it works", "Pricing", "Trust Score", "Security", "API"] },
+      { title: "PLATFORM", links: ["How it works", "Pricing", "Trust Score"] },
       { title: "FOR EMPLOYERS", links: ["Post a job", "Find a specialist", "Job boosts", "Enterprise plans"] },
       { title: "FOR SPECIALISTS", links: ["Create a profile", "PRO subscription", "Profile boosts", "KYC verification"] },
       { title: "COMPANY", links: ["About us", "Contact", "Careers at skill.com", "Blog", "Help"] },
