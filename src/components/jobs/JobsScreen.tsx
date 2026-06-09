@@ -126,7 +126,8 @@ export function JobsScreen({
         {effectiveView === "mapList" && !noResults && (
           <div className="grid gap-4 lg:h-[calc(100vh-220px)] lg:grid-rows-[minmax(0,1fr)] lg:grid-cols-[200px_minmax(300px,400px)_1fr]">
             {sidebar}
-            <div className="flex flex-col gap-3 overflow-y-auto pr-1">
+            {/* px room so the selection ring isn't clipped by overflow / doesn't bleed under the filters */}
+            <div className="flex flex-col gap-3 overflow-y-auto px-1.5 py-0.5">
               {isLoading
                 ? skeletons
                 : jobs.map((j) => (
