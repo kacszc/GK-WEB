@@ -280,6 +280,7 @@ const pl = {
     sWhen: "Długość zlecenia",
     sWhere: "Gdzie",
     districtLabel: "Dzielnica",
+    locationLabel: "Lokalizacja",
     districtPlaceholder: "Wybierz dzielnicę",
     radiusLabel: "Promień",
     sExtra: "Szczegóły",

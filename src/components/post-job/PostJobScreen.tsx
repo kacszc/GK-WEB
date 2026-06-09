@@ -548,7 +548,7 @@ export function PostJobScreen() {
                   <SumRow label={t("postJob.sProfession")} value={professionLabel} />
                   <SumRow label={t("postJob.titleLabel")} value={draft.title || "—"} />
                   <SumRow label={t("postJob.sWhen")} value={whenLabel} />
-                  <SumRow label={t("postJob.districtLabel")} value={draft.district || "—"} />
+                  <SumRow label={t("postJob.locationLabel")} value={draft.district || "—"} />
                   <SumRow label={t("postJob.engagementLabel")} value={t(`postJob.eng.${draft.engagement}`)} />
                   <SumRow label={t("postJob.peopleLabel")} value={String(draft.people)} />
                   {(draft.rate != null || draft.rateUndisclosed) && (

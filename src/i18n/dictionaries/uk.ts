@@ -281,6 +281,7 @@ const uk: Dictionary = {
     sWhen: "Тривалість замовлення",
     sWhere: "Де",
     districtLabel: "Район",
+    locationLabel: "Локація",
     districtPlaceholder: "Оберіть район",
     radiusLabel: "Радіус",
     sExtra: "Деталі",
