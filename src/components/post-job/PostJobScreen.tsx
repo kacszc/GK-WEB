@@ -11,6 +11,7 @@ import { ArrowLeft, Minus, Plus, CalendarCheck, PartyPopper } from "lucide-react
 import { SearchTopbar } from "@/components/search/SearchTopbar";
 import { Button } from "@/components/ui/Button";
 import { inputClass } from "@/components/ui/Input";
+import { SearchSelect } from "@/components/ui/SearchSelect";
 import { useCreateJob } from "@/hooks/useCreateJob";
 import { useAuth } from "@/lib/AuthProvider";
 import { VerifyNotice } from "@/components/layout/VerifyNotice";
@@ -24,6 +25,7 @@ const dpLocales: Record<Locale, DateFnsLocale> = { pl, en: enUS, uk };
 const intlTags: Record<Locale, string> = { pl: "pl-PL", en: "en-GB", uk: "uk-UA" };
 const DURATIONS: JobDuration[] = ["long_term", "few_weeks", "few_days", "one_day"];
 const ENGAGEMENTS: JobEngagement[] = ["full_time", "part_time", "hours_per_day"];
+const CURRENCIES = ["PLN", "EUR", "USD", "GBP", "UAH"];
 // Default hours/day used to auto-fill the workload (and a cosmetic weekly estimate).
 const AUTO_HOURS: Record<JobEngagement, number | null> = { full_time: 8, part_time: 4, hours_per_day: null };
 
@@ -361,17 +363,15 @@ export function PostJobScreen() {
             {/* Where — backend-driven: city → district (zones), refined by geolocation / a map pin */}
             <SectionCard title={t("postJob.sWhere")}>
               <Label>{t("postJob.cityLabel")}</Label>
-              <select
-                value={draft.cityCode}
-                onChange={(e) => pickCity(e.target.value)}
-                className={cn(inputCls(false), "cursor-pointer")}
-              >
-                {cities.map((c) => (
-                  <option key={c.code} value={c.code}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+              <div className="mt-1.5">
+                <SearchSelect
+                  value={draft.cityCode}
+                  onChange={pickCity}
+                  options={cities.map((c) => ({ value: c.code, label: c.name }))}
+                  placeholder={t("postJob.cityLabel")}
+                  searchPlaceholder={t("results.searchCity")}
+                />
+              </div>
 
               {/* Districts come from the city's backend zones — shown only when the city has any. */}
               {zones.length > 0 && (
@@ -473,17 +473,14 @@ export function PostJobScreen() {
                   <div className="mt-3 grid gap-4 sm:grid-cols-3">
                     <div>
                       <Label>{t("postJob.currencyLabel")}</Label>
-                      <select
-                        value={draft.currency}
-                        onChange={(e) => set({ currency: e.target.value })}
-                        className={cn(inputCls(false), "cursor-pointer")}
-                      >
-                        {["PLN", "EUR", "USD", "GBP", "UAH"].map((c) => (
-                          <option key={c} value={c}>
-                            {c}
-                          </option>
-                        ))}
-                      </select>
+                      <div className="mt-1.5">
+                        <SearchSelect
+                          value={draft.currency}
+                          onChange={(v) => set({ currency: v })}
+                          options={CURRENCIES.map((c) => ({ value: c, label: c }))}
+                          searchPlaceholder={t("postJob.search")}
+                        />
+                      </div>
                     </div>
                     <div>
                       <Label>{t("postJob.rateFromLabel")}</Label>
