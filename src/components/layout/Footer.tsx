@@ -4,6 +4,7 @@ import { getI18n } from "@/i18n/server";
 
 // Link targets keyed by column/link position — identical order across locales.
 const columnHrefs: Record<string, string> = {
+  "0:0": "/how-it-works", // PLATFORMA · Jak działa
   "0:1": "/pricing", // PLATFORMA · Cennik
   "1:0": "/post-job", // DLA PRACODAWCÓW · Dodaj zlecenie
   "1:1": "/search", // DLA PRACODAWCÓW · Szukaj specjalisty
