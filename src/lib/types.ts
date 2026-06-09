@@ -194,8 +194,9 @@ export type JobDraft = {
   duration: JobDuration | ""; // job length — required
   date: Date | null; // optional concrete start date (toggle)
   dateTo: Date | null; // optional end date (range); null = single day / open
+  cityCode: string; // backend geo.city code (drives the district list)
   district: string;
-  lat: number | null; // set when picked on the map
+  lat: number | null; // city/zone centre or a precise map-picked point
   lng: number | null;
   radiusKm: number;
   people: number;

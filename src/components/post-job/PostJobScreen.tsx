@@ -16,8 +16,7 @@ import { MapPickerDialog } from "./MapPickerDialog";
 import { useCreateJob } from "@/hooks/useCreateJob";
 import { useAuth } from "@/lib/AuthProvider";
 import { VerifyNotice } from "@/components/layout/VerifyNotice";
-import { onboardingService } from "@/services";
-import { warsawDistricts } from "@/services/warsaw-districts";
+import { onboardingService, geoService } from "@/services";
 import { useI18n } from "@/i18n/I18nProvider";
 import type { Locale } from "@/i18n/config";
 import { cn } from "@/lib/cn";
@@ -39,9 +38,10 @@ const emptyDraft: JobDraft = {
   duration: "",
   date: null,
   dateTo: null,
+  cityCode: "warszawa",
   district: "",
-  lat: null,
-  lng: null,
+  lat: 52.2297,
+  lng: 21.0122,
   radiusKm: 10,
   people: 1,
   rate: null,
@@ -78,6 +78,20 @@ export function PostJobScreen() {
     queryFn: () => onboardingService.getSpecializations(draft.industry),
     enabled: !!draft.industry,
   });
+
+  // Location is backend-driven: cities + per-city zones (= districts).
+  const { data: cities = [] } = useQuery({ queryKey: ["geoCities"], queryFn: () => geoService.getCities() });
+  const { data: zones = [] } = useQuery({
+    queryKey: ["geoZones", draft.cityCode],
+    queryFn: () => geoService.getZones(draft.cityCode),
+    enabled: !!draft.cityCode,
+  });
+
+  function pickCity(code: string) {
+    const c = cities.find((x) => x.code === code);
+    set({ cityCode: code, district: "", ...(c ? { lat: c.lat, lng: c.lng } : {}) });
+  }
+  const cityName = cities.find((c) => c.code === draft.cityCode)?.name ?? "";
 
   const set = (patch: Partial<JobDraft>) => setDraft((d) => ({ ...d, ...patch }));
 
@@ -347,14 +361,55 @@ export function PostJobScreen() {
               )}
             </SectionCard>
 
-            {/* Where — same location picking as the filters, plus a map pin */}
+            {/* Where — backend-driven: city → district (zones), refined by geolocation / a map pin */}
             <SectionCard title={t("postJob.sWhere")}>
-              <div className="mb-3 flex flex-wrap items-center gap-2">
+              <Label>{t("postJob.cityLabel")}</Label>
+              <select
+                value={draft.cityCode}
+                onChange={(e) => pickCity(e.target.value)}
+                className={cn(inputCls(false), "cursor-pointer")}
+              >
+                {cities.map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+
+              {/* Districts come from the city's backend zones — shown only when the city has any. */}
+              {zones.length > 0 && (
+                <>
+                  <Label className="mt-4">{t("postJob.districtLabel")}</Label>
+                  <select
+                    value={draft.district}
+                    onChange={(e) => {
+                      const z = zones.find((x) => x.name === e.target.value);
+                      set({ district: e.target.value, ...(z ? { lng: z.center[0], lat: z.center[1] } : {}) });
+                    }}
+                    className={cn(inputCls(false), "cursor-pointer")}
+                  >
+                    <option value="">{t("postJob.districtPlaceholder")}</option>
+                    {zones.map((z) => (
+                      <option key={z.name} value={z.name}>
+                        {z.name}
+                      </option>
+                    ))}
+                  </select>
+                </>
+              )}
+
+              {/* Optional: pinpoint an exact spot (geolocation / map) */}
+              <div className="mt-4 flex flex-wrap items-center gap-2">
                 <LocationButton
                   value={null}
                   fullWidth={false}
                   onLocate={(loc: UserLocation) =>
-                    set({ district: loc.district ?? draft.district, lat: loc.lat, lng: loc.lng })
+                    set({
+                      lat: loc.lat,
+                      lng: loc.lng,
+                      district: loc.district ?? draft.district,
+                      ...(loc.district ? { cityCode: "warszawa" } : {}),
+                    })
                   }
                   onClear={() => {}}
                 />
@@ -370,51 +425,19 @@ export function PostJobScreen() {
                   {t("postJob.pickOnMap")}
                 </button>
               </div>
-              {/* District + radius only make sense once a location is set (via geolocation or map). */}
-              {draft.lat != null ? (
-                <>
-                  <p className="mb-2 text-[12px] text-success">{t("postJob.pinSet")}</p>
-                  {/* District dropdown only for Warsaw (the only city we have districts for);
-                      elsewhere just show the resolved location, no nonsensical district list. */}
-                  {warsawDistricts.some((d) => d.name === draft.district) ? (
-                    <>
-                      <Label>{t("postJob.districtLabel")}</Label>
-                      <select
-                        value={draft.district}
-                        onChange={(e) => set({ district: e.target.value })}
-                        className={cn(inputCls(false), "cursor-pointer")}
-                      >
-                        {warsawDistricts.map((d) => (
-                          <option key={d.name} value={d.name}>
-                            {d.name}
-                          </option>
-                        ))}
-                      </select>
-                    </>
-                  ) : draft.district ? (
-                    <p className="text-[13px] text-ink-2">
-                      <span className="text-ink-3">{t("postJob.locationLabel")}: </span>
-                      <span className="font-medium text-ink">{draft.district}</span>
-                    </p>
-                  ) : null}
-                  <div className="mt-4 flex items-center justify-between text-[12px] font-semibold text-ink-3">
-                    <span>{t("postJob.radiusLabel")}</span>
-                    <span className="text-ink">{t("filters.upTo", { km: draft.radiusKm })}</span>
-                  </div>
-                  <input
-                    type="range"
-                    min={1}
-                    max={50}
-                    value={draft.radiusKm}
-                    onChange={(e) => set({ radiusKm: Number(e.target.value) })}
-                    className="mt-1 w-full cursor-pointer accent-brand-violet"
-                  />
-                </>
-              ) : (
-                <p className={cn("text-[12px]", showErrors && errors.district ? "text-[#b07400]" : "text-ink-3")}>
-                  {t("postJob.locationPrompt")}
-                </p>
-              )}
+
+              <div className="mt-4 flex items-center justify-between text-[12px] font-semibold text-ink-3">
+                <span>{t("postJob.radiusLabel")}</span>
+                <span className="text-ink">{t("filters.upTo", { km: draft.radiusKm })}</span>
+              </div>
+              <input
+                type="range"
+                min={1}
+                max={50}
+                value={draft.radiusKm}
+                onChange={(e) => set({ radiusKm: Number(e.target.value) })}
+                className="mt-1 w-full cursor-pointer accent-brand-violet"
+              />
             </SectionCard>
 
             {/* Details — people, workload type, rate range */}
@@ -562,7 +585,10 @@ export function PostJobScreen() {
                   <SumRow label={t("postJob.sProfession")} value={professionLabel} />
                   <SumRow label={t("postJob.titleLabel")} value={draft.title || "—"} />
                   <SumRow label={t("postJob.sWhen")} value={whenLabel} />
-                  <SumRow label={t("postJob.locationLabel")} value={draft.district || "—"} />
+                  <SumRow
+                    label={t("postJob.locationLabel")}
+                    value={[draft.district, cityName].filter(Boolean).join(", ") || "—"}
+                  />
                   <SumRow label={t("postJob.engagementLabel")} value={t(`postJob.eng.${draft.engagement}`)} />
                   <SumRow label={t("postJob.peopleLabel")} value={String(draft.people)} />
                   {(draft.rate != null || draft.rateUndisclosed) && (

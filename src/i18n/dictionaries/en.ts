@@ -281,6 +281,7 @@ const en: Dictionary = {
     sWhen: "Job length",
     sWhere: "Where",
     districtLabel: "District",
+    cityLabel: "City",
     locationLabel: "Location",
     districtPlaceholder: "Choose a district",
     radiusLabel: "Radius",
