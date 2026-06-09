@@ -348,7 +348,7 @@ export function PostJobScreen() {
 
             {/* Where — same location picking as the filters, plus a map pin */}
             <SectionCard title={t("postJob.sWhere")}>
-              <div className="mb-3 flex flex-wrap gap-2">
+              <div className="mb-3 flex flex-wrap items-center gap-2">
                 <LocationButton
                   value={null}
                   onLocate={(loc: UserLocation) =>
@@ -356,6 +356,9 @@ export function PostJobScreen() {
                   }
                   onClear={() => {}}
                 />
+                <span className="text-[12px] font-medium uppercase tracking-wide text-ink-4">
+                  {t("postJob.or")}
+                </span>
                 <button
                   type="button"
                   onClick={() => setMapOpen(true)}

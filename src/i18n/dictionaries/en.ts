@@ -300,6 +300,7 @@ const en: Dictionary = {
     withDate: "Set a specific date (optional)",
     withDateRange: "Set dates / a date range (optional)",
     pickOnMap: "Pick on the map",
+    or: "or",
     pinSet: "Point picked on the map ✓",
     locationPrompt: "Set a location: use your location or pick a point on the map.",
     engagementLabel: "Workload",

@@ -299,6 +299,7 @@ const pl = {
     withDate: "Wskaż konkretną datę (opcjonalnie)",
     withDateRange: "Wskaż termin / przedział dat (opcjonalnie)",
     pickOnMap: "Wybierz z mapy",
+    or: "lub",
     pinSet: "Punkt wybrany na mapie ✓",
     locationPrompt: "Wskaż lokalizację: użyj swojej lokalizacji lub wybierz punkt z mapy.",
     engagementLabel: "Wymiar",
