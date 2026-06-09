@@ -104,7 +104,8 @@ export function PostJobScreen() {
     customProfession: otherMode && !draft.customProfession.trim(),
     title: !draft.title.trim(),
     duration: !draft.duration,
-    district: !draft.district,
+    // A location counts as set once a point is picked (map/geolocation) or a district is chosen.
+    district: !draft.district && draft.lat == null,
   };
   const hasErrors = Object.values(errors).some(Boolean);
 
@@ -373,20 +374,29 @@ export function PostJobScreen() {
               {draft.lat != null ? (
                 <>
                   <p className="mb-2 text-[12px] text-success">{t("postJob.pinSet")}</p>
-                  <Label>{t("postJob.districtLabel")}</Label>
-                  <select
-                    value={draft.district}
-                    onChange={(e) => set({ district: e.target.value })}
-                    className={cn(inputCls(showErrors && errors.district), "cursor-pointer")}
-                  >
-                    <option value="">{t("postJob.districtPlaceholder")}</option>
-                    {warsawDistricts.map((d) => (
-                      <option key={d.name} value={d.name}>
-                        {d.name}
-                      </option>
-                    ))}
-                  </select>
-                  {showErrors && errors.district && <ErrText>{t("postJob.errDistrict")}</ErrText>}
+                  {/* District dropdown only for Warsaw (the only city we have districts for);
+                      elsewhere just show the resolved location, no nonsensical district list. */}
+                  {warsawDistricts.some((d) => d.name === draft.district) ? (
+                    <>
+                      <Label>{t("postJob.districtLabel")}</Label>
+                      <select
+                        value={draft.district}
+                        onChange={(e) => set({ district: e.target.value })}
+                        className={cn(inputCls(false), "cursor-pointer")}
+                      >
+                        {warsawDistricts.map((d) => (
+                          <option key={d.name} value={d.name}>
+                            {d.name}
+                          </option>
+                        ))}
+                      </select>
+                    </>
+                  ) : draft.district ? (
+                    <p className="text-[13px] text-ink-2">
+                      <span className="text-ink-3">{t("postJob.locationLabel")}: </span>
+                      <span className="font-medium text-ink">{draft.district}</span>
+                    </p>
+                  ) : null}
                   <div className="mt-4 flex items-center justify-between text-[12px] font-semibold text-ink-3">
                     <span>{t("postJob.radiusLabel")}</span>
                     <span className="text-ink">{t("filters.upTo", { km: draft.radiusKm })}</span>
