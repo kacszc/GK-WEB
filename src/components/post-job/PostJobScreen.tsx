@@ -351,6 +351,7 @@ export function PostJobScreen() {
               <div className="mb-3 flex flex-wrap items-center gap-2">
                 <LocationButton
                   value={null}
+                  fullWidth={false}
                   onLocate={(loc: UserLocation) =>
                     set({ district: loc.district ?? draft.district, lat: loc.lat, lng: loc.lng })
                   }

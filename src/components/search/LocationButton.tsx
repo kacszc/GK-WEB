@@ -13,10 +13,12 @@ export function LocationButton({
   value,
   onLocate,
   onClear,
+  fullWidth = true,
 }: {
   value: UserLocation | null;
   onLocate: (loc: UserLocation) => void;
   onClear: () => void;
+  fullWidth?: boolean;
 }) {
   const { t } = useI18n();
   const [state, setState] = useState<State>("idle");
@@ -48,7 +50,10 @@ export function LocationButton({
     return (
       <button
         onClick={onClear}
-        className="inline-flex w-full items-center gap-2 rounded-tile border border-brand-violet/30 bg-[#f6f3ff] px-3 py-2 text-[13px] font-medium text-ink transition-colors hover:bg-[#efe9ff]"
+        className={cn(
+          "inline-flex items-center gap-2 rounded-tile border border-brand-violet/30 bg-[#f6f3ff] px-3 py-2 text-[13px] font-medium text-ink transition-colors hover:bg-[#efe9ff]",
+          fullWidth && "w-full",
+        )}
       >
         <MapPin className="h-4 w-4 text-brand-violet" />
         <span className="flex-1 truncate text-left">{value.label}</span>
@@ -62,7 +67,8 @@ export function LocationButton({
       onClick={detect}
       disabled={state === "locating"}
       className={cn(
-        "inline-flex w-full items-center justify-center gap-2 rounded-tile border border-line-2 bg-surface px-3 py-2 text-[13px] font-medium text-ink transition-colors hover:bg-muted",
+        "inline-flex items-center justify-center gap-2 rounded-tile border border-line-2 bg-surface px-3 py-2 text-[13px] font-medium text-ink transition-colors hover:bg-muted",
+        fullWidth && "w-full",
         state === "locating" && "cursor-wait opacity-70",
       )}
     >
