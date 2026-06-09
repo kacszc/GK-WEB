@@ -25,7 +25,7 @@ export function MobileNav() {
       {({ close }) => (
         <nav className="flex flex-col gap-0.5">
           <MenuLink href="/pricing" onClick={close}>{t("nav.pricing")}</MenuLink>
-          <MenuLink onClick={close}>{t("nav.howItWorks")}</MenuLink>
+          <MenuLink href="/how-it-works" onClick={close}>{t("nav.howItWorks")}</MenuLink>
           <MenuLink href="/post-job" onClick={close}>
             <Plus className="h-4 w-4" />
             {t("nav.addJob")}

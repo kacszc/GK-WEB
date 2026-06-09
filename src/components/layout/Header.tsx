@@ -19,7 +19,7 @@ export async function Header() {
           <a href="/pricing" className="text-sm font-medium text-ink-2 hover:text-ink">
             {t("nav.pricing")}
           </a>
-          <a href="#" className="text-sm font-medium text-ink-2 hover:text-ink">
+          <a href="/how-it-works" className="text-sm font-medium text-ink-2 hover:text-ink">
             {t("nav.howItWorks")}
           </a>
           <Pill
