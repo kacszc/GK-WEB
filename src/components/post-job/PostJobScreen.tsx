@@ -7,12 +7,10 @@ import { DayPicker } from "react-day-picker";
 import { pl, enUS, uk } from "react-day-picker/locale";
 import type { Locale as DateFnsLocale } from "react-day-picker/locale";
 import "react-day-picker/style.css";
-import { ArrowLeft, Minus, Plus, CalendarCheck, PartyPopper, MapPin } from "lucide-react";
+import { ArrowLeft, Minus, Plus, CalendarCheck, PartyPopper } from "lucide-react";
 import { SearchTopbar } from "@/components/search/SearchTopbar";
 import { Button } from "@/components/ui/Button";
 import { inputClass } from "@/components/ui/Input";
-import { LocationButton } from "@/components/search/LocationButton";
-import { MapPickerDialog } from "./MapPickerDialog";
 import { useCreateJob } from "@/hooks/useCreateJob";
 import { useAuth } from "@/lib/AuthProvider";
 import { VerifyNotice } from "@/components/layout/VerifyNotice";
@@ -20,7 +18,7 @@ import { onboardingService, geoService } from "@/services";
 import { useI18n } from "@/i18n/I18nProvider";
 import type { Locale } from "@/i18n/config";
 import { cn } from "@/lib/cn";
-import type { JobDraft, JobDuration, JobEngagement, UserLocation } from "@/lib/types";
+import type { JobDraft, JobDuration, JobEngagement } from "@/lib/types";
 
 const dpLocales: Record<Locale, DateFnsLocale> = { pl, en: enUS, uk };
 const intlTags: Record<Locale, string> = { pl: "pl-PL", en: "en-GB", uk: "uk-UA" };
@@ -61,7 +59,6 @@ export function PostJobScreen() {
   const [otherMode, setOtherMode] = useState(false); // "Inne" — custom role with required text
   const [showErrors, setShowErrors] = useState(false);
   const [withDate, setWithDate] = useState(false); // optional concrete date toggle
-  const [mapOpen, setMapOpen] = useState(false);
   const [month, setMonth] = useState<Date>(new Date());
   const { mutate, isPending, data: result, isSuccess, reset } = useCreateJob();
 
@@ -398,34 +395,6 @@ export function PostJobScreen() {
                 </>
               )}
 
-              {/* Optional: pinpoint an exact spot (geolocation / map) */}
-              <div className="mt-4 flex flex-wrap items-center gap-2">
-                <LocationButton
-                  value={null}
-                  fullWidth={false}
-                  onLocate={(loc: UserLocation) =>
-                    set({
-                      lat: loc.lat,
-                      lng: loc.lng,
-                      district: loc.district ?? draft.district,
-                      ...(loc.district ? { cityCode: "warszawa" } : {}),
-                    })
-                  }
-                  onClear={() => {}}
-                />
-                <span className="text-[12px] font-medium uppercase tracking-wide text-ink-4">
-                  {t("postJob.or")}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setMapOpen(true)}
-                  className="inline-flex items-center gap-1.5 rounded-tile border border-line-2 bg-surface px-3 py-2 text-[13px] font-medium text-ink hover:bg-muted"
-                >
-                  <MapPin className="h-4 w-4 text-brand-violet" />
-                  {t("postJob.pickOnMap")}
-                </button>
-              </div>
-
               <div className="mt-4 flex items-center justify-between text-[12px] font-semibold text-ink-3">
                 <span>{t("postJob.radiusLabel")}</span>
                 <span className="text-ink">{t("filters.upTo", { km: draft.radiusKm })}</span>
@@ -622,13 +591,6 @@ export function PostJobScreen() {
           </aside>
         </div>
       </main>
-
-      <MapPickerDialog
-        open={mapOpen}
-        onClose={() => setMapOpen(false)}
-        center={draft.lat != null && draft.lng != null ? [draft.lng, draft.lat] : null}
-        onPick={(loc) => set({ district: loc.district || draft.district, lat: loc.lat, lng: loc.lng })}
-      />
     </>
   );
 }
