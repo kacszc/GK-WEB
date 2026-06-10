@@ -98,10 +98,6 @@ export function AccountSettings() {
       {/* Privacy & GDPR */}
       <section className="rounded-panel border border-line-3 bg-surface p-6">
         <h2 className="text-[15px] font-semibold text-ink">{t("account.gdprTitle")}</h2>
-        <div className="mt-3 flex items-start gap-2 rounded-tile bg-[#eef1ff] px-3.5 py-2.5 text-[12px] text-[#1f3a8a]">
-          <span aria-hidden>ℹ️</span>
-          <span>{t("account.gdprInfo")}</span>
-        </div>
         <div className="mt-3 divide-y divide-line">
           <GdprRow
             icon={<Bell className="h-4 w-4 text-ink-3" />}
