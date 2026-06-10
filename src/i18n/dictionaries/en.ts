@@ -124,6 +124,16 @@ const en: Dictionary = {
     rateTo: "up to {rate} zł/h",
     empty: "You don't have any specialist alerts yet. Create your first one above.",
   },
+  applications: {
+    navTitle: "My applications",
+    title: "My applications",
+    subtitle: "Jobs you've applied to — with their status.",
+    empty: "You haven't applied to any jobs yet.",
+    browse: "Browse jobs",
+    statusApplied: "Sent",
+    statusSelected: "Selected!",
+    statusRejected: "Not chosen",
+  },
   error: {
     title: "Something went wrong",
     body: "Please try again.",

@@ -11,6 +11,8 @@ export { alertsService } from "./alerts.service";
 export type { JobAlert, AlertDraft } from "./alerts.service";
 export { specialistAlertsService } from "./specialistAlerts.service";
 export type { SpecialistAlert, SpecialistAlertDraft } from "./specialistAlerts.service";
+export { applicationsService } from "./applications.service";
+export type { MyApplication } from "./applications.service";
 export { specialistsService } from "./specialists.service";
 export type { SpecialistFilters, SpecialistSort, SearchFilterSchema, FilterOption, FilterRange } from "./specialists.service";
 export { jobsService } from "./jobs.service";

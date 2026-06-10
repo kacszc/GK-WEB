@@ -124,6 +124,16 @@ const uk: Dictionary = {
     rateTo: "до {rate} zł/h",
     empty: "У вас ще немає сповіщень про спеціалістів. Створіть перше вище.",
   },
+  applications: {
+    navTitle: "Мої заявки",
+    title: "Мої заявки",
+    subtitle: "Замовлення, на які ви подалися — зі статусом.",
+    empty: "Ви ще не подавалися на жодне замовлення.",
+    browse: "Переглянути замовлення",
+    statusApplied: "Надіслано",
+    statusSelected: "Обрано!",
+    statusRejected: "Не обрано",
+  },
   error: {
     title: "Не вдалося",
     body: "Спробуйте ще раз.",

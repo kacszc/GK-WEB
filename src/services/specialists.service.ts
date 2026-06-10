@@ -18,6 +18,7 @@ type SpecialistDto = {
   // Detail-only fields.
   completedJobs?: number;
   memberSince?: number; // year, e.g. 2026 (0 when unknown)
+  repeatClientsPct?: number; // % of completed jobs from repeat employers
   specializations?: { code: string; label: string }[]; // localized labels
   languages?: string[]; // codes, e.g. ["pl","en"] — localized in the UI
 };
@@ -68,14 +69,15 @@ function profileExtras(
   base: Specialist,
   completedJobs: number,
   memberSince: number,
+  repeatClientsPct: number,
 ): Omit<SpecialistProfile, keyof Specialist> {
   return {
     bio: base.role ? `${base.role}. Dyspozycyjność w okolicy: ${base.district}.` : "",
     completedJobs,
-    responseTimeMin: 0, // no source yet → section hidden in the UI
+    responseTimeMin: 0, // needs message-response tracking → section hidden in the UI
     memberSince: memberSince > 0 ? String(memberSince) : "",
-    repeatClientsPct: 0, // no source yet → section hidden in the UI
-    certifications: [], // no source yet → section hidden in the UI
+    repeatClientsPct, // real (from completed jobs); UI hides it at 0
+    certifications: [], // needs a managed certifications feature → section hidden in the UI
     reviewList: [],
   };
 }
@@ -145,7 +147,10 @@ export const specialistsService = {
       specialties: (dto.specializations ?? []).map((s) => ({ label: s.label, count: 0 })),
       languages: dto.languages ?? [],
     };
-    return { ...base, ...profileExtras(base, dto.completedJobs ?? 0, dto.memberSince ?? 0) };
+    return {
+      ...base,
+      ...profileExtras(base, dto.completedJobs ?? 0, dto.memberSince ?? 0, dto.repeatClientsPct ?? 0),
+    };
   },
 
   /** The backend-defined filter schema (industries → specializations, availability, sort, ranges). */

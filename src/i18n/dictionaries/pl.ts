@@ -123,6 +123,16 @@ const pl = {
     rateTo: "do {rate} zł/h",
     empty: "Nie masz jeszcze żadnych alertów o specjalistach. Utwórz pierwszy powyżej.",
   },
+  applications: {
+    navTitle: "Moje aplikacje",
+    title: "Moje aplikacje",
+    subtitle: "Zlecenia, na które aplikowałeś — wraz ze statusem.",
+    empty: "Nie aplikowałeś jeszcze na żadne zlecenie.",
+    browse: "Przeglądaj zlecenia",
+    statusApplied: "Wysłana",
+    statusSelected: "Wybrany!",
+    statusRejected: "Odrzucona",
+  },
   error: {
     title: "Nie udało się",
     body: "Spróbuj ponownie.",
