@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, Settings, Briefcase, MessageSquare, Bookmark, Clock, Coins, ImageIcon, CalendarDays, BarChart3, Scale, BellRing, Send } from "lucide-react";
+import { LayoutGrid, Settings, Briefcase, MessageSquare, Bookmark, Clock, Coins, ImageIcon, CalendarDays, BarChart3, Scale, BellRing, Send, Award } from "lucide-react";
 import { useAuth } from "@/lib/AuthProvider";
 import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
@@ -14,6 +14,7 @@ const items = [
   { href: "/account/messages", key: "account.navMessages", icon: MessageSquare },
   { href: "/account/contacts", key: "account.navContacts", icon: Bookmark },
   { href: "/account/portfolio", key: "portfolio.title", icon: ImageIcon, role: "specialist" as const },
+  { href: "/account/certifications", key: "certifications.navTitle", icon: Award, role: "specialist" as const },
   { href: "/account/availability", key: "availability.eyebrow", icon: CalendarDays, role: "specialist" as const },
   { href: "/account/alerts", key: "alerts.navTitle", icon: BellRing, role: "specialist" as const },
   { href: "/account/specialist-alerts", key: "specialistAlerts.navTitle", icon: BellRing, role: "employer" as const },

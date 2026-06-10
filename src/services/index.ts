@@ -13,6 +13,8 @@ export { specialistAlertsService } from "./specialistAlerts.service";
 export type { SpecialistAlert, SpecialistAlertDraft } from "./specialistAlerts.service";
 export { applicationsService } from "./applications.service";
 export type { MyApplication } from "./applications.service";
+export { certificationsService } from "./certifications.service";
+export type { Certification, CertificationDraft } from "./certifications.service";
 export { specialistsService } from "./specialists.service";
 export type { SpecialistFilters, SpecialistSort, SearchFilterSchema, FilterOption, FilterRange } from "./specialists.service";
 export { jobsService } from "./jobs.service";

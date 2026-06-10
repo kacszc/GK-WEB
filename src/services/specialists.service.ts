@@ -19,6 +19,7 @@ type SpecialistDto = {
   completedJobs?: number;
   memberSince?: number; // year, e.g. 2026 (0 when unknown)
   repeatClientsPct?: number; // % of completed jobs from repeat employers
+  certifications?: string[]; // display labels (specialist-managed)
   specializations?: { code: string; label: string }[]; // localized labels
   languages?: string[]; // codes, e.g. ["pl","en"] — localized in the UI
 };
@@ -70,6 +71,7 @@ function profileExtras(
   completedJobs: number,
   memberSince: number,
   repeatClientsPct: number,
+  certifications: string[],
 ): Omit<SpecialistProfile, keyof Specialist> {
   return {
     bio: base.role ? `${base.role}. Dyspozycyjność w okolicy: ${base.district}.` : "",
@@ -77,7 +79,7 @@ function profileExtras(
     responseTimeMin: 0, // needs message-response tracking → section hidden in the UI
     memberSince: memberSince > 0 ? String(memberSince) : "",
     repeatClientsPct, // real (from completed jobs); UI hides it at 0
-    certifications: [], // needs a managed certifications feature → section hidden in the UI
+    certifications, // specialist-managed; UI hides the section when empty
     reviewList: [],
   };
 }
@@ -149,7 +151,13 @@ export const specialistsService = {
     };
     return {
       ...base,
-      ...profileExtras(base, dto.completedJobs ?? 0, dto.memberSince ?? 0, dto.repeatClientsPct ?? 0),
+      ...profileExtras(
+        base,
+        dto.completedJobs ?? 0,
+        dto.memberSince ?? 0,
+        dto.repeatClientsPct ?? 0,
+        dto.certifications ?? [],
+      ),
     };
   },
 
