@@ -112,6 +112,18 @@ const en: Dictionary = {
     errorTitle: "Something went wrong",
     errorBody: "Please try again.",
   },
+  specialistAlerts: {
+    navTitle: "Specialist alerts",
+    title: "Specialist alerts",
+    subtitle: "We'll notify you when a new specialist matching your criteria appears in the chosen area.",
+    newTitle: "New alert",
+    location: "Location",
+    range: "Range",
+    maxRate: "Max rate (zł/h)",
+    maxRatePlaceholder: "any",
+    rateTo: "up to {rate} zł/h",
+    empty: "You don't have any specialist alerts yet. Create your first one above.",
+  },
   error: {
     title: "Something went wrong",
     body: "Please try again.",

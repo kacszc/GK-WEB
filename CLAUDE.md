@@ -40,6 +40,7 @@ src/
 - **Server Components domyślnie**; `"use client"` tylko dla interaktywności (search bar, toggle, autocomplete, mapa, Reveal).
 - Ikony: `lucide-react`. Avatary: placeholdery (`@/lib/avatar`), nie używać wygasłych URL-i z Figmy.
 - **Komentarze w kodzie po angielsku.**
+- **Wyszukiwalne listy/selecty → `SearchSelect`** (`@/components/ui/SearchSelect`). Gdy lista opcji jest dłuższa niż kilka pozycji (miasta, waluty, kategorie itp.), używaj go zamiast zwykłego `<select>`: pole jak text-field → rozwija listę z wyszukiwarką u góry, wpisywanie filtruje. Props: `value`, `onChange`, `options: {value,label}[]`, `placeholder`, `searchPlaceholder`. (Picker miasta z geolokalizacją to osobny `LocationPicker`.)
 
 ## i18n (PL / EN / UK)
 

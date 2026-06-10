@@ -111,6 +111,18 @@ const pl = {
     errorTitle: "Nie udało się",
     errorBody: "Spróbuj ponownie.",
   },
+  specialistAlerts: {
+    navTitle: "Alerty o specjalistach",
+    title: "Alerty o specjalistach",
+    subtitle: "Powiadomimy Cię, gdy w wybranej okolicy pojawi się nowy specjalista pasujący do kryteriów.",
+    newTitle: "Nowy alert",
+    location: "Lokalizacja",
+    range: "Zasięg",
+    maxRate: "Maks. stawka (zł/h)",
+    maxRatePlaceholder: "dowolna",
+    rateTo: "do {rate} zł/h",
+    empty: "Nie masz jeszcze żadnych alertów o specjalistach. Utwórz pierwszy powyżej.",
+  },
   error: {
     title: "Nie udało się",
     body: "Spróbuj ponownie.",

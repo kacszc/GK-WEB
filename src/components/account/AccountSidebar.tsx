@@ -15,6 +15,7 @@ const items = [
   { href: "/account/portfolio", key: "portfolio.title", icon: ImageIcon, role: "specialist" as const },
   { href: "/account/availability", key: "availability.eyebrow", icon: CalendarDays, role: "specialist" as const },
   { href: "/account/alerts", key: "alerts.navTitle", icon: BellRing, role: "specialist" as const },
+  { href: "/account/specialist-alerts", key: "specialistAlerts.navTitle", icon: BellRing, role: "employer" as const },
   { href: "/account/reports", key: "reports.title", icon: BarChart3, role: "employer" as const },
   { href: "/account/disputes", key: "dispute.listTitle", icon: Scale },
   { href: "/account/tokens", key: "tokens.walletTitle", icon: Coins },
