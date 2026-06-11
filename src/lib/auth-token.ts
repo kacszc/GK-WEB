@@ -11,12 +11,12 @@ import { firebaseAuth } from "@/lib/firebase";
  * Returns a fresh Firebase ID token for the signed-in user, or null when no one
  * is signed in / running on the server / Firebase is unavailable.
  */
-export async function getCurrentIdToken(): Promise<string | null> {
+export async function getCurrentIdToken(forceRefresh = false): Promise<string | null> {
   if (typeof window === "undefined") return null;
   const user = firebaseAuth.currentUser;
   if (!user) return null;
   try {
-    return await user.getIdToken();
+    return await user.getIdToken(forceRefresh);
   } catch {
     return null;
   }

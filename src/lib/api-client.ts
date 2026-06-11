@@ -20,22 +20,25 @@ export class ApiError extends Error {
   }
 }
 
-async function authHeaders(): Promise<Record<string, string>> {
-  const token = await getCurrentIdToken();
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
-
 async function request<T>(path: string, opts: ApiOptions = {}): Promise<T> {
   const { locale, headers, ...init } = opts;
-  const res = await fetch(`${BASE_URL}${path}`, {
-    headers: {
-      "Content-Type": "application/json",
-      ...(locale ? { "Accept-Language": locale } : {}),
-      ...(await authHeaders()),
-      ...headers,
-    },
-    ...init,
+  const build = (token: string | null) => ({
+    "Content-Type": "application/json",
+    ...(locale ? { "Accept-Language": locale } : {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...headers,
   });
+
+  let token = await getCurrentIdToken();
+  let res = await fetch(`${BASE_URL}${path}`, { headers: build(token), ...init });
+
+  // Stale-claim recovery: when signed in but unauthorized/forbidden, the ID token may carry
+  // outdated claims (e.g. email_verified or role just changed). Force-refresh it once and retry.
+  if (token && (res.status === 401 || res.status === 403)) {
+    token = await getCurrentIdToken(true);
+    res = await fetch(`${BASE_URL}${path}`, { headers: build(token), ...init });
+  }
+
   if (!res.ok) {
     throw new ApiError(res.status, `API ${res.status} ${res.statusText} — ${path}`);
   }

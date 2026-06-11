@@ -181,7 +181,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const fb = firebaseAuth.currentUser;
     if (!fb) return false;
     await fb.reload();
-    const derived = await deriveUser(fb);
+    // Force-refresh the ID token so the Bearer sent to the API carries the fresh
+    // email_verified / role claims (reload() alone only updates the local user record,
+    // not the cached token — otherwise gated writes like /apply 403 after verifying).
+    if (fb.emailVerified) {
+      await fb.getIdToken(true);
+    }
+    const derived = await deriveUser(fb, true);
     // Only update state when something actually changed, so polling for the
     // verification link doesn't re-render the app every few seconds.
     setUser((prev) =>
