@@ -19,11 +19,13 @@ const DAY_OPTIONS = [3, 7, 14];
 const statusStyle: Record<MyJobStatus, string> = {
   active: "bg-success-chip text-success-chip-text",
   filled: "bg-[#e7efff] text-[#1158ed]",
+  completed: "bg-pill text-ink-2",
   expired: "bg-pill text-ink-3",
 };
 const statusKey: Record<MyJobStatus, string> = {
   active: "account.statusActive",
   filled: "account.statusFilled",
+  completed: "account.statusCompleted",
   expired: "account.statusExpired",
 };
 

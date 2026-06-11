@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, MapPin, Star, Check, Loader2, CheckCircle2 } from "lucide-react";
 import { accountService, reviewsService } from "@/services";
+import { jobRateLabel } from "@/lib/jobRate";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
@@ -25,8 +26,12 @@ export function JobDetailScreen({ id }: { id: string }) {
     queryFn: () => accountService.getApplicants(id),
   });
 
-  const [phase, setPhase] = useState<Phase>("applicants");
-  const [worker, setWorker] = useState<Applicant | null>(null);
+  // Phase is derived from the server job status (+ the selected applicant), so it survives a
+  // page reload — the employer can't accidentally re-open the applicant list after picking someone.
+  const phase: Phase =
+    job?.status === "completed" ? "completed" : job?.status === "filled" ? "inProgress" : "applicants";
+  const worker = useMemo(() => applicants.find((a) => a.status === "SELECTED") ?? null, [applicants]);
+
   const [selecting, setSelecting] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
@@ -35,14 +40,16 @@ export function JobDetailScreen({ id }: { id: string }) {
   const [dispute, setDispute] = useState<Dispute | null>(null);
 
   async function select(a: Applicant) {
+    if (!a.applicationId) return;
     setSelecting(a.id);
     try {
-      if (a.applicationId) {
-        await accountService.selectApplicant(id, a.applicationId);
-        await queryClient.invalidateQueries({ queryKey: ["applicants", id] });
-      }
-      setWorker(a);
-      setPhase("inProgress");
+      await accountService.selectApplicant(id, a.applicationId);
+      // Refetch so the derived phase/worker reflect the new server state.
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["applicants", id] }),
+        queryClient.invalidateQueries({ queryKey: ["job", id] }),
+        queryClient.invalidateQueries({ queryKey: ["myJobs"] }),
+      ]);
     } finally {
       setSelecting(null);
     }
@@ -52,7 +59,10 @@ export function JobDetailScreen({ id }: { id: string }) {
     setConfirming(true);
     try {
       await accountService.confirmCompletion(id);
-      setPhase("completed");
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["job", id] }),
+        queryClient.invalidateQueries({ queryKey: ["myJobs"] }),
+      ]);
     } finally {
       setConfirming(false);
     }
@@ -85,7 +95,8 @@ export function JobDetailScreen({ id }: { id: string }) {
       </div>
       {job && (
         <p className="-mt-3 text-[13px] text-ink-3">
-          {job.profession} · {job.district} · {job.rate} zł/h
+          {job.profession} · {job.district} ·{" "}
+          {jobRateLabel({ rate: job.rate, rateDisclosed: job.rateDisclosed, currency: job.currency }, t)}
         </p>
       )}
 

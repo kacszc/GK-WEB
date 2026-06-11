@@ -39,9 +39,11 @@ type MyJobDto = {
   title: string;
   profession: string;
   district: string;
-  status: "active" | "filled" | "expired";
+  status: "active" | "filled" | "completed" | "expired";
   applicants: number;
   rate: number;
+  rateDisclosed?: boolean;
+  currency?: string;
   createdAt: string;
 };
 
@@ -83,6 +85,8 @@ function toMyJob(d: MyJobDto): MyJob {
     status: d.status,
     applicants: d.applicants,
     rate: d.rate,
+    rateDisclosed: d.rateDisclosed ?? true,
+    currency: d.currency ?? "PLN",
     postedAgo: appliedAgo(d.createdAt),
   };
 }

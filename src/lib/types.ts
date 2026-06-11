@@ -70,7 +70,7 @@ export type SearchMode = "worker" | "job";
 export type UserRole = "employer" | "specialist";
 
 /** A job the user posted (employer dashboard). */
-export type MyJobStatus = "active" | "filled" | "expired";
+export type MyJobStatus = "active" | "filled" | "completed" | "expired";
 export type MyJob = {
   id: string;
   title: string;
@@ -79,6 +79,8 @@ export type MyJob = {
   status: MyJobStatus;
   applicants: number;
   rate: number;
+  rateDisclosed: boolean;
+  currency: string;
   postedAgo: string;
 };
 
