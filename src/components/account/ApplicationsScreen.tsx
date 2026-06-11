@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { Send, MapPin, Coins } from "lucide-react";
+import { Send, MapPin, Coins, BadgeCheck } from "lucide-react";
 import { applicationsService, type MyApplication } from "@/services";
 import { jobRateLabel } from "@/lib/jobRate";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -41,6 +41,12 @@ export function ApplicationsScreen() {
             <div key={a.id} className="flex items-start justify-between gap-3 rounded-panel border border-line-3 bg-surface p-4">
               <div className="min-w-0">
                 <h3 className="text-[15px] font-semibold text-ink">{a.title}</h3>
+                {a.employer && (
+                  <p className="mt-0.5 inline-flex items-center gap-1 text-[12px] text-ink-2">
+                    {a.employer}
+                    {a.employerVerified && <BadgeCheck className="h-3.5 w-3.5 text-[#1158ed]" />}
+                  </p>
+                )}
                 <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-ink-2">
                   <span className="rounded-tile bg-pill px-2 py-0.5 font-medium">{a.profession}</span>
                   {a.district && (
