@@ -81,10 +81,13 @@ export function toChatMessage(m: MessageView): ChatMessage {
 }
 
 export const messagesService = {
-  /** Send a contact message to a specialist (no thread yet → POST with recipientId). */
-  async send(specialistId: string, text: string): Promise<{ ok: true }> {
-    await apiPost<MessageView>("/api/messages", { recipientId: specialistId, text });
-    return { ok: true };
+  /**
+   * Start (or continue) a conversation with a user by id. Creates the thread on first contact.
+   * Returns the thread id so the caller can navigate to the live conversation.
+   */
+  async send(recipientId: string, text: string): Promise<{ ok: true; threadId: string }> {
+    const view = await apiPost<MessageView>("/api/messages", { recipientId, text });
+    return { ok: true, threadId: view.threadId };
   },
 
   /** Inbox thread list. */

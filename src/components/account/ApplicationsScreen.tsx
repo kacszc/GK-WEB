@@ -3,9 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Send, MapPin, Coins, BadgeCheck, XCircle, Loader2 } from "lucide-react";
+import { Send, MapPin, Coins, BadgeCheck, XCircle, Loader2, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
+import { MessageComposerDialog, type MessageTarget } from "@/components/messages/MessageComposerDialog";
 import {
   applicationsService,
   WITHDRAW_REASONS,
@@ -27,6 +28,7 @@ export function ApplicationsScreen() {
   });
 
   const [withdrawing, setWithdrawing] = useState<MyApplication | null>(null);
+  const [msgTo, setMsgTo] = useState<MessageTarget | null>(null);
 
   function formatDate(iso: string | null): string {
     if (!iso) return "";
@@ -89,6 +91,15 @@ export function ApplicationsScreen() {
               </div>
               <div className="flex shrink-0 flex-col items-end gap-2">
                 <StatusBadge status={a.status} t={t} />
+                {a.employerId && (
+                  <button
+                    onClick={() => setMsgTo({ id: a.employerId, name: a.employer || t("applications.employerFallback") })}
+                    className="inline-flex items-center gap-1 text-[12px] font-medium text-ink-3 hover:text-ink"
+                  >
+                    <MessageSquare className="h-3.5 w-3.5" />
+                    {t("applications.message")}
+                  </button>
+                )}
                 {a.status === "APPLIED" && (
                   <button
                     onClick={() => setWithdrawing(a)}
@@ -105,6 +116,7 @@ export function ApplicationsScreen() {
       )}
 
       <WithdrawDialog application={withdrawing} onClose={() => setWithdrawing(null)} />
+      <MessageComposerDialog target={msgTo} onClose={() => setMsgTo(null)} />
     </div>
   );
 }

@@ -7,6 +7,7 @@ export type MyApplication = {
   title: string;
   profession: string; // localized label
   district: string;
+  employerId: string;
   employer: string;
   employerVerified: boolean;
   rateFrom: number;

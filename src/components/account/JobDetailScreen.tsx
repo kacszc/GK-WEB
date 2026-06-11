@@ -3,8 +3,9 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, MapPin, Star, Check, Loader2, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, MapPin, Star, Check, Loader2, CheckCircle2, MessageSquare } from "lucide-react";
 import { accountService, reviewsService } from "@/services";
+import { MessageComposerDialog, type MessageTarget } from "@/components/messages/MessageComposerDialog";
 import { jobRateLabel } from "@/lib/jobRate";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
@@ -38,6 +39,7 @@ export function JobDetailScreen({ id }: { id: string }) {
   const [reviewed, setReviewed] = useState(false);
   const [disputeOpen, setDisputeOpen] = useState(false);
   const [dispute, setDispute] = useState<Dispute | null>(null);
+  const [msgTo, setMsgTo] = useState<MessageTarget | null>(null);
 
   async function select(a: Applicant) {
     if (!a.applicationId) return;
@@ -137,7 +139,15 @@ export function JobDetailScreen({ id }: { id: string }) {
                       <p className="mt-2 text-[13px] text-ink-2">{a.message}</p>
                     </div>
                   </div>
-                  <div className="mt-3 flex justify-end">
+                  <div className="mt-3 flex justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setMsgTo({ id: a.id, name: a.name })}
+                      className="rounded-tile px-4 py-2 text-[13px]"
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                      {t("jobDetail.message")}
+                    </Button>
                     <Button
                       variant="dark"
                       onClick={() => select(a)}
@@ -172,24 +182,34 @@ export function JobDetailScreen({ id }: { id: string }) {
               <p className="text-[12px] text-ink-3">{worker.role} · {worker.rate} zł/h</p>
             </div>
           </div>
-          <Button
-            variant="dark"
-            onClick={confirm}
-            disabled={confirming}
-            className="mt-5 rounded-tile px-5 py-2.5 text-sm"
-          >
-            {confirming ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                {t("jobDetail.confirming")}
-              </>
-            ) : (
-              <>
-                <CheckCircle2 className="h-4 w-4" />
-                {t("jobDetail.confirm")}
-              </>
-            )}
-          </Button>
+          <div className="mt-5 flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setMsgTo({ id: worker.id, name: worker.name })}
+              className="rounded-tile px-5 py-2.5 text-sm"
+            >
+              <MessageSquare className="h-4 w-4" />
+              {t("jobDetail.message")}
+            </Button>
+            <Button
+              variant="dark"
+              onClick={confirm}
+              disabled={confirming}
+              className="rounded-tile px-5 py-2.5 text-sm"
+            >
+              {confirming ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {t("jobDetail.confirming")}
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="h-4 w-4" />
+                  {t("jobDetail.confirm")}
+                </>
+              )}
+            </Button>
+          </div>
         </section>
       )}
 
@@ -252,6 +272,8 @@ export function JobDetailScreen({ id }: { id: string }) {
           setReviewOpen(false);
         }}
       />
+
+      <MessageComposerDialog target={msgTo} onClose={() => setMsgTo(null)} />
     </div>
   );
 }
