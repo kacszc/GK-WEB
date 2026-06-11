@@ -171,6 +171,9 @@ const en: Dictionary = {
   error: {
     title: "Something went wrong",
     body: "Please try again.",
+    rateLimitTitle: "Slow down",
+    rateLimitBody: "Too many requests. Please try again shortly.",
+    rateLimitBodySecs: "Too many requests. Please try again in {seconds}s.",
   },
   verify: {
     bannerTitle: "Your account is inactive",

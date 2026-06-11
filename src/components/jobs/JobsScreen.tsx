@@ -14,6 +14,7 @@ import { jobsService, type JobFilters } from "@/services";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useAuth } from "@/lib/AuthProvider";
 import { useToast } from "@/lib/ToastProvider";
+import { requestErrorToast } from "@/lib/errorToast";
 import { VerifyNotice } from "@/components/layout/VerifyNotice";
 import { jobRateLabel } from "@/lib/jobRate";
 import { cn } from "@/lib/cn";
@@ -281,8 +282,8 @@ function ApplyDialog({ job, onClose }: { job: JobPosting | null; onClose: () => 
     try {
       await jobsService.apply(job.id, text);
       setSent(true);
-    } catch {
-      show({ title: t("error.title"), body: t("error.body") });
+    } catch (e) {
+      show(requestErrorToast(e, t));
     } finally {
       setSending(false);
     }

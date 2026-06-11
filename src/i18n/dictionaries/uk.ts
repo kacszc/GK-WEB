@@ -171,6 +171,9 @@ const uk: Dictionary = {
   error: {
     title: "Не вдалося",
     body: "Спробуйте ще раз.",
+    rateLimitTitle: "Зачекайте трохи",
+    rateLimitBody: "Забагато запитів. Спробуйте ще раз за мить.",
+    rateLimitBodySecs: "Забагато запитів. Спробуйте ще раз через {seconds} с.",
   },
   verify: {
     bannerTitle: "Ваш акаунт неактивний",

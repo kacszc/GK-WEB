@@ -15,6 +15,7 @@ import {
 import { jobRateLabel } from "@/lib/jobRate";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useToast } from "@/lib/ToastProvider";
+import { requestErrorToast } from "@/lib/errorToast";
 import { cn } from "@/lib/cn";
 
 /** Specialist-side: the jobs I've applied to, with status + the option to withdraw (with a survey). */
@@ -146,8 +147,8 @@ function WithdrawDialog({ application, onClose }: { application: MyApplication |
       await qc.invalidateQueries({ queryKey: ["myApplications"] });
       show({ title: t("applications.withdrawSuccess") });
       onClose();
-    } catch {
-      show({ title: t("error.title"), body: t("error.body") });
+    } catch (e) {
+      show(requestErrorToast(e, t));
     } finally {
       setBusy(false);
     }

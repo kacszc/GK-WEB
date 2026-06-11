@@ -13,8 +13,8 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
   const [client] = useState(
     () =>
       new QueryClient({
-        queryCache: new QueryCache({ onError: () => reportRequestError() }),
-        mutationCache: new MutationCache({ onError: () => reportRequestError() }),
+        queryCache: new QueryCache({ onError: (error) => reportRequestError(error) }),
+        mutationCache: new MutationCache({ onError: (error) => reportRequestError(error) }),
         defaultOptions: {
           queries: {
             staleTime: 60_000, // 1 min fresh

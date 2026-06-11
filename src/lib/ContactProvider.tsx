@@ -14,6 +14,8 @@ import { VerifyNotice } from "@/components/layout/VerifyNotice";
 import { useWallet } from "@/lib/WalletProvider";
 import { messagesService, contactsService, accountService } from "@/services";
 import { ApiError } from "@/lib/api-client";
+import { useToast } from "@/lib/ToastProvider";
+import { requestErrorToast } from "@/lib/errorToast";
 
 const CONTACT_COST = 3;
 import type { Specialist } from "@/lib/types";
@@ -50,6 +52,7 @@ function ContactModal({
   onClose: () => void;
 }) {
   const { t } = useI18n();
+  const { show } = useToast();
   const { user } = useAuth();
   const { balance, backed, spend, setBalance } = useWallet();
   const [text, setText] = useState("");
@@ -99,7 +102,9 @@ function ContactModal({
             setInsufficient(true);
             return;
           }
-          throw e;
+          // 429 (rate limited) or anything else → surface a toast instead of an unhandled rejection.
+          show(requestErrorToast(e, t));
+          return;
         }
       } else if (!spend(CONTACT_COST)) {
         return; // insufficient local balance — gate is shown instead

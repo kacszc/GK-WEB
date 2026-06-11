@@ -10,13 +10,16 @@ export const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:808
 
 type ApiOptions = RequestInit & { locale?: string };
 
-/** Thrown on non-2xx responses. `status` lets callers branch (e.g. 422 token gate). */
+/** Thrown on non-2xx responses. `status` lets callers branch (e.g. 422 token gate, 429 rate limit). */
 export class ApiError extends Error {
   readonly status: number;
-  constructor(status: number, message: string) {
+  /** Seconds to back off, parsed from the `Retry-After` header (set on 429 responses). */
+  readonly retryAfter?: number;
+  constructor(status: number, message: string, retryAfter?: number) {
     super(message);
     this.name = "ApiError";
     this.status = status;
+    this.retryAfter = retryAfter;
   }
 }
 
@@ -40,7 +43,12 @@ async function request<T>(path: string, opts: ApiOptions = {}): Promise<T> {
   }
 
   if (!res.ok) {
-    throw new ApiError(res.status, `API ${res.status} ${res.statusText} — ${path}`);
+    const retryAfter = Number(res.headers.get("Retry-After"));
+    throw new ApiError(
+      res.status,
+      `API ${res.status} ${res.statusText} — ${path}`,
+      Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter : undefined,
+    );
   }
   // 204 / empty body — return undefined cast to T.
   if (res.status === 204) return undefined as T;

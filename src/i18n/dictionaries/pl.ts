@@ -170,6 +170,9 @@ const pl = {
   error: {
     title: "Nie udało się",
     body: "Spróbuj ponownie.",
+    rateLimitTitle: "Zwolnij na chwilę",
+    rateLimitBody: "Za dużo żądań. Spróbuj ponownie za chwilę.",
+    rateLimitBodySecs: "Za dużo żądań. Spróbuj ponownie za {seconds} s.",
   },
   verify: {
     bannerTitle: "Twoje konto jest nieaktywne",
