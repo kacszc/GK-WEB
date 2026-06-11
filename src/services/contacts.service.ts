@@ -13,8 +13,10 @@ export const contactsService = {
    * Throws `ApiError` with status 422 when the balance is insufficient — the
    * caller shows the token-gate UI in that case.
    */
-  async reveal(specialistId: string): Promise<ContactReveal> {
+  async reveal(specialistId: string, jobId?: string): Promise<ContactReveal> {
     // No mock fallback: revealing must hit the backend (it debits the wallet).
-    return apiPost<ContactReveal>("/api/contacts", { specialistId });
+    // jobId scopes the charge to a job (Model B): the same specialist for a different
+    // job is a new reveal; omit it for a job-less ("cold") contact from search.
+    return apiPost<ContactReveal>("/api/contacts", { specialistId, jobId: jobId ?? null });
   },
 };

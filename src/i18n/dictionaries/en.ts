@@ -403,6 +403,10 @@ const en: Dictionary = {
   },
   contact: {
     title: "Get in touch",
+    jobLabel: "For which job?",
+    jobSearch: "Search a job…",
+    jobHint: "Contact is billed per job — the same specialist for a different job is a new charge.",
+    noJob: "No specific job",
     messageLabel: "Your message",
     messagePlaceholder: "Briefly describe what you need — date, place, scope…",
     send: "Send message",

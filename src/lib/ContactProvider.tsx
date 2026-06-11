@@ -2,15 +2,17 @@
 
 import { createContext, useContext, useState } from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { Check, Star, Coins, Phone, Mail } from "lucide-react";
 import { Dialog } from "@/components/ui/Dialog";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
+import { SearchSelect } from "@/components/ui/SearchSelect";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useAuth } from "@/lib/AuthProvider";
 import { VerifyNotice } from "@/components/layout/VerifyNotice";
 import { useWallet } from "@/lib/WalletProvider";
-import { messagesService, contactsService } from "@/services";
+import { messagesService, contactsService, accountService } from "@/services";
 import { ApiError } from "@/lib/api-client";
 
 const CONTACT_COST = 3;
@@ -56,9 +58,25 @@ function ContactModal({
   const [err, setErr] = useState(false);
   const [insufficient, setInsufficient] = useState(false);
   const [revealed, setRevealed] = useState<{ phone: string | null; email: string | null } | null>(null);
+  const [jobId, setJobId] = useState("");
 
   const s = specialist;
   const min = 5;
+
+  // Model B: an employer reveals a contact in the context of a specific job (a different job
+  // is charged again). Offer their open jobs; "" = a job-less cold contact from search.
+  const isEmployer = user?.role === "employer";
+  const { data: myJobs = [] } = useQuery({
+    queryKey: ["myJobs"],
+    queryFn: accountService.getMyJobs,
+    enabled: !!s && isEmployer,
+  });
+  const jobOptions = [
+    { value: "", label: t("contact.noJob") },
+    ...myJobs
+      .filter((j) => j.status === "active" || j.status === "filled")
+      .map((j) => ({ value: j.id, label: j.title })),
+  ];
 
   async function send() {
     if (!s) return;
@@ -73,7 +91,7 @@ function ContactModal({
       // to the local optimistic spend so the mock flow keeps working.
       if (backed) {
         try {
-          const r = await contactsService.reveal(s.id);
+          const r = await contactsService.reveal(s.id, jobId || undefined);
           setBalance(r.balanceAfter);
           setRevealed({ phone: r.phone, email: r.email });
         } catch (e) {
@@ -180,6 +198,21 @@ function ContactModal({
             </div>
           ) : (
             <>
+              {isEmployer && jobOptions.length > 1 && (
+                <>
+                  <label className="mb-1.5 mt-4 block text-[12px] font-semibold text-ink-3">
+                    {t("contact.jobLabel")}
+                  </label>
+                  <SearchSelect
+                    value={jobId}
+                    onChange={setJobId}
+                    options={jobOptions}
+                    placeholder={t("contact.noJob")}
+                    searchPlaceholder={t("contact.jobSearch")}
+                  />
+                  <p className="mt-1 text-[11px] text-ink-4">{t("contact.jobHint")}</p>
+                </>
+              )}
               <label className="mb-1.5 mt-4 block text-[12px] font-semibold text-ink-3">
                 {t("contact.messageLabel")}
               </label>

@@ -402,6 +402,10 @@ const pl = {
   },
   contact: {
     title: "Skontaktuj się",
+    jobLabel: "Do którego zlecenia?",
+    jobSearch: "Szukaj zlecenia…",
+    jobHint: "Kontakt rozliczany per zlecenie — ten sam specjalista do innego zlecenia to nowy koszt.",
+    noJob: "Bez konkretnego zlecenia",
     messageLabel: "Twoja wiadomość",
     messagePlaceholder: "Opisz krótko, czego potrzebujesz — termin, miejsce, zakres…",
     send: "Wyślij wiadomość",
