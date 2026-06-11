@@ -13,6 +13,7 @@ import { useJobSearch } from "@/hooks/useJobSearch";
 import { jobsService, type JobFilters } from "@/services";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useAuth } from "@/lib/AuthProvider";
+import { useToast } from "@/lib/ToastProvider";
 import { VerifyNotice } from "@/components/layout/VerifyNotice";
 import { jobRateLabel } from "@/lib/jobRate";
 import { cn } from "@/lib/cn";
@@ -269,6 +270,7 @@ function JobCard({ job, onApply }: { job: JobPosting; onApply: () => void }) {
 function ApplyDialog({ job, onClose }: { job: JobPosting | null; onClose: () => void }) {
   const { t } = useI18n();
   const { user } = useAuth();
+  const { show } = useToast();
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
@@ -279,6 +281,8 @@ function ApplyDialog({ job, onClose }: { job: JobPosting | null; onClose: () => 
     try {
       await jobsService.apply(job.id, text);
       setSent(true);
+    } catch {
+      show({ title: t("error.title"), body: t("error.body") });
     } finally {
       setSending(false);
     }
@@ -317,6 +321,10 @@ function ApplyDialog({ job, onClose }: { job: JobPosting | null; onClose: () => 
             </div>
           ) : !user.emailVerified ? (
             <VerifyNotice variant="panel" message={t("verify.noticeContact")} className="mt-4" />
+          ) : user.role !== "specialist" ? (
+            <div className="mt-4 rounded-tile border border-line-2 bg-muted p-4 text-center text-[13px] text-ink-2">
+              {t("jobs.applySpecialistsOnly")}
+            </div>
           ) : (
             <>
               <label className="mb-1.5 mt-4 block text-[12px] font-semibold text-ink-3">

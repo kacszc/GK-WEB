@@ -895,6 +895,7 @@ const pl = {
     applyPlaceholder: "Przedstaw się i napisz, dlaczego pasujesz na to zlecenie…",
     applySend: "Wyślij aplikację",
     applySending: "Wysyłam…",
+    applySpecialistsOnly: "Aplikować mogą tylko specjaliści. Pracodawcy publikują zlecenia.",
     applyLoginRequired: "Zaloguj się, aby aplikować na ofertę.",
     applySuccessTitle: "Aplikacja wysłana!",
     applySuccessDesc: "Pracodawca otrzyma Twoją aplikację. Powiadomimy Cię o odpowiedzi.",

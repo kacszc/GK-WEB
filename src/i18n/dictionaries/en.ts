@@ -896,6 +896,7 @@ const en: Dictionary = {
     applyPlaceholder: "Introduce yourself and say why you're a good fit…",
     applySend: "Send application",
     applySending: "Sending…",
+    applySpecialistsOnly: "Only specialists can apply. Employers post jobs instead.",
     applyLoginRequired: "Log in to apply for jobs.",
     applySuccessTitle: "Application sent!",
     applySuccessDesc: "The employer will receive your application. We'll notify you about the reply.",

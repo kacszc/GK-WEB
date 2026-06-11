@@ -896,6 +896,7 @@ const uk: Dictionary = {
     applyPlaceholder: "Представтесь і напишіть, чому ви підходите…",
     applySend: "Надіслати відгук",
     applySending: "Надсилаю…",
+    applySpecialistsOnly: "Подаватися можуть лише спеціалісти. Роботодавці публікують замовлення.",
     applyLoginRequired: "Увійдіть, щоб відгукнутися на вакансію.",
     applySuccessTitle: "Відгук надіслано!",
     applySuccessDesc: "Роботодавець отримає ваш відгук. Ми сповістимо вас про відповідь.",
