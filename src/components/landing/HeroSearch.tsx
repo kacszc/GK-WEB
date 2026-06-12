@@ -7,7 +7,7 @@ import { AutocompleteDropdown } from "./AutocompleteDropdown";
 import { presetDate } from "./WhenFilter";
 import { searchService } from "@/services";
 import { recordSearch } from "@/lib/searchHistory";
-import type { SearchSuggestions, WhenValue, WhereValue, SearchMode, Specialization } from "@/lib/types";
+import type { SearchSuggestions, WhenValue, UserLocation, SearchMode, Specialization } from "@/lib/types";
 
 export function HeroSearch({ mode, seedKeys = [] }: { mode: SearchMode; seedKeys?: Specialization[] }) {
   // Seed dropdown state from the landing payload so focus shows suggestions with no extra fetch.
@@ -34,10 +34,8 @@ export function HeroSearch({ mode, seedKeys = [] }: { mode: SearchMode; seedKeys
     preset: "today",
     date: presetDate("today"),
   }));
-  const [where, setWhere] = useState<WhereValue>({
-    location: "Warszawa",
-    distanceKm: 25,
-  });
+  // Default: no city = "Proponowane" (no anchor, no range) — clicking Search shows everyone.
+  const [where, setWhere] = useState<UserLocation | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -47,13 +45,20 @@ export function HeroSearch({ mode, seedKeys = [] }: { mode: SearchMode; seedKeys
   function goToResults(value: string, opts?: { view?: "map"; professionCode?: string }) {
     const q = value.trim();
     const base = mode === "job" ? "/jobs" : "/search";
-    // Remember the search (query + where + range) for the "recently viewed" landing section.
-    if (q) recordSearch({ query: q, location: where.location, rangeKm: where.distanceKm });
+    // Remember the search for the "recently viewed" landing section.
+    if (q) recordSearch({ query: q, location: where?.city ?? where?.label });
     const params = new URLSearchParams();
     // A picked profession goes by code (pre-selects the filter); free text goes by q.
     if (opts?.professionCode) params.set("profession", opts.professionCode);
     else if (q) params.set("q", q);
     if (opts?.view) params.set("view", opts.view);
+    // Carry the picked city to results (lat/lng anchor). No city → "Proponowane" (everyone).
+    if (where) {
+      params.set("lat", String(where.lat));
+      params.set("lng", String(where.lng));
+      if (where.city) params.set("city", where.city);
+      if (where.code) params.set("code", where.code);
+    }
     const qs = params.toString();
     router.push(`${base}${qs ? `?${qs}` : ""}`);
   }

@@ -41,21 +41,23 @@ function useIsDesktop() {
 export function JobsScreen({
   initialQuery,
   initialProfession,
+  initialLocation = null,
 }: {
   initialQuery: string;
   initialProfession?: string;
+  initialLocation?: UserLocation | null;
 }) {
   const { t } = useI18n();
+  // No distance cap by default → "Proponowane" (everyone). A limit applies only once the user sets it.
   const [filters, setFilters] = useState<JobFilters>({
     q: initialQuery || undefined,
     professions: initialProfession ? [initialProfession] : undefined,
-    maxDistanceKm: 25,
   });
   const [view, setView] = useState<ResultsView>("mapList");
   const isDesktop = useIsDesktop();
   const effectiveView = !isDesktop && view === "mapList" ? "list" : view;
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
+  const [userLocation, setUserLocation] = useState<UserLocation | null>(initialLocation);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [applyJob, setApplyJob] = useState<JobPosting | null>(null);
   const [page, setPage] = useState(1);
@@ -79,7 +81,7 @@ export function JobsScreen({
     setPage(1);
   };
   const clear = () => {
-    setFilters((f) => ({ q: f.q, maxDistanceKm: 25 }));
+    setFilters((f) => ({ q: f.q }));
     setPage(1);
   };
 

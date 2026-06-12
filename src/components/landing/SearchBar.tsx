@@ -5,7 +5,7 @@ import { WhereFilter } from "./WhereFilter";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useTypewriter } from "@/lib/useTypewriter";
 import { cn } from "@/lib/cn";
-import type { WhenValue, WhereValue, SearchMode } from "@/lib/types";
+import type { WhenValue, UserLocation, SearchMode } from "@/lib/types";
 
 type SearchBarProps = {
   value: string;
@@ -18,8 +18,8 @@ type SearchBarProps = {
   mode: SearchMode;
   when: WhenValue;
   onWhenChange: (v: WhenValue) => void;
-  where: WhereValue;
-  onWhereChange: (v: WhereValue) => void;
+  where: UserLocation | null;
+  onWhereChange: (v: UserLocation | null) => void;
 };
 
 /** Hero search bar — controlled input with filters and CTA. */
@@ -103,14 +103,16 @@ export function SearchBar({
             (lg+) these move inline to the right of the input instead (block below). */}
         <div className="grid grid-cols-2 gap-2 border-t border-line-2 px-1 pt-3 sm:border-t-0 sm:pt-0 lg:hidden">
           <WhenFilter value={when} onChange={onWhenChange} align="start" fullWidth />
-          <WhereFilter value={where} onChange={onWhereChange} align="end" fullWidth />
+          <WhereFilter value={where} onChange={onWhereChange} />
         </div>
 
         {/* Right: filters + CTA */}
         <div className="flex items-center gap-2">
           <div className="hidden items-center gap-2 lg:flex">
             <WhenFilter value={when} onChange={onWhenChange} />
-            <WhereFilter value={where} onChange={onWhereChange} />
+            <div className="w-[190px]">
+              <WhereFilter value={where} onChange={onWhereChange} />
+            </div>
           </div>
           <Button
             variant="gradient"

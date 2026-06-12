@@ -38,9 +38,11 @@ function useIsDesktop() {
 export function SearchScreen({
   initialFilters,
   initialView = "list",
+  initialLocation = null,
 }: {
   initialFilters: SpecialistFilters;
   initialView?: ResultsView;
+  initialLocation?: UserLocation | null;
 }) {
   const { t } = useI18n();
   const [filters, setFilters] = useState<SpecialistFilters>(initialFilters);
@@ -62,7 +64,7 @@ export function SearchScreen({
   const effectiveView = !isDesktop && view === "mapList" ? "list" : view;
   const [page, setPage] = useState(1);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
+  const [userLocation, setUserLocation] = useState<UserLocation | null>(initialLocation);
   const [filtersOpen, setFiltersOpen] = useState(false); // mobile filters toggle
 
   const activeCount =

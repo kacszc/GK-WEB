@@ -1,12 +1,11 @@
 import type { SpecialistFilters, SpecialistSort } from "@/services";
-import type { Availability } from "@/lib/types";
+import type { Availability, UserLocation } from "@/lib/types";
 import type { ResultsView } from "./ResultsToolbar";
 
 // Single source of truth for the /search URL <-> filter mapping. The server page parses the
 // incoming query (SSR-safe, restores on reload/share); the client writes it back on change.
 
 const DEFAULT_TRUST = 75;
-const DEFAULT_DISTANCE = 25;
 const DEFAULT_AVAILABILITY: Availability[] = ["now", "week"];
 const DEFAULT_SORT: SpecialistSort = "trust";
 
@@ -37,7 +36,8 @@ export function parseSearchFilters(sp: SearchParamsInput): { filters: Specialist
     industries: csv(first(sp.industries)),
     customIndustries: csv(first(sp.customIndustries)),
     minTrust: numOr(first(sp.minTrust), DEFAULT_TRUST),
-    maxDistanceKm: numOr(first(sp.maxDistanceKm), DEFAULT_DISTANCE),
+    // No distance cap by default → "Proponowane" (everyone). A limit applies only once the user sets it.
+    maxDistanceKm: numOrUndef(first(sp.maxDistanceKm)),
     // Present (even empty) → user-controlled; absent → default. Lets the user clear it explicitly.
     availability: availabilityRaw != null ? ((csv(availabilityRaw) ?? []) as Availability[]) : DEFAULT_AVAILABILITY,
     rateMin: numOrUndef(first(sp.rateMin)),
@@ -47,6 +47,16 @@ export function parseSearchFilters(sp: SearchParamsInput): { filters: Specialist
     sort: (first(sp.sort) as SpecialistSort) || DEFAULT_SORT,
   };
   return { filters, view: asView(first(sp.view)) ?? "list" };
+}
+
+/** Parse a search-origin city from the URL (lat/lng[/city][/code]) — carried from the landing search.
+ * Returns null when no point is given (→ "Proponowane": no anchor, everyone). */
+export function parseLocation(sp: SearchParamsInput): UserLocation | null {
+  const lat = numOrUndef(first(sp.lat));
+  const lng = numOrUndef(first(sp.lng));
+  if (lat == null || lng == null) return null;
+  const city = first(sp.city);
+  return { lat, lng, city, code: first(sp.code), label: city ?? "" };
 }
 
 /** Serialize filters + view back into a query string (omits empty/default-ish values). */
