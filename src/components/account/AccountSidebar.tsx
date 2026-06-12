@@ -12,7 +12,7 @@ const items = [
   { href: "/account/jobs", key: "account.navJobs", icon: Briefcase, role: "employer" as const },
   { href: "/account/applications", key: "applications.navTitle", icon: Send, role: "specialist" as const },
   { href: "/account/messages", key: "account.navMessages", icon: MessageSquare },
-  { href: "/account/contacts", key: "account.navContacts", icon: Bookmark },
+  { href: "/account/contacts", key: "account.navContacts", icon: Bookmark, role: "employer" as const },
   { href: "/account/portfolio", key: "portfolio.title", icon: ImageIcon, role: "specialist" as const },
   { href: "/account/certifications", key: "certifications.navTitle", icon: Award, role: "specialist" as const },
   { href: "/account/availability", key: "availability.eyebrow", icon: CalendarDays, role: "specialist" as const },
@@ -20,8 +20,8 @@ const items = [
   { href: "/account/specialist-alerts", key: "specialistAlerts.navTitle", icon: BellRing, role: "employer" as const },
   { href: "/account/reports", key: "reports.title", icon: BarChart3, role: "employer" as const },
   { href: "/account/disputes", key: "dispute.listTitle", icon: Scale },
-  { href: "/account/tokens", key: "tokens.walletTitle", icon: Coins },
-  { href: "/account/history", key: "account.navHistory", icon: Clock },
+  { href: "/account/tokens", key: "tokens.walletTitle", icon: Coins, role: "employer" as const },
+  { href: "/account/history", key: "account.navHistory", icon: Clock, role: "employer" as const },
   { href: "/account/settings", key: "account.navSettings", icon: Settings },
 ];
 

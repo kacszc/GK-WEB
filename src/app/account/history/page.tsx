@@ -1,4 +1,10 @@
 import { HistoryList } from "@/components/account/HistoryList";
+import { EmployerOnly } from "@/components/account/EmployerOnly";
+
 export default function Page() {
-  return <HistoryList />;
+  return (
+    <EmployerOnly>
+      <HistoryList />
+    </EmployerOnly>
+  );
 }

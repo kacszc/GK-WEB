@@ -208,6 +208,27 @@ export function PostJobScreen() {
     );
   }
 
+  // Logged in but a specialist → posting jobs is employer-only (the backend enforces ROLE_EMPLOYER).
+  if (ready && user && user.role !== "employer") {
+    return (
+      <>
+        <SearchTopbar category={t("postJob.title")} />
+        <main className="mx-auto flex w-full max-w-[1280px] flex-1 items-center justify-center px-4 py-20 sm:px-8">
+          <div className="w-full max-w-md rounded-card border border-line-3 bg-surface p-7 text-center shadow-search">
+            <h1 className="text-lg font-bold text-ink">{t("postJob.title")}</h1>
+            <p className="mt-2 text-sm text-ink-2">{t("postJob.employerOnly")}</p>
+            <Link
+              href="/search"
+              className="mt-5 inline-flex w-full items-center justify-center rounded-tile bg-ink px-4 py-2.5 text-sm font-bold text-on-dark hover:bg-ink/90"
+            >
+              {t("profile.back")}
+            </Link>
+          </div>
+        </main>
+      </>
+    );
+  }
+
   return (
     <>
       <SearchTopbar category={t("postJob.title")} />

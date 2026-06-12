@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu, X, Plus, LogOut } from "lucide-react";
+import { Menu, X, Plus, Search, LogOut } from "lucide-react";
 import { Popover } from "@/components/ui/Popover";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useAuth } from "@/lib/AuthProvider";
@@ -26,10 +26,17 @@ export function MobileNav() {
         <nav className="flex flex-col gap-0.5">
           <MenuLink href="/pricing" onClick={close}>{t("nav.pricing")}</MenuLink>
           <MenuLink href="/how-it-works" onClick={close}>{t("nav.howItWorks")}</MenuLink>
-          <MenuLink href="/post-job" onClick={close}>
-            <Plus className="h-4 w-4" />
-            {t("nav.addJob")}
-          </MenuLink>
+          {user?.role === "specialist" ? (
+            <MenuLink href="/jobs" onClick={close}>
+              <Search className="h-4 w-4" />
+              {t("nav.findWork")}
+            </MenuLink>
+          ) : (
+            <MenuLink href="/post-job" onClick={close}>
+              <Plus className="h-4 w-4" />
+              {t("nav.addJob")}
+            </MenuLink>
+          )}
           <hr className="my-2 border-line" />
           {ready && user ? (
             <>

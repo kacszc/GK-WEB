@@ -1,9 +1,8 @@
-import { Plus } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
-import { Pill } from "@/components/ui/Pill";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { MobileNav } from "./MobileNav";
 import { HeaderAuth } from "./HeaderAuth";
+import { HeaderCta } from "./HeaderCta";
 import { getI18n } from "@/i18n/server";
 
 export async function Header() {
@@ -22,14 +21,7 @@ export async function Header() {
           <a href="/how-it-works" className="text-sm font-medium text-ink-2 hover:text-ink">
             {t("nav.howItWorks")}
           </a>
-          <Pill
-            as="a"
-            href="/post-job"
-            className="border border-line-2 bg-pill text-ink hover:bg-line-2"
-          >
-            <Plus className="h-4 w-4" />
-            {t("nav.addJob")}
-          </Pill>
+          <HeaderCta />
           <LanguageSwitcher />
           <HeaderAuth />
         </nav>
