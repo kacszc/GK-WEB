@@ -22,9 +22,12 @@ const LANG_KEY: Record<string, string> = {
 export function ActiveFilters({
   filters,
   onPatch,
+  city,
 }: {
   filters: SpecialistFilters;
   onPatch: (patch: Partial<SpecialistFilters>) => void;
+  /** Current search-origin city — shown on the distance chip so "up to X km" has context. */
+  city?: string;
 }) {
   const { t, locale } = useI18n();
   // Reuses the sidebar's cached schema (same query key) to label the profession chip.
@@ -53,7 +56,9 @@ export function ActiveFilters({
   if (filters.maxDistanceKm != null)
     chips.push({
       key: "dist",
-      label: t("filters.upTo", { km: filters.maxDistanceKm }),
+      label: city
+        ? `${city} · ${t("filters.upTo", { km: filters.maxDistanceKm })}`
+        : t("filters.upTo", { km: filters.maxDistanceKm }),
       remove: () => onPatch({ maxDistanceKm: undefined }),
     });
   for (const a of filters.availability ?? [])

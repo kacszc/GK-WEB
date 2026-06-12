@@ -141,7 +141,7 @@ export function SearchScreen({
           filterCount={activeCount}
         />
 
-        <ActiveFilters filters={filters} onPatch={patch} />
+        <ActiveFilters filters={filters} onPatch={patch} city={city} />
 
         {/* List view — also used as the fallback for map/split when there are no results. */}
         {(effectiveView === "list" || noResults) && (
