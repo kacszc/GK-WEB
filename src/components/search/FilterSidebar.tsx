@@ -174,10 +174,24 @@ export function FilterSidebar({
         })}
       </Section>
 
-      {/* Distance */}
+      {/* Distance — clearing the radius (maxDistanceKm = undefined) drops the geo limit so results
+          aren't bound to a city; the slider greys out but still re-enables the limit when dragged. */}
       <Section title={t("results.fDistance")}>
-        <div className="text-[13px] font-bold text-ink">
-          {t("filters.upTo", { km: filters.maxDistanceKm ?? distance.defaultValue })}
+        <div className="flex items-center justify-between gap-2">
+          <div className="text-[13px] font-bold text-ink">
+            {filters.maxDistanceKm != null
+              ? t("filters.upTo", { km: filters.maxDistanceKm })
+              : t("results.fAnyDistance")}
+          </div>
+          {filters.maxDistanceKm != null && (
+            <button
+              type="button"
+              onClick={() => onPatch({ maxDistanceKm: undefined })}
+              className="shrink-0 text-[12px] font-medium text-ink-3 hover:text-ink"
+            >
+              {t("results.fAnyDistanceAction")}
+            </button>
+          )}
         </div>
         <input
           type="range"
@@ -185,7 +199,10 @@ export function FilterSidebar({
           max={distance.max}
           value={filters.maxDistanceKm ?? distance.defaultValue}
           onChange={(e) => onPatch({ maxDistanceKm: Number(e.target.value) })}
-          className="mt-1 w-full cursor-pointer accent-brand-violet"
+          className={cn(
+            "mt-1 w-full cursor-pointer accent-brand-violet",
+            filters.maxDistanceKm == null && "opacity-40",
+          )}
         />
       </Section>
 

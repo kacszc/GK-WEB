@@ -97,6 +97,13 @@ export function SearchBar({
           </div>
         </div>
 
+        {/* When/Where on mobile + tablet — a subtle row under the field, above the CTA. On desktop
+            (lg+) these move inline to the right of the input instead (block below). */}
+        <div className="flex items-center gap-2 border-t border-line-2 px-1 pt-3 sm:border-t-0 sm:pt-0 lg:hidden">
+          <WhenFilter value={when} onChange={onWhenChange} />
+          <WhereFilter value={where} onChange={onWhereChange} />
+        </div>
+
         {/* Right: filters + CTA */}
         <div className="flex items-center gap-2">
           <div className="hidden items-center gap-2 lg:flex">

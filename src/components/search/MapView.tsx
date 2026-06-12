@@ -252,7 +252,15 @@ export function MapView({
       onSelectRef.current?.(null);
     });
     popupRef.current = popup;
-    map.flyTo({ center: [s.lng, s.lat], zoom: Math.max(map.getZoom(), 12), speed: 0.8 });
+    // On mobile the popup opens above the pin and would otherwise be clipped by the top edge /
+    // legend. Push the pin into the lower half (positive y offset) so the whole tile stays visible.
+    const isMobile = window.matchMedia("(max-width: 1023px)").matches;
+    map.flyTo({
+      center: [s.lng, s.lat],
+      zoom: Math.max(map.getZoom(), 12),
+      speed: 0.8,
+      offset: isMobile ? [0, 130] : [0, 0],
+    });
   }, [activeId]);
 
   return (
