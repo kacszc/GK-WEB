@@ -24,9 +24,14 @@ export async function Footer() {
   const { t, dict } = await getI18n();
 
   return (
-    <footer className="pb-safe mt-auto bg-ink text-on-dark">
-      <div className="mx-auto w-full max-w-[1280px] px-4 pb-8 pt-12 sm:px-8 lg:px-24">
-        {/* Top */}
+    <>
+      {/* Paint the home-indicator strip with the footer colour (the document footer alone doesn't
+          always reach under it on iOS). Only present on footer-bearing pages, so light pages keep
+          their own bottom colour. */}
+      <div aria-hidden className="pointer-events-none fixed inset-x-0 bottom-0 z-0 h-safe-bottom bg-ink print:hidden" />
+      <footer className="pb-safe mt-auto bg-ink text-on-dark">
+        <div className="mx-auto w-full max-w-[1280px] px-4 pb-8 pt-12 sm:px-8 lg:px-24">
+          {/* Top */}
         <div className="flex flex-col gap-10 lg:flex-row lg:gap-16">
           <div className="lg:w-[280px]">
             <Logo dark href="/" />
@@ -72,6 +77,7 @@ export async function Footer() {
           </ul>
         </div>
       </div>
-    </footer>
+      </footer>
+    </>
   );
 }

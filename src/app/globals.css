@@ -368,3 +368,7 @@ body {
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
 }
+/* Exact height of the bottom inset — used for a fixed filler that paints the home-indicator strip. */
+.h-safe-bottom {
+  height: env(safe-area-inset-bottom);
+}
