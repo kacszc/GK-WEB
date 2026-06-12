@@ -7,9 +7,9 @@ import { useI18n } from "@/i18n/I18nProvider";
 export function MaintenanceScreen() {
   const { t } = useI18n();
 
+  // fixed inset-0 spans the whole screen incl. notch/home-indicator (viewport-fit=cover), so the
+  // dark bg covers the safe areas — there's no header/footer here to paint them.
   return (
-    {/* fixed inset-0 spans the whole screen incl. notch/home-indicator (viewport-fit=cover), so the
-        dark bg covers the safe areas — there's no header/footer here to paint them. */}
     <main className="fixed inset-0 grid place-items-center overflow-y-auto bg-ink px-4 py-16 text-on-dark">
       <div className="w-full max-w-[560px] text-center">
         <span className="mx-auto block h-20 w-20 rounded-full bg-gradient-to-br from-[#ff8a3d] to-[#ff5470]" aria-hidden />
