@@ -54,24 +54,24 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col bg-page text-ink">
         <I18nProvider locale={locale} dict={dict}>
           <QueryProvider>
-            <AuthProvider>
-              <WalletProvider>
-                <ContactProvider>
-                  <ToastProvider>
-                  <CookieConsentProvider>
-                    <VerifyNotice variant="banner" />
-                    {children}
-                    <NotificationToaster />
-                    <ErrorToaster />
-                    <CookieConsent />
-                    <Suspense fallback={null}>
-                      <FirebaseAnalytics />
-                    </Suspense>
-                  </CookieConsentProvider>
-                  </ToastProvider>
-                </ContactProvider>
-              </WalletProvider>
-            </AuthProvider>
+            <ToastProvider>
+              <AuthProvider>
+                <WalletProvider>
+                  <ContactProvider>
+                    <CookieConsentProvider>
+                      <VerifyNotice variant="banner" />
+                      {children}
+                      <NotificationToaster />
+                      <ErrorToaster />
+                      <CookieConsent />
+                      <Suspense fallback={null}>
+                        <FirebaseAnalytics />
+                      </Suspense>
+                    </CookieConsentProvider>
+                  </ContactProvider>
+                </WalletProvider>
+              </AuthProvider>
+            </ToastProvider>
           </QueryProvider>
         </I18nProvider>
       </body>

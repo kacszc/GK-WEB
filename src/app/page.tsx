@@ -7,13 +7,22 @@ import { ActionCards } from "@/components/landing/ActionCards";
 import { PopularSection } from "@/components/landing/PopularSection";
 import { TrustStrip } from "@/components/landing/TrustStrip";
 import { Reveal } from "@/components/ui/Reveal";
+import { redirect } from "next/navigation";
 import { landingService } from "@/services";
 import { getI18n } from "@/i18n/server";
+import type { Landing } from "@/lib/types";
 
 export default async function Home() {
   const { locale } = await getI18n();
   // Whole landing page in one backend call (auth-aware: personalized when signed in).
-  const landing = await landingService.getLanding({ locale });
+  // If the backend is unreachable, send visitors to the maintenance page rather than a broken
+  // home (redirect() throws its NEXT_REDIRECT signal from the catch, so it isn't swallowed).
+  let landing: Landing;
+  try {
+    landing = await landingService.getLanding({ locale });
+  } catch {
+    redirect("/maintenance");
+  }
 
   return (
     <>
