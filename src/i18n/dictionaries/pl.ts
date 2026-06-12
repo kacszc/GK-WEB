@@ -59,6 +59,7 @@ const pl = {
   },
   chips: {
     heading: "JEDNYM KLIKNIĘCIEM · POPULARNE",
+    headingSpecialist: "POPULARNE KATEGORIE ZLECEŃ",
     now: "TERAZ",
   },
   actions: {
@@ -80,6 +81,15 @@ const pl = {
     findWorkDesc:
       "Przeglądaj zlecenia w Twojej okolicy i aplikuj jednym kliknięciem — pierwsi zwykle dostają robotę.",
     findWorkCta: "Przeglądaj zlecenia",
+    specSearchTitle: "Przeglądaj zlecenia",
+    specSearchDesc: "Zlecenia w Twojej branży i okolicy. Aplikuj jednym kliknięciem.",
+    specSearchCta: "Zobacz zlecenia",
+    specAvailTitle: "Ustaw dostępność",
+    specAvailDesc: "Oznacz, że jesteś dostępny TERAZ — pojawisz się wyżej u pracodawców.",
+    specAvailCta: "Ustaw dostępność",
+    specProfileTitle: "Twoja oferta",
+    specProfileDesc: "Uzupełnij profil — to Twoja oferta widoczna w wyszukiwarce fachowców.",
+    specProfileCta: "Edytuj profil",
   },
   popular: {
     label: "POPULARNE OSTATNIO",

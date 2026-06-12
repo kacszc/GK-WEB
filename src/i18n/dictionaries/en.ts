@@ -60,6 +60,7 @@ const en: Dictionary = {
   },
   chips: {
     heading: "ONE CLICK · POPULAR",
+    headingSpecialist: "POPULAR JOB CATEGORIES",
     now: "NOW",
   },
   actions: {
@@ -81,6 +82,15 @@ const en: Dictionary = {
     findWorkDesc:
       "Browse jobs near you and apply in one click — the first to reply usually gets the gig.",
     findWorkCta: "Browse jobs",
+    specSearchTitle: "Browse jobs",
+    specSearchDesc: "Jobs in your trade and area. Apply in one click.",
+    specSearchCta: "See jobs",
+    specAvailTitle: "Set availability",
+    specAvailDesc: "Mark yourself available NOW — you'll rank higher with employers.",
+    specAvailCta: "Set availability",
+    specProfileTitle: "Your offer",
+    specProfileDesc: "Complete your profile — it's the offer employers see in search.",
+    specProfileCta: "Edit profile",
   },
   popular: {
     label: "RECENTLY POPULAR",

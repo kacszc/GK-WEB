@@ -18,6 +18,9 @@ export function Hero({ seedKeys = [] }: { seedKeys?: Specialization[] }) {
 
   return (
     <section className="mx-auto flex w-full max-w-[1280px] flex-col items-center gap-8 px-4 pb-8 pt-12 sm:px-8 sm:pt-16">
+      {user && (
+        <p className="-mb-4 text-[13px] font-medium text-ink-3">{t("account.greeting", { name: user.name })}</p>
+      )}
       <SearchToggle mode={mode} onChange={setOverride} />
 
       <h1
