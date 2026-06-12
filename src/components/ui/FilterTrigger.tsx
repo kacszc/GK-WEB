@@ -7,16 +7,20 @@ export function FilterTrigger({
   label,
   value,
   open,
+  fullWidth = false,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
   open: boolean;
+  /** Stretch to fill the parent (used in the full-width mobile search row). */
+  fullWidth?: boolean;
 }) {
   return (
     <span
       className={cn(
-        "flex min-w-[128px] items-center gap-2 rounded-tile px-3.5 py-3 transition-colors",
+        "flex items-center gap-2 rounded-tile px-3.5 py-3 transition-colors",
+        fullWidth ? "w-full" : "min-w-[128px]",
         open ? "bg-pill ring-2 ring-ink/10" : "bg-pill hover:bg-line-2",
       )}
     >

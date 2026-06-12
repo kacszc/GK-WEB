@@ -32,9 +32,13 @@ export function presetDate(id: WhenPreset): Date {
 export function WhenFilter({
   value,
   onChange,
+  align = "end",
+  fullWidth = false,
 }: {
   value: WhenValue;
   onChange: (v: WhenValue) => void;
+  align?: "start" | "end";
+  fullWidth?: boolean;
 }) {
   const { t, locale } = useI18n();
   const [month, setMonth] = useState<Date>(value.date ?? new Date());
@@ -47,18 +51,20 @@ export function WhenFilter({
 
   return (
     <Popover
-      align="end"
+      align={align}
+      triggerClassName={fullWidth ? "w-full" : undefined}
       trigger={({ open }) => (
         <FilterTrigger
           icon={<CalendarDays className="h-4 w-4 text-ink-3" />}
           label={t("filters.when")}
           value={displayLabel}
           open={open}
+          fullWidth={fullWidth}
         />
       )}
     >
       {({ close }) => (
-        <div className="w-[300px]">
+        <div className="w-[min(300px,calc(100vw-3rem))]">
           <div className="mb-3 flex flex-wrap gap-2">
             {presetKeys.map((id) => (
               <button

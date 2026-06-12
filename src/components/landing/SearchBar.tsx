@@ -97,11 +97,13 @@ export function SearchBar({
           </div>
         </div>
 
-        {/* When/Where on mobile + tablet — a subtle row under the field, above the CTA. On desktop
+        {/* When/Where on mobile + tablet — a subtle full-width row under the field, above the CTA.
+            Each picker fills half the width; panels open toward screen centre (When→start,
+            Where→end) and are capped to the viewport so they never run off-screen. On desktop
             (lg+) these move inline to the right of the input instead (block below). */}
-        <div className="flex items-center gap-2 border-t border-line-2 px-1 pt-3 sm:border-t-0 sm:pt-0 lg:hidden">
-          <WhenFilter value={when} onChange={onWhenChange} />
-          <WhereFilter value={where} onChange={onWhereChange} />
+        <div className="grid grid-cols-2 gap-2 border-t border-line-2 px-1 pt-3 sm:border-t-0 sm:pt-0 lg:hidden">
+          <WhenFilter value={when} onChange={onWhenChange} align="start" fullWidth />
+          <WhereFilter value={where} onChange={onWhereChange} align="end" fullWidth />
         </div>
 
         {/* Right: filters + CTA */}
