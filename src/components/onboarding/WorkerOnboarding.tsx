@@ -9,6 +9,7 @@ import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { useAuth } from "@/lib/AuthProvider";
 import { onboardingService } from "@/services";
 import { useI18n } from "@/i18n/I18nProvider";
+import { cn } from "@/lib/cn";
 import type { WorkerOnboardingResult } from "@/lib/types";
 import { OnboardingCard, StepHeading, Field, fieldInput, Chip } from "./parts";
 
@@ -26,8 +27,11 @@ export function WorkerOnboarding({
   const router = useRouter();
 
   const [step, setStep] = useState<Step>("basics");
+  // A specialist may work as a private person (first/last name) or as a company (company name).
+  const [entityType, setEntityType] = useState<"person" | "company">("person");
   const [name, setName] = useState(initialName);
   const [lastName, setLastName] = useState("");
+  const [companyName, setCompanyName] = useState("");
   const [email, setEmail] = useState(initialEmail);
   const [phone, setPhone] = useState("");
   const [industry, setIndustry] = useState("");
@@ -67,10 +71,13 @@ export function WorkerOnboarding({
       const custom = otherText.trim()
         ? [{ industryCode: industry, label: otherText.trim() }]
         : [];
-      // First name (required) + last name (optional) → single display name on the profile.
-      const fullName = [name.trim(), lastName.trim()].filter(Boolean).join(" ");
+      // Display name = company name, or first name (required) + last name (optional).
+      const displayName =
+        entityType === "company"
+          ? companyName.trim()
+          : [name.trim(), lastName.trim()].filter(Boolean).join(" ");
       const res = await onboardingService.completeWorker({
-        name: fullName,
+        name: displayName,
         email,
         phone,
         industry,
@@ -100,12 +107,39 @@ export function WorkerOnboarding({
           <OnboardingCard step={1} total={total} stepLabel={t("onboarding.stepOf", { n: 1, total })}>
             <StepHeading title={t("onboarding.wTitle")} subtitle={t("onboarding.wSubtitle")} />
             <div className="flex flex-col gap-3.5">
-              <Field label={t("onboarding.wName")}>
-                <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("onboarding.wNamePlaceholder")} className={fieldInput} />
+              <Field label={t("onboarding.wAs")}>
+                <div className="grid grid-cols-2 gap-2">
+                  {(["person", "company"] as const).map((tp) => (
+                    <button
+                      key={tp}
+                      type="button"
+                      onClick={() => setEntityType(tp)}
+                      className={cn(
+                        "rounded-tile border px-3 py-2.5 text-[13px] font-medium transition-colors",
+                        entityType === tp
+                          ? "border-ink bg-ink text-on-dark"
+                          : "border-line-2 text-ink hover:bg-muted",
+                      )}
+                    >
+                      {t(tp === "person" ? "onboarding.wAsPerson" : "onboarding.wAsCompany")}
+                    </button>
+                  ))}
+                </div>
               </Field>
-              <Field label={t("onboarding.wLastName")}>
-                <input value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder={t("onboarding.wLastNamePlaceholder")} className={fieldInput} />
-              </Field>
+              {entityType === "person" ? (
+                <>
+                  <Field label={t("onboarding.wName")}>
+                    <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("onboarding.wNamePlaceholder")} className={fieldInput} />
+                  </Field>
+                  <Field label={t("onboarding.wLastName")}>
+                    <input value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder={t("onboarding.wLastNamePlaceholder")} className={fieldInput} />
+                  </Field>
+                </>
+              ) : (
+                <Field label={t("onboarding.wCompanyName")}>
+                  <input value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder={t("onboarding.wCompanyNamePlaceholder")} className={fieldInput} />
+                </Field>
+              )}
               <Field label={t("onboarding.wEmail")}>
                 <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t("onboarding.wEmailPlaceholder")} className={fieldInput} />
               </Field>
@@ -116,7 +150,7 @@ export function WorkerOnboarding({
             <Button
               variant="dark"
               onClick={() => setStep("verify")}
-              disabled={!name.trim() || !emailOk(email)}
+              disabled={(entityType === "person" ? !name.trim() : !companyName.trim()) || !emailOk(email)}
               className="mt-5 w-full rounded-tile py-3 text-sm disabled:opacity-40"
             >
               {t("onboarding.next")}
