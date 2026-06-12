@@ -7,6 +7,7 @@ import { ResultsToolbar, type ResultsView } from "@/components/search/ResultsToo
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
 import { SpecialistCardSkeleton } from "@/components/search/SpecialistCard";
+import { Pagination } from "@/components/search/Pagination";
 import { JobsFilterSidebar } from "./JobsFilterSidebar";
 import { JobsMapView } from "./JobsMapView";
 import { useJobSearch } from "@/hooks/useJobSearch";
@@ -21,6 +22,8 @@ import { cn } from "@/lib/cn";
 import type { JobPosting, UserLocation } from "@/lib/types";
 
 const CITY = "Warszawa";
+const PAGE_SIZE = 12;
+const MAP_BATCH = 200; // map views fetch a single larger batch so most pins render at once
 
 /** True at >= lg (1024px). Drops the desktop-only split view on mobile. */
 function useIsDesktop() {
@@ -55,16 +58,30 @@ export function JobsScreen({
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [applyJob, setApplyJob] = useState<JobPosting | null>(null);
+  const [page, setPage] = useState(1);
 
+  // Server-side pagination: list fetches one page; map views fetch a larger batch for the pins.
+  const isListView = effectiveView === "list";
   const queryFilters: JobFilters = {
     ...filters,
     near: userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : undefined,
+    page: isListView ? page - 1 : 0,
+    size: isListView ? PAGE_SIZE : MAP_BATCH,
   };
-  const { data: jobs = [], isLoading } = useJobSearch(queryFilters);
-  const noResults = !isLoading && jobs.length === 0;
+  const { data, isLoading } = useJobSearch(queryFilters);
+  const jobs = data?.items ?? [];
+  const total = data?.total ?? 0;
+  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const noResults = !isLoading && total === 0;
 
-  const patch = (p: Partial<JobFilters>) => setFilters((f) => ({ ...f, ...p }));
-  const clear = () => setFilters((f) => ({ q: f.q, maxDistanceKm: 25 }));
+  const patch = (p: Partial<JobFilters>) => {
+    setFilters((f) => ({ ...f, ...p }));
+    setPage(1);
+  };
+  const clear = () => {
+    setFilters((f) => ({ q: f.q, maxDistanceKm: 25 }));
+    setPage(1);
+  };
 
   const activeCount =
     (filters.professions?.length ?? 0) +
@@ -96,7 +113,7 @@ export function JobsScreen({
 
       <main className="mx-auto mb-8 flex w-full max-w-[1280px] flex-1 flex-col gap-4 px-4 pt-6 pb-20 sm:px-8">
         <ResultsToolbar
-          title={t("jobs.titleCount", { count: jobs.length, city })}
+          title={t("jobs.titleCount", { count: total, city })}
           subtitle={t("jobs.subtitle")}
           view={effectiveView}
           onView={setView}
@@ -114,11 +131,16 @@ export function JobsScreen({
               ) : jobs.length === 0 ? (
                 <Empty t={t} />
               ) : (
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {jobs.map((j) => (
-                    <JobCard key={j.id} job={j} onApply={() => setApplyJob(j)} />
-                  ))}
-                </div>
+                <>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {jobs.map((j) => (
+                      <JobCard key={j.id} job={j} onApply={() => setApplyJob(j)} />
+                    ))}
+                  </div>
+                  <div className="mt-8">
+                    <Pagination page={page} pageCount={pageCount} onPage={setPage} />
+                  </div>
+                </>
               )}
             </div>
           </div>

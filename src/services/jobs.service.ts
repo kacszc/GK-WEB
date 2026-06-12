@@ -70,8 +70,13 @@ export type JobFilters = {
   rateMin?: number;
   near?: { lat: number; lng: number };
   maxDistanceKm?: number;
+  page?: number; // 0-indexed page (server-side pagination)
+  size?: number; // page size
   locale?: string;
 };
+
+/** One page of job postings + total matching count (server-side pagination). */
+export type JobSearchResult = { items: JobPosting[]; total: number };
 
 export const jobsService = {
   /** Publish a job posting and return its id + a cosmetic "notified N specialists" estimate. */
@@ -106,8 +111,8 @@ export const jobsService = {
     return { id: dto.id, notifiedCount };
   },
 
-  /** Browse public job postings (job-seeker side) — mirrors the specialist search filters. */
-  async searchJobs(filters: JobFilters = {}): Promise<JobPosting[]> {
+  /** Browse public job postings (job-seeker side). Backend sorts (promoted first) + paginates. */
+  async searchJobs(filters: JobFilters = {}): Promise<JobSearchResult> {
     const params = new URLSearchParams();
     if (filters.near) {
       params.set("lat", String(filters.near.lat));
@@ -122,9 +127,13 @@ export const jobsService = {
     if (filters.district) params.set("district", filters.district);
     if (filters.q) params.set("q", filters.q);
     if (filters.rateMin != null) params.set("rateMin", String(filters.rateMin));
+    if (filters.page != null) params.set("page", String(filters.page));
+    if (filters.size != null) params.set("size", String(filters.size));
     const qs = params.toString();
-    const dtos = await apiGet<JobDto[]>(`/api/jobs${qs ? `?${qs}` : ""}`, { locale: filters.locale });
-    return dtos.map(toJobPosting);
+    const data = await apiGet<{ items: JobDto[]; total: number }>(`/api/jobs${qs ? `?${qs}` : ""}`, {
+      locale: filters.locale,
+    });
+    return { items: data.items.map(toJobPosting), total: data.total };
   },
 
   /** Full detail for a single job posting. */
