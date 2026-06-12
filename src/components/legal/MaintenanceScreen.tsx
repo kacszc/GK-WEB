@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useI18n } from "@/i18n/I18nProvider";
 
 /** Shown when the service is unavailable (e.g. backend unreachable). Intentionally minimal —
@@ -7,10 +8,20 @@ import { useI18n } from "@/i18n/I18nProvider";
 export function MaintenanceScreen() {
   const { t } = useI18n();
 
-  // fixed inset-0 spans the whole screen incl. notch/home-indicator (viewport-fit=cover), so the
-  // dark bg covers the safe areas — there's no header/footer here to paint them.
+  // The notch / home-indicator (and overscroll) areas show the <html> background. This page has no
+  // header/footer to paint them, so darken the root element while it's shown — then both safe areas
+  // match the page. Restored on unmount.
+  useEffect(() => {
+    const html = document.documentElement;
+    const prev = html.style.backgroundColor;
+    html.style.backgroundColor = "#111111"; // --color-ink
+    return () => {
+      html.style.backgroundColor = prev;
+    };
+  }, []);
+
   return (
-    <main className="fixed inset-0 grid place-items-center overflow-y-auto bg-ink px-4 py-16 text-on-dark">
+    <main className="grid min-h-dvh place-items-center bg-ink px-4 py-16 text-on-dark">
       <div className="w-full max-w-[560px] text-center">
         <span className="mx-auto block h-20 w-20 rounded-full bg-gradient-to-br from-[#ff8a3d] to-[#ff5470]" aria-hidden />
         <p className="mt-6 text-[12px] font-bold uppercase tracking-[1.5px] text-[#ffb067]">{t("maintenance.eyebrow")}</p>

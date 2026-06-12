@@ -372,3 +372,8 @@ body {
 .h-safe-bottom {
   height: env(safe-area-inset-bottom);
 }
+/* Baseline canvas colour shown in the safe-area / overscroll regions (matches the page). Full-screen
+   dark pages (e.g. maintenance) override this on <html> while mounted. */
+html {
+  background-color: var(--color-page);
+}
