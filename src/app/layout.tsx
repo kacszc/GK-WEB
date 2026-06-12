@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -23,6 +23,14 @@ const inter = Inter({
   weight: ["400", "500", "600", "700"],
   display: "swap",
 });
+
+// viewport-fit=cover lets the app draw under the iOS notch/home-indicator; safe-area insets
+// (env(safe-area-inset-*)) then keep sticky bars + fixed UI clear of them — see globals.css.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();

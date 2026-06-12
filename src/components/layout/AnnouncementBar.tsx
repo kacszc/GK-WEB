@@ -51,7 +51,7 @@ export function AnnouncementBar() {
   if (visible.length === 0) return null;
 
   return (
-    <div className="flex flex-col print:hidden">
+    <div className="pt-safe flex flex-col print:hidden">
       {visible.map((a) => (
         <div
           key={a.code}

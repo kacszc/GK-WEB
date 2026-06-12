@@ -354,3 +354,17 @@ body {
     background: #fff;
   }
 }
+
+/* iOS safe areas (notch / home indicator). env() is 0 on devices without insets, so these are
+   no-ops elsewhere. Used by sticky top bars, the announcement bar and bottom-fixed UI (toasts). */
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+/* Horizontal insets (landscape notch) applied app-wide; 0 in portrait. */
+body {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
