@@ -42,16 +42,20 @@ export function JobsScreen({
   initialQuery,
   initialProfession,
   initialLocation = null,
+  initialMaxDistanceKm,
 }: {
   initialQuery: string;
   initialProfession?: string;
   initialLocation?: UserLocation | null;
+  initialMaxDistanceKm?: number;
 }) {
   const { t } = useI18n();
-  // No distance cap by default → "Proponowane" (everyone). A limit applies only once the user sets it.
+  // No distance cap by default → "Proponowane" (everyone). A limit applies only once the user sets it
+  // (or when the landing carried a city + radius).
   const [filters, setFilters] = useState<JobFilters>({
     q: initialQuery || undefined,
     professions: initialProfession ? [initialProfession] : undefined,
+    maxDistanceKm: initialMaxDistanceKm,
   });
   const [view, setView] = useState<ResultsView>("mapList");
   const isDesktop = useIsDesktop();

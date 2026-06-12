@@ -7,7 +7,7 @@ import { AutocompleteDropdown } from "./AutocompleteDropdown";
 import { presetDate } from "./WhenFilter";
 import { searchService } from "@/services";
 import { recordSearch } from "@/lib/searchHistory";
-import type { SearchSuggestions, WhenValue, UserLocation, SearchMode, Specialization } from "@/lib/types";
+import type { SearchSuggestions, WhenValue, WhereValue, SearchMode, Specialization } from "@/lib/types";
 
 export function HeroSearch({ mode, seedKeys = [] }: { mode: SearchMode; seedKeys?: Specialization[] }) {
   // Seed dropdown state from the landing payload so focus shows suggestions with no extra fetch.
@@ -34,8 +34,8 @@ export function HeroSearch({ mode, seedKeys = [] }: { mode: SearchMode; seedKeys
     preset: "today",
     date: presetDate("today"),
   }));
-  // Default: no city = "Proponowane" (no anchor, no range) — clicking Search shows everyone.
-  const [where, setWhere] = useState<UserLocation | null>(null);
+  // Default: no city = "Proponowane" (no anchor, no range). Picking a city reveals the radius (25 km).
+  const [where, setWhere] = useState<WhereValue>({ city: null, distanceKm: 25 });
 
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -46,18 +46,19 @@ export function HeroSearch({ mode, seedKeys = [] }: { mode: SearchMode; seedKeys
     const q = value.trim();
     const base = mode === "job" ? "/jobs" : "/search";
     // Remember the search for the "recently viewed" landing section.
-    if (q) recordSearch({ query: q, location: where?.city ?? where?.label });
+    if (q) recordSearch({ query: q, location: where.city?.city ?? where.city?.label, rangeKm: where.city ? where.distanceKm : undefined });
     const params = new URLSearchParams();
     // A picked profession goes by code (pre-selects the filter); free text goes by q.
     if (opts?.professionCode) params.set("profession", opts.professionCode);
     else if (q) params.set("q", q);
     if (opts?.view) params.set("view", opts.view);
-    // Carry the picked city to results (lat/lng anchor). No city → "Proponowane" (everyone).
-    if (where) {
-      params.set("lat", String(where.lat));
-      params.set("lng", String(where.lng));
-      if (where.city) params.set("city", where.city);
-      if (where.code) params.set("code", where.code);
+    // Carry the picked city (lat/lng anchor + radius) to results. No city → "Proponowane" (everyone).
+    if (where.city) {
+      params.set("lat", String(where.city.lat));
+      params.set("lng", String(where.city.lng));
+      if (where.city.city) params.set("city", where.city.city);
+      if (where.city.code) params.set("code", where.city.code);
+      params.set("maxDistanceKm", String(where.distanceKm));
     }
     const qs = params.toString();
     router.push(`${base}${qs ? `?${qs}` : ""}`);

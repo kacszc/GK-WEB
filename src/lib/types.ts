@@ -337,7 +337,9 @@ export type WhenValue = {
 
 /** "Where" filter — location + radius (km). */
 export type WhereValue = {
-  location: string;
+  /** Chosen search-origin city (backend geo). null = "Proponowane" — no anchor, no range. */
+  city: UserLocation | null;
+  /** Radius (km) applied only when a city is chosen; default 25. */
   distanceKm: number;
 };
 

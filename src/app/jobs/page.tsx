@@ -10,13 +10,16 @@ export default async function JobsPage({
 }) {
   const sp = await searchParams;
   const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
-  // lat/lng carry the search-origin city from the landing (absent → "Proponowane": no anchor).
+  const md = Number(first(sp.maxDistanceKm));
+  // lat/lng (+ maxDistanceKm) carry the search-origin city/radius from the landing
+  // (absent → "Proponowane": no anchor, no cap).
   return (
     <>
       <JobsScreen
         initialQuery={first(sp.q) ?? ""}
         initialProfession={first(sp.profession)}
         initialLocation={parseLocation(sp)}
+        initialMaxDistanceKm={Number.isFinite(md) ? md : undefined}
       />
       <Footer />
     </>
