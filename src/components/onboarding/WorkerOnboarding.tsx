@@ -44,7 +44,14 @@ export function WorkerOnboarding({
   }
   const [phone, setPhone] = useState("");
   const [industry, setIndustry] = useState("");
-  const [location, setLocation] = useState<UserLocation | null>(null);
+  // Default to Warsaw (matches the picker's default label) so the step is valid without re-selecting.
+  const [location, setLocation] = useState<UserLocation | null>({
+    city: "Warszawa",
+    code: "warszawa",
+    label: "Warszawa",
+    lat: 52.2297,
+    lng: 21.0122,
+  });
   const baseLocation = location?.district ?? location?.city ?? location?.label ?? "";
   const [radiusKm, setRadiusKm] = useState(25);
   const [specs, setSpecs] = useState<string[]>([]);

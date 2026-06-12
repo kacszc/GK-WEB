@@ -37,7 +37,14 @@ export function EmployerOnboarding({ initialEmail = "" }: { initialEmail?: strin
   const [company, setCompany] = useState<GusCompany | null>(null);
   const [industries, setIndustries] = useState<string[]>([]);
   const [teamSize, setTeamSize] = useState("");
-  const [loc, setLoc] = useState<UserLocation | null>(null);
+  // Default to Warsaw (matches the picker's default label) so the step is valid without re-selecting.
+  const [loc, setLoc] = useState<UserLocation | null>({
+    city: "Warszawa",
+    code: "warszawa",
+    label: "Warszawa",
+    lat: 52.2297,
+    lng: 21.0122,
+  });
   const location = loc?.city ?? loc?.label ?? "";
   const [result, setResult] = useState<EmployerOnboardingResult | null>(null);
   const [busy, setBusy] = useState(false);
