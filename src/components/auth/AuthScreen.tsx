@@ -15,6 +15,14 @@ import type { UserRole } from "@/lib/types";
 
 const emailOk = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
+/** Where to go after login: the `?redirect=` target if it's a safe internal path, else home.
+ * Read from window at click-time so the page needs no useSearchParams Suspense boundary. */
+function safeRedirect(): string {
+  if (typeof window === "undefined") return "/";
+  const to = new URLSearchParams(window.location.search).get("redirect");
+  return to && to.startsWith("/") && !to.startsWith("//") ? to : "/";
+}
+
 /** Map a Firebase auth error to a user-facing i18n key (falls back to the generic one). */
 function authErrorKey(e: unknown): string {
   const code = typeof e === "object" && e && "code" in e ? String((e as { code: unknown }).code) : "";
@@ -78,7 +86,7 @@ export function AuthScreen({ mode }: { mode: "login" | "register" }) {
         return;
       }
       await signInWithEmail(email, password);
-      router.push("/");
+      router.push(safeRedirect());
     } catch (e) {
       setFormError(t(authErrorKey(e)));
     } finally {

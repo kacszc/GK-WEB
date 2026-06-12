@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Check, Star, Coins, Phone, Mail } from "lucide-react";
 import { Dialog } from "@/components/ui/Dialog";
@@ -54,6 +55,7 @@ function ContactModal({
   const { t } = useI18n();
   const { show } = useToast();
   const { user } = useAuth();
+  const pathname = usePathname();
   const { balance, backed, spend, setBalance } = useWallet();
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
@@ -177,7 +179,8 @@ function ContactModal({
             <div className="mt-4 rounded-tile border border-line-2 p-4 text-center">
               <p className="text-sm text-ink-2">{t("contact.loginRequired")}</p>
               <Link
-                href="/login"
+                href={`/login?redirect=${encodeURIComponent(pathname)}`}
+                onClick={onClose}
                 className="mt-3 inline-flex w-full items-center justify-center rounded-tile bg-ink px-4 py-2.5 text-sm font-bold text-on-dark hover:bg-ink/90"
               >
                 {t("contact.loginCta")}
@@ -196,6 +199,7 @@ function ContactModal({
               </p>
               <Link
                 href="/account/tokens"
+                onClick={onClose}
                 className="mt-3 inline-flex w-full items-center justify-center rounded-tile bg-ink px-4 py-2.5 text-sm font-bold text-on-dark hover:bg-ink/90"
               >
                 {t("tokens.gateBuy")}
