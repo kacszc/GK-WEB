@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Mail, Lock, User as UserIcon } from "lucide-react";
+import { Mail, Lock } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
 import { Button } from "@/components/ui/Button";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
@@ -48,7 +48,6 @@ export function AuthScreen({ mode }: { mode: "login" | "register" }) {
   const router = useRouter();
 
   const [role, setRole] = useState<UserRole>("employer");
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [terms, setTerms] = useState(false);
@@ -57,7 +56,6 @@ export function AuthScreen({ mode }: { mode: "login" | "register" }) {
   const [formError, setFormError] = useState<string | null>(null);
 
   const errors = {
-    name: mode === "register" && !name.trim(),
     email: !emailOk(email),
     password: password.length < 6,
     terms: mode === "register" && !terms,
@@ -76,12 +74,13 @@ export function AuthScreen({ mode }: { mode: "login" | "register" }) {
         // Create the Firebase account, then finalize registration on the backend
         // (sets the `role` custom claim) and re-derive the app user so the new
         // role is reflected. Then continue into role-specific onboarding.
-        await signUpWithEmail(email, password, name);
+        await signUpWithEmail(email, password);
         await sendVerificationEmail(); // email-link verification; confirmed in onboarding
         await authService.registerFinalize(role);
         await refreshUser(); // force-refresh token + re-derive so the role claim is visible
+        // Name/company is collected in onboarding step 1 — pass only the email to pre-fill it.
         const base = role === "specialist" ? "/onboarding/specialist" : "/onboarding/employer";
-        const qs = new URLSearchParams({ name, email }).toString();
+        const qs = new URLSearchParams({ email }).toString();
         router.push(`${base}?${qs}`);
         return;
       }
@@ -134,17 +133,6 @@ export function AuthScreen({ mode }: { mode: "login" | "register" }) {
                   ))}
                 </div>
               </div>
-            )}
-
-            {mode === "register" && (
-              <TextInput
-                icon={<UserIcon className="h-4 w-4" />}
-                label={t("auth.name")}
-                value={name}
-                onChange={setName}
-                placeholder={t("auth.namePlaceholder")}
-                error={showErrors && errors.name ? t("auth.errName") : undefined}
-              />
             )}
 
             <TextInput

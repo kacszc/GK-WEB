@@ -635,8 +635,10 @@ const uk: Dictionary = {
     // worker · step 1
     wTitle: "Почнімо з основ",
     wSubtitle: "Ім'я та контакт — решту заповните за мить. Профіль видно одразу після реєстрації.",
-    wName: "Ім'я (або назва компанії)",
-    wNamePlaceholder: "напр. Анна Ковальська",
+    wName: "Ім'я",
+    wNamePlaceholder: "напр. Анна",
+    wLastName: "Прізвище (необов'язково)",
+    wLastNamePlaceholder: "напр. Ковальська",
     wEmail: "E-mail",
     wEmailPlaceholder: "напр. anna.k@email.com",
     wPhone: "Телефон (необов'язково)",

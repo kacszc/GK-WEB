@@ -27,6 +27,7 @@ export function WorkerOnboarding({
 
   const [step, setStep] = useState<Step>("basics");
   const [name, setName] = useState(initialName);
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState(initialEmail);
   const [phone, setPhone] = useState("");
   const [industry, setIndustry] = useState("");
@@ -66,8 +67,10 @@ export function WorkerOnboarding({
       const custom = otherText.trim()
         ? [{ industryCode: industry, label: otherText.trim() }]
         : [];
+      // First name (required) + last name (optional) → single display name on the profile.
+      const fullName = [name.trim(), lastName.trim()].filter(Boolean).join(" ");
       const res = await onboardingService.completeWorker({
-        name,
+        name: fullName,
         email,
         phone,
         industry,
@@ -99,6 +102,9 @@ export function WorkerOnboarding({
             <div className="flex flex-col gap-3.5">
               <Field label={t("onboarding.wName")}>
                 <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("onboarding.wNamePlaceholder")} className={fieldInput} />
+              </Field>
+              <Field label={t("onboarding.wLastName")}>
+                <input value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder={t("onboarding.wLastNamePlaceholder")} className={fieldInput} />
               </Field>
               <Field label={t("onboarding.wEmail")}>
                 <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t("onboarding.wEmailPlaceholder")} className={fieldInput} />

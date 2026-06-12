@@ -635,8 +635,10 @@ const en: Dictionary = {
     // worker · step 1
     wTitle: "Let's start with the basics",
     wSubtitle: "Name and contact — you'll fill in the rest shortly. Your profile is visible right after sign-up.",
-    wName: "Name (or company name)",
-    wNamePlaceholder: "e.g. Anna Kowalska",
+    wName: "First name",
+    wNamePlaceholder: "e.g. Anna",
+    wLastName: "Last name (optional)",
+    wLastNamePlaceholder: "e.g. Kowalska",
     wEmail: "E-mail",
     wEmailPlaceholder: "e.g. anna.k@email.com",
     wPhone: "Phone (optional)",

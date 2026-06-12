@@ -634,8 +634,10 @@ const pl = {
     // worker · step 1
     wTitle: "Zacznijmy od podstaw",
     wSubtitle: "Imię i kontakt — zaraz uzupełnisz resztę. Profil widoczny od razu po rejestracji.",
-    wName: "Imię (lub nazwa firmy)",
-    wNamePlaceholder: "np. Anna Kowalska",
+    wName: "Imię",
+    wNamePlaceholder: "np. Anna",
+    wLastName: "Nazwisko (opcjonalnie)",
+    wLastNamePlaceholder: "np. Kowalska",
     wEmail: "E-mail",
     wEmailPlaceholder: "np. anna.k@email.com",
     wPhone: "Telefon (opcjonalnie)",
