@@ -76,6 +76,10 @@ const pl = {
     jobDesc:
       "2 minuty. Twoje zlecenie zobaczy 247 dostępnych specjalistów — pierwsze odpowiedzi w kilka minut.",
     jobCta: "Stwórz zlecenie",
+    findWorkTitle: "Znajdź pracę",
+    findWorkDesc:
+      "Przeglądaj zlecenia w Twojej okolicy i aplikuj jednym kliknięciem — pierwsi zwykle dostają robotę.",
+    findWorkCta: "Przeglądaj zlecenia",
   },
   popular: {
     label: "POPULARNE OSTATNIO",

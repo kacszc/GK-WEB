@@ -77,6 +77,10 @@ const en: Dictionary = {
     jobDesc:
       "2 minutes. Your job will be seen by 247 available specialists — first replies in minutes.",
     jobCta: "Create a job",
+    findWorkTitle: "Find work",
+    findWorkDesc:
+      "Browse jobs near you and apply in one click — the first to reply usually gets the gig.",
+    findWorkCta: "Browse jobs",
   },
   popular: {
     label: "RECENTLY POPULAR",
