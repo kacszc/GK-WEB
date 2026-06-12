@@ -123,8 +123,8 @@ export function JobsScreen({
           filterCount={activeCount}
         />
 
-        {/* List (also the empty-state fallback for the map views) */}
-        {(effectiveView === "list" || noResults) && (
+        {/* List view (map views stay on the map and show an empty overlay instead of falling back). */}
+        {effectiveView === "list" && (
           <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
             {sidebar}
             <div>
@@ -148,8 +148,8 @@ export function JobsScreen({
           </div>
         )}
 
-        {/* Map + list (desktop only) */}
-        {effectiveView === "mapList" && !noResults && (
+        {/* Map + list (desktop only). Empty → overlay on the map. */}
+        {effectiveView === "mapList" && (
           <div className="grid gap-4 lg:h-[calc(100vh-220px)] lg:grid-rows-[minmax(0,1fr)] lg:grid-cols-[200px_minmax(300px,400px)_1fr]">
             {sidebar}
             {/* px room so the selection ring isn't clipped by overflow / doesn't bleed under the filters */}
@@ -171,27 +171,33 @@ export function JobsScreen({
                     </div>
                   ))}
             </div>
-            <JobsMapView
-              jobs={jobs}
-              activeId={activeId}
-              onSelect={setActiveId}
-              onApply={setApplyJob}
-              center={mapCenter}
-            />
+            <div className="relative h-full">
+              <JobsMapView
+                jobs={jobs}
+                activeId={activeId}
+                onSelect={setActiveId}
+                onApply={setApplyJob}
+                center={mapCenter}
+              />
+              {noResults && <MapEmptyOverlay t={t} />}
+            </div>
           </div>
         )}
 
-        {/* Map only */}
-        {effectiveView === "map" && !noResults && (
+        {/* Map only. Empty → overlay on the map. */}
+        {effectiveView === "map" && (
           <div className="grid gap-4 lg:h-[calc(100vh-220px)] lg:grid-rows-[minmax(0,1fr)] lg:grid-cols-[200px_1fr]">
             {sidebar}
-            <JobsMapView
-              jobs={jobs}
-              activeId={activeId}
-              onSelect={setActiveId}
-              onApply={setApplyJob}
-              center={mapCenter}
-            />
+            <div className="relative h-full">
+              <JobsMapView
+                jobs={jobs}
+                activeId={activeId}
+                onSelect={setActiveId}
+                onApply={setApplyJob}
+                center={mapCenter}
+              />
+              {noResults && <MapEmptyOverlay t={t} />}
+            </div>
           </div>
         )}
       </main>
@@ -217,6 +223,18 @@ function Empty({ t }: { t: (k: string) => string }) {
   return (
     <div className="grid min-h-[240px] place-items-center text-center">
       <div>
+        <p className="text-sm font-semibold text-ink">{t("jobs.empty")}</p>
+        <p className="mt-1 text-[13px] text-ink-3">{t("results.emptyHint")}</p>
+      </div>
+    </div>
+  );
+}
+
+/** No-results overlay on top of the map (translucent), so the map stays visible behind it. */
+function MapEmptyOverlay({ t }: { t: (k: string) => string }) {
+  return (
+    <div className="pointer-events-none absolute inset-0 z-10 grid place-items-center rounded-card bg-surface/70 px-4 text-center backdrop-blur-[2px]">
+      <div className="pointer-events-auto rounded-panel border border-line-3 bg-surface/95 px-5 py-4 shadow-search">
         <p className="text-sm font-semibold text-ink">{t("jobs.empty")}</p>
         <p className="mt-1 text-[13px] text-ink-3">{t("results.emptyHint")}</p>
       </div>

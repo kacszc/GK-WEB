@@ -152,8 +152,8 @@ export function SearchScreen({
 
         <ActiveFilters filters={filters} onPatch={patch} city={city} />
 
-        {/* List view — also used as the fallback for map/split when there are no results. */}
-        {(effectiveView === "list" || noResults) && (
+        {/* List view (map views stay on the map and show an empty overlay instead of falling back). */}
+        {effectiveView === "list" && (
           <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
             {sidebar}
             <div>
@@ -181,8 +181,8 @@ export function SearchScreen({
           </div>
         )}
 
-        {/* Map + List view (desktop only — coerced to list on mobile; hidden when no results) */}
-        {effectiveView === "mapList" && !noResults && (
+        {/* Map + List view (desktop only — coerced to list on mobile). Empty → overlay on the map. */}
+        {effectiveView === "mapList" && (
           <div className="grid gap-4 lg:h-[calc(100vh-220px)] lg:grid-rows-[minmax(0,1fr)] lg:grid-cols-[200px_minmax(300px,400px)_1fr]">
             {sidebar}
             <div className="flex flex-col gap-3 overflow-y-auto pr-1">
@@ -200,27 +200,33 @@ export function SearchScreen({
                     />
                   ))}
             </div>
-            <MapView
-              specialists={items}
-              activeId={activeId}
-              onSelect={setActiveId}
-              cityCode={userLocation?.code ?? "warszawa"}
-              center={userLocation ? [userLocation.lng, userLocation.lat] : undefined}
-            />
+            <div className="relative h-full">
+              <MapView
+                specialists={items}
+                activeId={activeId}
+                onSelect={setActiveId}
+                cityCode={userLocation?.code ?? "warszawa"}
+                center={userLocation ? [userLocation.lng, userLocation.lat] : undefined}
+              />
+              {noResults && <MapEmptyOverlay t={t} />}
+            </div>
           </div>
         )}
 
-        {/* Map only view (hidden when no results — no point showing an empty map) */}
-        {effectiveView === "map" && !noResults && (
+        {/* Map only view. Empty → overlay on the map (no fallback to the list). */}
+        {effectiveView === "map" && (
           <div className="grid gap-4 lg:h-[calc(100vh-220px)] lg:grid-rows-[minmax(0,1fr)] lg:grid-cols-[200px_1fr]">
             {sidebar}
-            <MapView
-              specialists={items}
-              activeId={activeId}
-              onSelect={setActiveId}
-              cityCode={userLocation?.code ?? "warszawa"}
-              center={userLocation ? [userLocation.lng, userLocation.lat] : undefined}
-            />
+            <div className="relative h-full">
+              <MapView
+                specialists={items}
+                activeId={activeId}
+                onSelect={setActiveId}
+                cityCode={userLocation?.code ?? "warszawa"}
+                center={userLocation ? [userLocation.lng, userLocation.lat] : undefined}
+              />
+              {noResults && <MapEmptyOverlay t={t} />}
+            </div>
           </div>
         )}
 
@@ -261,6 +267,18 @@ function Empty({ t }: { t: (k: string) => string }) {
   return (
     <div className="grid min-h-[300px] place-items-center text-center">
       <div>
+        <p className="text-sm font-semibold text-ink">{t("results.empty")}</p>
+        <p className="mt-1 text-[13px] text-ink-3">{t("results.emptyHint")}</p>
+      </div>
+    </div>
+  );
+}
+
+/** No-results overlay sitting on top of the map (translucent), so the map stays visible behind it. */
+function MapEmptyOverlay({ t }: { t: (k: string) => string }) {
+  return (
+    <div className="pointer-events-none absolute inset-0 z-10 grid place-items-center rounded-card bg-surface/70 px-4 text-center backdrop-blur-[2px]">
+      <div className="pointer-events-auto rounded-panel border border-line-3 bg-surface/95 px-5 py-4 shadow-search">
         <p className="text-sm font-semibold text-ink">{t("results.empty")}</p>
         <p className="mt-1 text-[13px] text-ink-3">{t("results.emptyHint")}</p>
       </div>
