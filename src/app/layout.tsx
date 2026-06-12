@@ -60,7 +60,7 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} className={`${inter.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-page text-ink">
+      <body className="min-h-dvh flex flex-col bg-page text-ink">
         <I18nProvider locale={locale} dict={dict}>
           <QueryProvider>
             <ToastProvider>
