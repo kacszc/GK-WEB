@@ -766,7 +766,7 @@ const en: Dictionary = {
   maintenance: {
     eyebrow: "Maintenance",
     title: "We'll be right back!",
-    desc: "The service is temporarily unavailable. We're working on it — please try again in a moment.",
+    desc: "The service is temporarily unavailable.",
   },
   errorPage: {
     code: "Error 500",

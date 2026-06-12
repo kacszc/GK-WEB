@@ -765,7 +765,7 @@ const pl = {
   maintenance: {
     eyebrow: "Prace techniczne",
     title: "Zaraz wracamy!",
-    desc: "Usługa jest chwilowo niedostępna. Pracujemy nad przywróceniem — spróbuj ponownie za chwilę.",
+    desc: "Usługa jest chwilowo niedostępna.",
   },
   errorPage: {
     code: "Błąd 500",
