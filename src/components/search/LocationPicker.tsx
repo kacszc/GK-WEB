@@ -37,7 +37,8 @@ export function LocationPicker({
   });
 
   const defaultCity = cities[0]?.name ?? "Warszawa";
-  const currentLabel = value?.label ?? defaultCity;
+  // No city selected = no anchor = search all of Poland (backend returns everyone, promoted first).
+  const currentLabel = value?.label ?? t("results.allPoland");
   const currentCity = value?.city ?? defaultCity;
 
   function detect(close: () => void) {
