@@ -17,6 +17,7 @@ import type { SpecialistFilters } from "@/services";
 import type { UserLocation } from "@/lib/types";
 
 const PAGE_SIZE = 9;
+const MAP_BATCH = 200; // map views fetch a single larger batch so most pins render at once
 const CITY = "Warszawa";
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -73,9 +74,14 @@ export function SearchScreen({
     (filters.minTrust ? 1 : 0) +
     (filters.maxDistanceKm != null ? 1 : 0);
 
+  // Server-side pagination: the list view fetches one page; the map views fetch a larger single
+  // batch so all pins show (the side list just scrolls). Backend sorts (promoted first) + paginates.
+  const isListView = effectiveView === "list";
   const queryFilters: SpecialistFilters = {
     ...filters,
     near: userLocation ? { lng: userLocation.lng, lat: userLocation.lat } : undefined,
+    page: isListView ? page - 1 : 0,
+    size: isListView ? PAGE_SIZE : MAP_BATCH,
   };
   const { data, isLoading, isFetching } = useSpecialistSearch(queryFilters);
   const items = data?.items ?? [];
@@ -83,7 +89,8 @@ export function SearchScreen({
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
   // No results: showing a map makes no sense — fall back to the list layout with the empty message.
   const noResults = !isLoading && total === 0;
-  const pageItems = items.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  // List view: the backend already returned this page. Map views render `items` directly.
+  const pageItems = items;
 
   const patch = (p: Partial<SpecialistFilters>) => {
     setFilters((f) => ({ ...f, ...p }));

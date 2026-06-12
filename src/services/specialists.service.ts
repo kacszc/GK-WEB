@@ -101,6 +101,8 @@ export type SpecialistFilters = {
   languages?: string[];
   sort?: SpecialistSort;
   near?: { lng: number; lat: number };
+  page?: number; // 0-indexed page (server-side pagination)
+  size?: number; // page size
   locale?: string;
 };
 
@@ -126,16 +128,21 @@ export const specialistsService = {
     if (filters.kyc) params.set("kyc", "true");
     if (filters.languages?.length) params.set("languages", filters.languages.join(","));
     if (filters.sort) params.set("sort", filters.sort);
+    if (filters.page != null) params.set("page", String(filters.page));
+    if (filters.size != null) params.set("size", String(filters.size));
     const qs = params.toString();
-    const dtos = await apiGet<SpecialistDto[]>(`/api/specialists${qs ? `?${qs}` : ""}`, {
-      locale: filters.locale,
-    });
-    const items = dtos.map(toSpecialist);
+    // Backend sorts (promoted first) + paginates + returns the facet totals over the full set.
+    const data = await apiGet<{
+      items: SpecialistDto[];
+      total: number;
+      availableNow: number;
+      availableWeek: number;
+    }>(`/api/specialists${qs ? `?${qs}` : ""}`, { locale: filters.locale });
     return {
-      items,
-      total: items.length,
-      availableNow: items.filter((s) => s.availability === "now").length,
-      availableWeek: items.filter((s) => s.availability === "week").length,
+      items: data.items.map(toSpecialist),
+      total: data.total,
+      availableNow: data.availableNow,
+      availableWeek: data.availableWeek,
     };
   },
 
