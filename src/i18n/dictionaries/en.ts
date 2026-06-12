@@ -505,6 +505,7 @@ const en: Dictionary = {
     detailsTitle: "Your details",
     detailsSubtitle: "The data you provided when creating your account. Role is fixed.",
     detailsEmpty: "Complete your details by finishing account setup.",
+    detailsComplete: "Finish setup",
     fieldRole: "Role",
     fieldHeadline: "Specialization",
     fieldLocation: "Location",

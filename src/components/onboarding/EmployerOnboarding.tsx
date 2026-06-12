@@ -7,6 +7,7 @@ import { Loader2, CheckCircle2, Gift } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { useWallet } from "@/lib/WalletProvider";
+import { useAuth } from "@/lib/AuthProvider";
 import { onboardingService } from "@/services";
 import { useI18n } from "@/i18n/I18nProvider";
 import type { GusCompany, EmployerOnboardingResult } from "@/lib/types";
@@ -20,10 +21,18 @@ export function EmployerOnboarding({ initialEmail = "" }: { initialEmail?: strin
   const { t } = useI18n();
   const router = useRouter();
   const { topUp } = useWallet();
+  const { user } = useAuth();
 
   const [step, setStep] = useState<Step>("company");
   const [nip, setNip] = useState("");
   const [email, setEmail] = useState(initialEmail);
+  const [emailSeeded, setEmailSeeded] = useState(false);
+
+  // Returning to finish setup (no query param): prefill the email from the signed-in account once.
+  if (!emailSeeded && !email && user?.email) {
+    setEmailSeeded(true);
+    setEmail(user.email);
+  }
   const [company, setCompany] = useState<GusCompany | null>(null);
   const [industries, setIndustries] = useState<string[]>([]);
   const [teamSize, setTeamSize] = useState("");

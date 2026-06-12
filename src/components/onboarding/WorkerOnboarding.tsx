@@ -25,6 +25,7 @@ export function WorkerOnboarding({
 }) {
   const { t } = useI18n();
   const router = useRouter();
+  const { user } = useAuth();
 
   const [step, setStep] = useState<Step>("basics");
   // A specialist may work as a private person (first/last name) or as a company (company name).
@@ -33,6 +34,13 @@ export function WorkerOnboarding({
   const [lastName, setLastName] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [email, setEmail] = useState(initialEmail);
+  const [emailSeeded, setEmailSeeded] = useState(false);
+
+  // Returning to finish setup (no query param): prefill the email from the signed-in account once.
+  if (!emailSeeded && !email && user?.email) {
+    setEmailSeeded(true);
+    setEmail(user.email);
+  }
   const [phone, setPhone] = useState("");
   const [industry, setIndustry] = useState("");
   const [baseLocation, setBaseLocation] = useState("");

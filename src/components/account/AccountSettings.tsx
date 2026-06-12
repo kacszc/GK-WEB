@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check, FileClock, Bell, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -293,7 +294,7 @@ function YourDetails() {
           (loading ? (
             <Skeleton className="h-11 w-full rounded-tile" />
           ) : !sp ? (
-            <p className="text-[13px] text-ink-3 sm:col-span-2">{t("account.detailsEmpty")}</p>
+            <CompleteSetup role="specialist" />
           ) : (
             <>
               <ReadField label={t("auth.name")} value={sp.displayName} />
@@ -309,7 +310,7 @@ function YourDetails() {
           (loading ? (
             <Skeleton className="h-11 w-full rounded-tile" />
           ) : !emp ? (
-            <p className="text-[13px] text-ink-3 sm:col-span-2">{t("account.detailsEmpty")}</p>
+            <CompleteSetup role="employer" />
           ) : (
             <>
               <ReadField label={t("account.fieldCompany")} value={emp.name} />
@@ -323,6 +324,22 @@ function YourDetails() {
           ))}
       </div>
     </section>
+  );
+}
+
+/** Empty profile → link the user into onboarding to finish (idempotent: completing upserts the profile). */
+function CompleteSetup({ role }: { role: "specialist" | "employer" }) {
+  const { t } = useI18n();
+  return (
+    <div className="sm:col-span-2">
+      <p className="text-[13px] text-ink-3">{t("account.detailsEmpty")}</p>
+      <Link
+        href={`/onboarding/${role}`}
+        className="mt-3 inline-flex items-center rounded-tile bg-ink px-4 py-2.5 text-sm font-bold text-on-dark hover:bg-ink/90"
+      >
+        {t("account.detailsComplete")}
+      </Link>
+    </div>
   );
 }
 

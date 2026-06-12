@@ -504,6 +504,7 @@ const pl = {
     detailsTitle: "Twoje dane",
     detailsSubtitle: "Dane podane przy zakładaniu konta. Rola jest stała.",
     detailsEmpty: "Uzupełnij dane, kończąc konfigurację konta.",
+    detailsComplete: "Dokończ konfigurację",
     fieldRole: "Rola",
     fieldHeadline: "Specjalizacja",
     fieldLocation: "Lokalizacja",

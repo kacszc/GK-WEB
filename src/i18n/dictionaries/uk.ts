@@ -505,6 +505,7 @@ const uk: Dictionary = {
     detailsTitle: "Ваші дані",
     detailsSubtitle: "Дані, вказані під час створення акаунта. Роль незмінна.",
     detailsEmpty: "Заповніть дані, завершивши налаштування акаунта.",
+    detailsComplete: "Завершити налаштування",
     fieldRole: "Роль",
     fieldHeadline: "Спеціалізація",
     fieldLocation: "Локація",
