@@ -365,6 +365,8 @@ export type WorkerOnboardingData = {
   phone: string;
   industry: string;
   baseLocation: string;
+  lat?: number;
+  lng?: number;
   radiusKm: number;
   specializations: string[]; // labels (compose the free-text headline)
   specializationCodes: string[]; // stable codes → specialist's specialization relation

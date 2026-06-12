@@ -61,6 +61,8 @@ export const onboardingService = {
       displayName: data.name,
       headline: data.specializations.join(", ") || data.industry, // free-text label list
       district: data.baseLocation,
+      lat: data.lat, // geo origin for distance-based search (omitted → backend default)
+      lng: data.lng,
       specializationCodes: data.specializationCodes, // structured codes → search relation
       customSpecializations: data.customSpecializations, // "Inne" → industry + free-text role
       languageCodes: data.languages, // language codes → language filter

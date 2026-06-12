@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/Button";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { useWallet } from "@/lib/WalletProvider";
 import { useAuth } from "@/lib/AuthProvider";
+import { LocationPicker } from "@/components/search/LocationPicker";
 import { onboardingService } from "@/services";
 import { useI18n } from "@/i18n/I18nProvider";
-import type { GusCompany, EmployerOnboardingResult } from "@/lib/types";
+import type { GusCompany, EmployerOnboardingResult, UserLocation } from "@/lib/types";
 import { OnboardingCard, StepHeading, Field, fieldInput, Chip } from "./parts";
 
 type Step = "company" | "verified" | "needs" | "done";
@@ -36,7 +37,8 @@ export function EmployerOnboarding({ initialEmail = "" }: { initialEmail?: strin
   const [company, setCompany] = useState<GusCompany | null>(null);
   const [industries, setIndustries] = useState<string[]>([]);
   const [teamSize, setTeamSize] = useState("");
-  const [location, setLocation] = useState("");
+  const [loc, setLoc] = useState<UserLocation | null>(null);
+  const location = loc?.city ?? loc?.label ?? "";
   const [result, setResult] = useState<EmployerOnboardingResult | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -143,7 +145,7 @@ export function EmployerOnboarding({ initialEmail = "" }: { initialEmail?: strin
             </div>
             <div className="mt-4">
               <Field label={t("onboarding.eLocation")}>
-                <input value={location} onChange={(e) => setLocation(e.target.value)} placeholder={t("onboarding.eLocationPlaceholder")} className={fieldInput} />
+                <LocationPicker value={loc} onLocate={setLoc} onClear={() => setLoc(null)} />
               </Field>
             </div>
             <Button variant="dark" onClick={finish} disabled={industries.length === 0 || !location.trim() || busy} className="mt-6 w-full rounded-tile py-3 text-sm disabled:opacity-40">

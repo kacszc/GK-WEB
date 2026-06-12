@@ -6,11 +6,12 @@ import { useQuery } from "@tanstack/react-query";
 import { MailCheck, Loader2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
+import { LocationPicker } from "@/components/search/LocationPicker";
 import { useAuth } from "@/lib/AuthProvider";
 import { onboardingService } from "@/services";
 import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
-import type { WorkerOnboardingResult } from "@/lib/types";
+import type { WorkerOnboardingResult, UserLocation } from "@/lib/types";
 import { OnboardingCard, StepHeading, Field, fieldInput, Chip } from "./parts";
 
 type Step = "basics" | "verify" | "industry" | "spec" | "done";
@@ -43,7 +44,8 @@ export function WorkerOnboarding({
   }
   const [phone, setPhone] = useState("");
   const [industry, setIndustry] = useState("");
-  const [baseLocation, setBaseLocation] = useState("");
+  const [location, setLocation] = useState<UserLocation | null>(null);
+  const baseLocation = location?.district ?? location?.city ?? location?.label ?? "";
   const [radiusKm, setRadiusKm] = useState(25);
   const [specs, setSpecs] = useState<string[]>([]);
   const [otherText, setOtherText] = useState(""); // "Inne" — custom role in the chosen industry
@@ -90,6 +92,8 @@ export function WorkerOnboarding({
         phone,
         industry,
         baseLocation,
+        lat: location?.lat,
+        lng: location?.lng,
         radiusKm,
         specializations: otherText.trim() ? [...specLabels, otherText.trim()] : specLabels,
         specializationCodes: specs,
@@ -188,7 +192,7 @@ export function WorkerOnboarding({
             </div>
             <div className="mt-5">
               <Field label={t("onboarding.wBaseLocation")}>
-                <input value={baseLocation} onChange={(e) => setBaseLocation(e.target.value)} placeholder={t("onboarding.wBaseLocationPlaceholder")} className={fieldInput} />
+                <LocationPicker value={location} onLocate={setLocation} onClear={() => setLocation(null)} />
               </Field>
             </div>
             <div className="mt-5 flex items-center justify-between text-[12px] font-semibold text-ink-3">
