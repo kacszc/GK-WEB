@@ -764,13 +764,8 @@ const pl = {
   },
   maintenance: {
     eyebrow: "Prace techniczne",
-    title: "Zaraz wracamy z lepszym skill.com!",
-    desc: "Wykonujemy planowaną aktualizację. Powinno potrwać około 30 minut. Dziękujemy za cierpliwość!",
-    etaLabel: "Estymowane zakończenie",
-    remainingLabel: "Pozostało",
-    statusLabel: "Status",
-    logLabel: "Aktualizacje na żywo",
-    statusButton: "Status systemu → status.skill.com",
+    title: "Zaraz wracamy!",
+    desc: "Usługa jest chwilowo niedostępna. Pracujemy nad przywróceniem — spróbuj ponownie za chwilę.",
   },
   errorPage: {
     code: "Błąd 500",

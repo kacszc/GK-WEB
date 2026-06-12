@@ -765,13 +765,8 @@ const en: Dictionary = {
   },
   maintenance: {
     eyebrow: "Maintenance",
-    title: "We'll be back with a better skill.com!",
-    desc: "We're running a scheduled update. It should take about 30 minutes. Thanks for your patience!",
-    etaLabel: "Estimated completion",
-    remainingLabel: "Remaining",
-    statusLabel: "Status",
-    logLabel: "Live updates",
-    statusButton: "System status → status.skill.com",
+    title: "We'll be right back!",
+    desc: "The service is temporarily unavailable. We're working on it — please try again in a moment.",
   },
   errorPage: {
     code: "Error 500",
