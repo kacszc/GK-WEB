@@ -273,7 +273,6 @@ const uk: Dictionary = {
     subtitleMap: "{category} · {now} доступно ЗАРАЗ · {week} цього тижня",
     sortLabel: "Сортувати:",
     sortTrust: "Найближчі + Trust Score",
-    sortTrustShort: "Trust",
     sortDistance: "Найближчі",
     sortRate: "Ставка",
     viewList: "Список",

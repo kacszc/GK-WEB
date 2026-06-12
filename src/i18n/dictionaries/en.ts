@@ -273,7 +273,6 @@ const en: Dictionary = {
     subtitleMap: "{category} · {now} available NOW · {week} this week",
     sortLabel: "Sort:",
     sortTrust: "Nearest + Trust Score",
-    sortTrustShort: "Trust",
     sortDistance: "Nearest",
     sortRate: "Rate",
     viewList: "List",

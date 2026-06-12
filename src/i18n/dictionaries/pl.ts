@@ -272,7 +272,6 @@ const pl = {
     subtitleMap: "{category} · {now} dostępnych TERAZ · {week} w tym tygodniu",
     sortLabel: "Sortuj:",
     sortTrust: "Najbliższy + Trust Score",
-    sortTrustShort: "Trust",
     sortDistance: "Najbliżej",
     sortRate: "Stawka",
     viewList: "Lista",

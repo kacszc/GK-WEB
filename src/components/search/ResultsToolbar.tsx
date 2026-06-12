@@ -22,8 +22,8 @@ const VIEWS: { id: ResultsView; key: string; icon: React.ReactNode; className?: 
   { id: "map", key: "results.viewMap", icon: <MapIcon className="h-4 w-4" /> },
 ];
 
-const SORTS: { id: SpecialistSort; key: string; shortKey?: string }[] = [
-  { id: "trust", key: "results.sortTrust", shortKey: "results.sortTrustShort" },
+const SORTS: { id: SpecialistSort; key: string }[] = [
+  { id: "trust", key: "results.sortTrust" },
   { id: "distance", key: "results.sortDistance" },
   { id: "rate", key: "results.sortRate" },
 ];
@@ -97,30 +97,22 @@ export function ResultsToolbar({
           <Popover
             align="end"
             panelClassName="w-56 p-1.5"
-            trigger={({ open }) => {
-              const current = SORTS.find((s) => s.id === sort)!;
-              return (
-                <span
-                  className={cn(
-                    "flex items-center gap-1.5 whitespace-nowrap rounded-tile border border-line-2 bg-surface px-3 py-2 text-[13px] text-ink",
-                    open && "ring-2 ring-ink/10",
-                  )}
-                >
-                  {/* "Sortuj:" prefix is desktop-only — saves width on mobile so the row stays 1 line. */}
-                  <span className="hidden text-ink-3 sm:inline">{t("results.sortLabel")}</span>
-                  {/* Short label on mobile, full label from sm up. */}
-                  {current.shortKey ? (
-                    <span className="font-semibold">
-                      <span className="sm:hidden">{t(current.shortKey)}</span>
-                      <span className="hidden sm:inline">{t(current.key)}</span>
-                    </span>
-                  ) : (
-                    <span className="font-semibold">{t(current.key)}</span>
-                  )}
-                  <ChevronDown className={cn("h-3.5 w-3.5 text-ink-3 transition-transform", open && "rotate-180")} />
+            trigger={({ open }) => (
+              <span
+                className={cn(
+                  "flex items-center gap-1.5 whitespace-nowrap rounded-tile border border-line-2 bg-surface px-3 py-2 text-[13px] text-ink",
+                  open && "ring-2 ring-ink/10",
+                )}
+              >
+                {/* "Sortuj:" prefix is desktop-only — saves width on mobile so the row stays 1 line. */}
+                <span className="hidden text-ink-3 sm:inline">{t("results.sortLabel")}</span>
+                {/* Full label, but truncated with an ellipsis on mobile so it never wraps to 2 lines. */}
+                <span className="max-w-[120px] truncate font-semibold sm:max-w-none">
+                  {t(SORTS.find((s) => s.id === sort)!.key)}
                 </span>
-              );
-            }}
+                <ChevronDown className={cn("h-3.5 w-3.5 text-ink-3 transition-transform", open && "rotate-180")} />
+              </span>
+            )}
           >
             {({ close }) => (
               <ul>
