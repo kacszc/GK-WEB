@@ -214,4 +214,8 @@ export const accountService = {
   async getMyEmployerProfile(locale?: string): Promise<MyEmployerProfile | null> {
     return optionalProfile<MyEmployerProfile>("/api/me/employer-profile", locale);
   },
+  /** Boost the current specialist's own profile (sorts first in search). Payment not wired yet — grants it. */
+  async boostMyProfile(days: number): Promise<{ promotedUntil: string }> {
+    return apiPost<{ promotedUntil: string }>("/api/me/specialist-profile/boost", { days });
+  },
 };

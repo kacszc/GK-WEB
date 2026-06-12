@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Briefcase, MessageSquare, Coins, Plus, Search } from "lucide-react";
 import { accountService, messagesService } from "@/services";
+import { PromoteProfile } from "./PromoteProfile";
 import { Skeleton, SkeletonCard } from "@/components/ui/Skeleton";
 import { useAuth } from "@/lib/AuthProvider";
 import { useWallet } from "@/lib/WalletProvider";
@@ -47,8 +48,17 @@ export function AccountOverview() {
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <Quick href="/post-job" icon={<Plus className="h-5 w-5" />} label={t("account.quickPost")} dark />
-        <Quick href="/search" icon={<Search className="h-5 w-5" />} label={t("account.quickSearch")} />
+        {user?.role === "specialist" ? (
+          <>
+            <PromoteProfile />
+            <Quick href="/jobs" icon={<Search className="h-5 w-5" />} label={t("nav.findWork")} />
+          </>
+        ) : (
+          <>
+            <Quick href="/post-job" icon={<Plus className="h-5 w-5" />} label={t("account.quickPost")} dark />
+            <Quick href="/search" icon={<Search className="h-5 w-5" />} label={t("account.quickSearch")} />
+          </>
+        )}
       </div>
     </div>
   );
