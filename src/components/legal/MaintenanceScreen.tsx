@@ -8,7 +8,9 @@ export function MaintenanceScreen() {
   const { t } = useI18n();
 
   return (
-    <main className="grid min-h-dvh place-items-center bg-ink px-4 py-16 text-on-dark">
+    {/* fixed inset-0 spans the whole screen incl. notch/home-indicator (viewport-fit=cover), so the
+        dark bg covers the safe areas — there's no header/footer here to paint them. */}
+    <main className="fixed inset-0 grid place-items-center overflow-y-auto bg-ink px-4 py-16 text-on-dark">
       <div className="w-full max-w-[560px] text-center">
         <span className="mx-auto block h-20 w-20 rounded-full bg-gradient-to-br from-[#ff8a3d] to-[#ff5470]" aria-hidden />
         <p className="mt-6 text-[12px] font-bold uppercase tracking-[1.5px] text-[#ffb067]">{t("maintenance.eyebrow")}</p>
