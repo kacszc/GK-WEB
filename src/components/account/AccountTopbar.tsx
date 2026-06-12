@@ -36,7 +36,7 @@ export function AccountTopbar() {
     .sort((a, b) => b.prefix.length - a.prefix.length)[0];
 
   return (
-    <header className="pt-safe sticky top-0 z-40 border-b border-line bg-surface/90 backdrop-blur">
+    <header className="pt-safe sticky top-0 z-40 border-b border-line bg-surface">
       <div className="mx-auto flex w-full max-w-[1280px] items-center justify-between gap-4 px-4 py-3 sm:px-8">
         <div className="flex min-w-0 items-center gap-3 sm:gap-4">
           <Link href="/" className="shrink-0">

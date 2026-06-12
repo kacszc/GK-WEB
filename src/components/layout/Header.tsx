@@ -9,7 +9,7 @@ export async function Header() {
   const { t } = await getI18n();
 
   return (
-    <header className="pt-safe sticky top-0 z-50 border-b border-line bg-surface/90 backdrop-blur">
+    <header className="pt-safe sticky top-0 z-50 border-b border-line bg-surface">
       <div className="mx-auto flex w-full max-w-[1280px] items-center justify-between gap-4 px-4 py-3 sm:px-8">
         <Logo href="/" />
 
