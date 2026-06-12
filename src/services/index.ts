@@ -28,6 +28,7 @@ export type { ContactReveal } from "./contacts.service";
 export { reviewsService } from "./reviews.service";
 export { notificationsService } from "./notifications.service";
 export { accountService } from "./account.service";
+export type { MySpecialistProfile, MyEmployerProfile } from "./account.service";
 export { walletService } from "./wallet.service";
 export { onboardingService } from "./onboarding.service";
 export { portfolioService } from "./portfolio.service";

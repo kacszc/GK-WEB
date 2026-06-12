@@ -11,10 +11,18 @@ import { cn } from "@/lib/cn";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { KycCard } from "@/components/account/KycCard";
-import { settingsService } from "@/services";
+import { settingsService, accountService } from "@/services";
 import type { NotificationSettings } from "@/services";
 import { useAuth } from "@/lib/AuthProvider";
 import { useI18n } from "@/i18n/I18nProvider";
+
+const LANG_KEY: Record<string, string> = {
+  pl: "results.langPl",
+  en: "results.langEn",
+  uk: "results.langUk",
+  de: "results.langDe",
+  ru: "results.langRu",
+};
 
 export function AccountSettings() {
   const { t } = useI18n();
@@ -74,6 +82,8 @@ export function AccountSettings() {
           </div>
         </div>
       </section>
+
+      <YourDetails />
 
       <KycCard />
 
@@ -247,6 +257,87 @@ function SettingsSkeleton({ title }: { title: string }) {
 
 function Label({ children }: { children: React.ReactNode }) {
   return <label className="block text-[12px] font-semibold text-ink-3">{children}</label>;
+}
+
+/** Read-only "Your details" — role (fixed) + the data captured during onboarding, per role. */
+function YourDetails() {
+  const { t, locale } = useI18n();
+  const { user } = useAuth();
+  const role = user?.role;
+
+  const { data: sp, isLoading: spLoading } = useQuery({
+    queryKey: ["mySpecialistProfile", locale],
+    queryFn: () => accountService.getMySpecialistProfile(locale),
+    enabled: role === "specialist",
+    retry: false,
+  });
+  const { data: emp, isLoading: empLoading } = useQuery({
+    queryKey: ["myEmployerProfile", locale],
+    queryFn: () => accountService.getMyEmployerProfile(locale),
+    enabled: role === "employer",
+    retry: false,
+  });
+
+  const loading = role === "specialist" ? spLoading : role === "employer" ? empLoading : false;
+  const langLabel = (code: string) => (LANG_KEY[code] ? t(LANG_KEY[code]) : code.toUpperCase());
+
+  return (
+    <section className="rounded-panel border border-line-3 bg-surface p-6">
+      <h2 className="text-[15px] font-semibold text-ink">{t("account.detailsTitle")}</h2>
+      <p className="mt-1 text-[12px] text-ink-3">{t("account.detailsSubtitle")}</p>
+
+      <div className="mt-3 grid gap-4 sm:grid-cols-2">
+        <ReadField label={t("account.fieldRole")} value={role ? t(role === "employer" ? "auth.roleEmployer" : "auth.roleSpecialist") : "—"} />
+
+        {role === "specialist" &&
+          (loading ? (
+            <Skeleton className="h-11 w-full rounded-tile" />
+          ) : !sp ? (
+            <p className="text-[13px] text-ink-3 sm:col-span-2">{t("account.detailsEmpty")}</p>
+          ) : (
+            <>
+              <ReadField label={t("auth.name")} value={sp.displayName} />
+              <ReadField label={t("account.fieldHeadline")} value={sp.headline} />
+              <ReadField label={t("account.fieldLocation")} value={sp.district} />
+              <ReadField label={t("account.fieldRate")} value={sp.rateFrom ? `${sp.rateFrom} zł/h` : null} />
+              <ReadField label={t("account.fieldSpecializations")} value={sp.specializations.join(", ")} />
+              <ReadField label={t("account.fieldLanguages")} value={sp.languages.map(langLabel).join(", ")} />
+            </>
+          ))}
+
+        {role === "employer" &&
+          (loading ? (
+            <Skeleton className="h-11 w-full rounded-tile" />
+          ) : !emp ? (
+            <p className="text-[13px] text-ink-3 sm:col-span-2">{t("account.detailsEmpty")}</p>
+          ) : (
+            <>
+              <ReadField label={t("account.fieldCompany")} value={emp.name} />
+              <ReadField label={t("account.fieldNip")} value={emp.nip} />
+              <ReadField label={t("account.fieldRegon")} value={emp.regon} />
+              <ReadField label={t("account.fieldAddress")} value={emp.address} />
+              <ReadField label={t("account.fieldCity")} value={emp.city} />
+              <ReadField label={t("account.fieldIndustries")} value={emp.industries.join(", ")} />
+              <ReadField label={t("account.fieldTeamSize")} value={emp.monthlyHires} />
+            </>
+          ))}
+      </div>
+    </section>
+  );
+}
+
+/** Read-only field: a label + a disabled, muted input (consistent with the email field). */
+function ReadField({ label, value }: { label: string; value: string | null | undefined }) {
+  return (
+    <div>
+      <Label>{label}</Label>
+      <input
+        value={value && value.length > 0 ? value : "—"}
+        readOnly
+        className="mt-1.5 w-full rounded-tile border border-line-2 bg-muted px-3 py-2.5 text-sm text-ink-3 outline-none"
+      />
+    </div>
+  );
 }
 
 function ToggleRow({ label, on, onChange }: { label: string; on: boolean; onChange: (v: boolean) => void }) {

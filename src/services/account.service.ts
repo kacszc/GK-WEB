@@ -1,5 +1,15 @@
 import type { MyJob, SavedContact, ActivityItem, ActivityType, Applicant } from "@/lib/types";
-import { apiGet, apiPost } from "@/lib/api-client";
+import { apiGet, apiPost, ApiError } from "@/lib/api-client";
+
+/** Resolve an owner-profile GET, treating "not created yet" (404) as null rather than an error. */
+async function optionalProfile<T>(path: string, locale?: string): Promise<T | null> {
+  try {
+    return await apiGet<T>(path, { locale });
+  } catch (e) {
+    if (e instanceof ApiError && e.status === 404) return null;
+    throw e;
+  }
+}
 
 /** Backend applicant DTO (job owner view) — bare; enriched client-side from the specialist profile. */
 type ApplicantDto = {
@@ -55,6 +65,30 @@ type ContactCardDto = {
   district: string | null;
   trustScore: number;
   rating: number | null;
+};
+
+/** The signed-in specialist's own profile (read-only "Your details" view). */
+export type MySpecialistProfile = {
+  displayName: string;
+  headline: string | null;
+  district: string | null;
+  rateFrom: number;
+  specializations: string[];
+  languages: string[];
+  availability: string | null;
+  kycVerified: boolean;
+};
+
+/** The signed-in employer's own company profile, including registry fields (NIP/REGON/address). */
+export type MyEmployerProfile = {
+  name: string;
+  nip: string | null;
+  regon: string | null;
+  address: string | null;
+  city: string | null;
+  verified: boolean;
+  industries: string[];
+  monthlyHires: string | null;
 };
 
 /** Notification row (also used as the activity feed source). */
@@ -171,5 +205,13 @@ export const accountService = {
   async confirmCompletion(jobId: string): Promise<{ ok: true }> {
     await apiPost(`/api/jobs/${encodeURIComponent(jobId)}/complete`);
     return { ok: true };
+  },
+  /** The current specialist's own profile (localized specialization labels); null if not created yet. */
+  async getMySpecialistProfile(locale?: string): Promise<MySpecialistProfile | null> {
+    return optionalProfile<MySpecialistProfile>("/api/me/specialist-profile", locale);
+  },
+  /** The current employer's own company profile (incl. NIP/REGON/address); null if not created yet. */
+  async getMyEmployerProfile(locale?: string): Promise<MyEmployerProfile | null> {
+    return optionalProfile<MyEmployerProfile>("/api/me/employer-profile", locale);
   },
 };
