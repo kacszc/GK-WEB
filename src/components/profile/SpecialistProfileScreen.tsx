@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -14,12 +15,14 @@ import {
   Globe,
   Share2,
   Bookmark,
+  Image as ImageIcon,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { SearchTopbar } from "@/components/search/SearchTopbar";
 import { TrustBadge, AvailabilityTag } from "@/components/search/SpecialistCard";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
+import { Dialog } from "@/components/ui/Dialog";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useSpecialist } from "@/hooks/useSpecialist";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -78,6 +81,8 @@ function Profile({ s, t }: { s: SpecialistProfile; t: (k: string, p?: Record<str
     queryKey: ["portfolio", "public", s.id],
     queryFn: () => portfolioService.getPublicPortfolio(s.id),
   });
+  // Portfolio item opened in the detail dialog (gallery + info).
+  const [openItem, setOpenItem] = useState<PortfolioItem | null>(null);
   return (
     <>
       {/* Header card */}
@@ -205,7 +210,12 @@ function Profile({ s, t }: { s: SpecialistProfile; t: (k: string, p?: Record<str
             <Section title={t("profile.portfolio")}>
               <div className="grid gap-4 sm:grid-cols-2">
                 {portfolio.map((it) => (
-                  <ProfilePortfolioCard key={it.id} item={it} verifiedLabel={t("portfolio.verified")} />
+                  <ProfilePortfolioCard
+                    key={it.id}
+                    item={it}
+                    verifiedLabel={t("portfolio.verified")}
+                    onClick={() => setOpenItem(it)}
+                  />
                 ))}
               </div>
             </Section>
@@ -270,6 +280,8 @@ function Profile({ s, t }: { s: SpecialistProfile; t: (k: string, p?: Record<str
           </div>
         </aside>
       </div>
+
+      <PortfolioDetailDialog item={openItem} onClose={() => setOpenItem(null)} t={t} />
     </>
   );
 }
@@ -310,18 +322,39 @@ function Tag({ children, className }: { children: React.ReactNode; className?: s
   );
 }
 
-function ProfilePortfolioCard({ item, verifiedLabel }: { item: PortfolioItem; verifiedLabel: string }) {
+function ProfilePortfolioCard({
+  item,
+  verifiedLabel,
+  onClick,
+}: {
+  item: PortfolioItem;
+  verifiedLabel: string;
+  onClick: () => void;
+}) {
   const verified = item.status === "verified";
   return (
-    <div className={cn("overflow-hidden rounded-tile border bg-surface", verified ? "border-success-badge" : "border-line-3")}>
-      <div className="flex h-28 gap-0.5">
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "group overflow-hidden rounded-tile border bg-surface text-left transition-all hover:-translate-y-0.5 hover:shadow-md",
+        verified ? "border-success-badge" : "border-line-3",
+      )}
+    >
+      <div className="relative flex h-28 gap-0.5">
         {item.colors.slice(0, 3).map((c, i) => (
           <div key={i} className="flex-1" style={{ background: c }} />
         ))}
+        {item.photoCount > 0 && (
+          <span className="absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-full bg-ink/70 px-2 py-0.5 text-[10px] font-semibold text-on-dark">
+            <ImageIcon className="h-3 w-3" />
+            {item.photoCount}
+          </span>
+        )}
       </div>
       <div className="p-3">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="text-[13px] font-semibold text-ink">{item.title}</h3>
+          <h3 className="text-[13px] font-semibold text-ink group-hover:underline">{item.title}</h3>
           {/* Public profile: only the employer-confirmed badge. "Added by you" is first-person
               and would make no sense to a visitor, so self-added items show no badge here. */}
           {verified && (
@@ -336,7 +369,52 @@ function ProfilePortfolioCard({ item, verifiedLabel }: { item: PortfolioItem; ve
           {[item.location, item.date].filter(Boolean).join(" · ")}
         </p>
       </div>
-    </div>
+    </button>
+  );
+}
+
+/** Detail view of a portfolio realisation: a photo gallery (placeholder tiles) + full info. */
+function PortfolioDetailDialog({
+  item,
+  onClose,
+  t,
+}: {
+  item: PortfolioItem | null;
+  onClose: () => void;
+  t: (k: string, p?: Record<string, string | number>) => string;
+}) {
+  if (!item) return null;
+  const verified = item.status === "verified";
+  // Build the gallery from the stored placeholder colors, cycling to fill photoCount tiles.
+  const tileCount = Math.max(item.photoCount, item.colors.length, 1);
+  const tiles = Array.from({ length: tileCount }, (_, i) => item.colors[i % item.colors.length] ?? "#e5e7eb");
+  return (
+    <Dialog open={!!item} onClose={onClose} title={item.title} size="lg">
+      <div className="flex flex-col gap-4">
+        <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
+          {tiles.map((c, i) => (
+            <div key={i} className="aspect-[4/3] rounded-tile" style={{ background: c }} />
+          ))}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          {verified && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-success-chip px-2 py-0.5 text-[11px] font-semibold text-success-chip-text">
+              <ShieldCheck className="h-3 w-3" />
+              {t("portfolio.verified")}
+            </span>
+          )}
+          {(item.location || item.date) && (
+            <span className="inline-flex items-center gap-1.5 text-[12px] text-ink-3">
+              <MapPin className="h-3.5 w-3.5" />
+              {[item.location, item.date].filter(Boolean).join(" · ")}
+            </span>
+          )}
+        </div>
+
+        {item.description && <p className="text-[13px] leading-relaxed text-ink-2">{item.description}</p>}
+      </div>
+    </Dialog>
   );
 }
 
