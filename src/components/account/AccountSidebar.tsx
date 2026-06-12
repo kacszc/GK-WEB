@@ -2,11 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { LayoutGrid, Settings, Briefcase, MessageSquare, Bookmark, Clock, Coins, ImageIcon, CalendarDays, BarChart3, Scale, BellRing, Send, Award, ShieldCheck } from "lucide-react";
+import { LayoutGrid, Settings, Briefcase, MessageSquare, Bookmark, Clock, Coins, ImageIcon, CalendarDays, BarChart3, Scale, BellRing, Send, Award } from "lucide-react";
 import { useAuth } from "@/lib/AuthProvider";
 import { useI18n } from "@/i18n/I18nProvider";
-import { adminService } from "@/services";
 import { cn } from "@/lib/cn";
 
 const items = [
@@ -32,8 +30,6 @@ export function AccountSidebar() {
   const { user } = useAuth();
   const pathname = usePathname();
   const visible = items.filter((it) => !it.role || it.role === user?.role);
-  // Admin status isn't in the token — probe the API (cheap 403 for non-admins) to reveal the CMS link.
-  const { data: isAdmin } = useQuery({ queryKey: ["amIAdmin"], queryFn: adminService.amIAdmin, enabled: !!user, staleTime: 5 * 60_000 });
 
   return (
     <nav className="flex gap-1 overflow-x-auto lg:flex-col lg:gap-0.5">
@@ -53,18 +49,6 @@ export function AccountSidebar() {
           </Link>
         );
       })}
-      {isAdmin && (
-        <Link
-          href="/admin"
-          className={cn(
-            "flex shrink-0 items-center gap-2.5 rounded-tile px-3 py-2.5 text-sm font-medium transition-colors",
-            pathname.startsWith("/admin") ? "bg-ink text-on-dark" : "text-brand-violet hover:bg-muted",
-          )}
-        >
-          <ShieldCheck className="h-4 w-4" />
-          {t("admin.title")}
-        </Link>
-      )}
     </nav>
   );
 }

@@ -4,8 +4,8 @@
 
 export { searchService } from "./search.service";
 export { catalogService } from "./catalog.service";
-export { adminService } from "./admin.service";
-export type { AdminIndustry, AdminSpecialization, AdminLanguage } from "./admin.service";
+export { contentService } from "./content.service";
+export type { Announcement } from "./content.service";
 export { landingService } from "./landing.service";
 export { geoService } from "./geo.service";
 export type { GeoCity, GeoZone } from "./geo.service";

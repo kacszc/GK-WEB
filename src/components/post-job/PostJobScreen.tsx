@@ -56,7 +56,7 @@ const emptyDraft: JobDraft = {
 
 export function PostJobScreen() {
   const { t, locale } = useI18n();
-  const { user } = useAuth();
+  const { user, ready } = useAuth();
   const [draft, setDraft] = useState<JobDraft>(emptyDraft);
   const [otherMode, setOtherMode] = useState(false); // "Inne" — custom role with required text
   const [showErrors, setShowErrors] = useState(false);
@@ -181,6 +181,27 @@ export function PostJobScreen() {
                 {t("postJob.successSecondary")}
               </button>
             </div>
+          </div>
+        </main>
+      </>
+    );
+  }
+
+  // Not logged in → prompt to sign in instead of rendering the form (publishing requires an account).
+  if (ready && !user) {
+    return (
+      <>
+        <SearchTopbar category={t("postJob.title")} />
+        <main className="mx-auto flex w-full max-w-[1280px] flex-1 items-center justify-center px-4 py-20 sm:px-8">
+          <div className="w-full max-w-md rounded-card border border-line-3 bg-surface p-7 text-center shadow-search">
+            <h1 className="text-lg font-bold text-ink">{t("postJob.title")}</h1>
+            <p className="mt-2 text-sm text-ink-2">{t("postJob.loginRequired")}</p>
+            <Link
+              href={`/login?redirect=${encodeURIComponent("/post-job")}`}
+              className="mt-5 inline-flex w-full items-center justify-center rounded-tile bg-ink px-4 py-2.5 text-sm font-bold text-on-dark hover:bg-ink/90"
+            >
+              {t("auth.loginCta")}
+            </Link>
           </div>
         </main>
       </>
