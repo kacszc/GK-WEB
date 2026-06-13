@@ -29,14 +29,16 @@ export function NotificationBell() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  // Poll the unread count while signed in. Returns 0 when the backend is down.
-  const { data: unread = 0 } = useQuery({
-    queryKey: ["notifications", "unread-count"],
-    queryFn: () => notificationsService.unreadCount(),
+  // Derive the badge from the SAME list the inbox shows (shared cache) so the count can never
+  // diverge from what the user can actually see/clear — an empty inbox always means a 0 badge.
+  const { data: items = [] } = useQuery({
+    queryKey: ["notifications", "list"],
+    queryFn: () => notificationsService.list(),
     enabled: !!user,
     refetchInterval: 30_000,
     refetchOnWindowFocus: true,
   });
+  const unread = items.filter((n) => !n.read).length;
 
   return (
     <Popover
