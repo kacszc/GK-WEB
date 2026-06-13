@@ -78,7 +78,6 @@ export function JobsScreen({
   const jobs = data?.items ?? [];
   const total = data?.total ?? 0;
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const noResults = !isLoading && total === 0;
 
   const patch = (p: Partial<JobFilters>) => {
     setFilters((f) => ({ ...f, ...p }));
@@ -183,7 +182,7 @@ export function JobsScreen({
                 onApply={setApplyJob}
                 center={mapCenter}
               />
-              {noResults && <MapEmptyOverlay t={t} />}
+              {(isLoading || total === 0) && <MapEmptyOverlay t={t} loading={isLoading} />}
             </div>
           </div>
         )}
@@ -200,7 +199,7 @@ export function JobsScreen({
                 onApply={setApplyJob}
                 center={mapCenter}
               />
-              {noResults && <MapEmptyOverlay t={t} />}
+              {(isLoading || total === 0) && <MapEmptyOverlay t={t} loading={isLoading} />}
             </div>
           </div>
         )}
@@ -234,13 +233,20 @@ function Empty({ t }: { t: (k: string) => string }) {
   );
 }
 
-/** No-results overlay on top of the map (translucent), so the map stays visible behind it. */
-function MapEmptyOverlay({ t }: { t: (k: string) => string }) {
+/** Overlay on top of the map while loading or when there are no results. Captures pointer events so
+ *  the empty/loading map can't be panned underneath; removed once results exist (map interactive). */
+function MapEmptyOverlay({ t, loading = false }: { t: (k: string) => string; loading?: boolean }) {
   return (
-    <div className="pointer-events-none absolute inset-0 z-10 grid place-items-center rounded-card bg-surface/70 px-4 text-center backdrop-blur-[2px]">
-      <div className="pointer-events-auto rounded-panel border border-line-3 bg-surface/95 px-5 py-4 shadow-search">
-        <p className="text-sm font-semibold text-ink">{t("jobs.empty")}</p>
-        <p className="mt-1 text-[13px] text-ink-3">{t("results.emptyHint")}</p>
+    <div className="absolute inset-0 z-10 grid place-items-center rounded-card bg-surface/70 px-4 text-center backdrop-blur-[2px]">
+      <div className="rounded-panel border border-line-3 bg-surface/95 px-5 py-4 shadow-search">
+        {loading ? (
+          <Loader2 className="mx-auto h-5 w-5 animate-spin text-brand-violet" />
+        ) : (
+          <>
+            <p className="text-sm font-semibold text-ink">{t("jobs.empty")}</p>
+            <p className="mt-1 text-[13px] text-ink-3">{t("results.emptyHint")}</p>
+          </>
+        )}
       </div>
     </div>
   );

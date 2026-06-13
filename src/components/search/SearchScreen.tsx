@@ -89,8 +89,6 @@ export function SearchScreen({
   const items = data?.items ?? [];
   const total = data?.total ?? 0;
   const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  // No results: showing a map makes no sense — fall back to the list layout with the empty message.
-  const noResults = !isLoading && total === 0;
   // List view: the backend already returned this page. Map views render `items` directly.
   const pageItems = items;
 
@@ -208,7 +206,7 @@ export function SearchScreen({
                 cityCode={userLocation?.code ?? "warszawa"}
                 center={userLocation ? [userLocation.lng, userLocation.lat] : undefined}
               />
-              {noResults && <MapEmptyOverlay t={t} />}
+              {(isLoading || total === 0) && <MapEmptyOverlay t={t} loading={isLoading} />}
             </div>
           </div>
         )}
@@ -225,7 +223,7 @@ export function SearchScreen({
                 cityCode={userLocation?.code ?? "warszawa"}
                 center={userLocation ? [userLocation.lng, userLocation.lat] : undefined}
               />
-              {noResults && <MapEmptyOverlay t={t} />}
+              {(isLoading || total === 0) && <MapEmptyOverlay t={t} loading={isLoading} />}
             </div>
           </div>
         )}
@@ -274,13 +272,20 @@ function Empty({ t }: { t: (k: string) => string }) {
   );
 }
 
-/** No-results overlay sitting on top of the map (translucent), so the map stays visible behind it. */
-function MapEmptyOverlay({ t }: { t: (k: string) => string }) {
+/** Overlay on top of the map while loading or when there are no results. Captures pointer events so
+ *  the empty/loading map can't be panned underneath; removed once results exist (map interactive). */
+function MapEmptyOverlay({ t, loading = false }: { t: (k: string) => string; loading?: boolean }) {
   return (
-    <div className="pointer-events-none absolute inset-0 z-10 grid place-items-center rounded-card bg-surface/70 px-4 text-center backdrop-blur-[2px]">
-      <div className="pointer-events-auto rounded-panel border border-line-3 bg-surface/95 px-5 py-4 shadow-search">
-        <p className="text-sm font-semibold text-ink">{t("results.empty")}</p>
-        <p className="mt-1 text-[13px] text-ink-3">{t("results.emptyHint")}</p>
+    <div className="absolute inset-0 z-10 grid place-items-center rounded-card bg-surface/70 px-4 text-center backdrop-blur-[2px]">
+      <div className="rounded-panel border border-line-3 bg-surface/95 px-5 py-4 shadow-search">
+        {loading ? (
+          <Loader2 className="mx-auto h-5 w-5 animate-spin text-brand-violet" />
+        ) : (
+          <>
+            <p className="text-sm font-semibold text-ink">{t("results.empty")}</p>
+            <p className="mt-1 text-[13px] text-ink-3">{t("results.emptyHint")}</p>
+          </>
+        )}
       </div>
     </div>
   );
