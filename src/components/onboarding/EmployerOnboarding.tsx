@@ -9,7 +9,6 @@ import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { useWallet } from "@/lib/WalletProvider";
 import { useAuth } from "@/lib/AuthProvider";
 import { LocationPicker } from "@/components/search/LocationPicker";
-import { PlatformTour, useTourAutoOpen, type TourAction } from "@/components/onboarding/PlatformTour";
 import { onboardingService } from "@/services";
 import { useI18n } from "@/i18n/I18nProvider";
 import type { GusCompany, EmployerOnboardingResult, UserLocation } from "@/lib/types";
@@ -49,13 +48,6 @@ export function EmployerOnboarding({ initialEmail = "" }: { initialEmail?: strin
   const location = loc?.city ?? loc?.label ?? "";
   const [result, setResult] = useState<EmployerOnboardingResult | null>(null);
   const [busy, setBusy] = useState(false);
-
-  // Tour auto-opens on the success step; the final card sends the employer to search or post a job.
-  const tour = useTourAutoOpen("employer", step === "done");
-  const tourFinish: TourAction[] = [
-    { label: t("account.quickSearch"), href: "/search" },
-    { label: t("account.quickPost"), href: "/post-job", primary: true },
-  ];
 
   const { data: industryOptions = [] } = useQuery({
     queryKey: ["industries"],
@@ -196,8 +188,6 @@ export function EmployerOnboarding({ initialEmail = "" }: { initialEmail?: strin
           </OnboardingCard>
         )}
       </main>
-
-      <PlatformTour open={tour.open} onClose={tour.close} role="employer" finishActions={tourFinish} />
     </div>
   );
 }

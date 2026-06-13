@@ -175,11 +175,14 @@ export function SpecialistCard({
       {/* Footer */}
       <div className="mt-3 flex items-center justify-between gap-2">
         <div>
-          <span className="text-[15px] font-bold text-ink">
-            {t("results.perHour", { rate: s.rateFrom })}
-          </span>
+          {/* Rate is optional — only show it when the specialist actually set one. */}
+          {s.rateFrom > 0 && (
+            <span className="text-[15px] font-bold text-ink">
+              {t("results.perHour", { rate: s.rateFrom })}
+            </span>
+          )}
           {!compact && s.reviews > 0 && (
-            <span className="ml-2 text-[12px] text-ink-3">
+            <span className={cn("text-[12px] text-ink-3", s.rateFrom > 0 && "ml-2")}>
               <Star className="mr-0.5 inline h-3 w-3 fill-current text-[#e0a400]" />
               {s.rating.toFixed(1)} ({s.reviews})
             </span>
