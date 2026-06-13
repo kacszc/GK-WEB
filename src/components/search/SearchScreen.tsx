@@ -36,6 +36,8 @@ function isoFromToday(addDays: number): string {
  */
 function effectiveRange(f: SpecialistFilters): { from: string; to: string } | null {
   if (f.fromDate && f.toDate) return { from: f.fromDate, to: f.toDate };
+  // Open-ended term ("from X onward") has no bounded window → no "X of Y days" badge.
+  if (f.fromDate) return null;
   const av = f.availability ?? [];
   if (av.includes("week")) return { from: isoFromToday(0), to: isoFromToday(6) };
   if (av.includes("now")) return { from: isoFromToday(0), to: isoFromToday(0) };

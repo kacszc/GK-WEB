@@ -69,6 +69,9 @@ const uk: Dictionary = {
     anyWhen: "Будь-яка дата",
     anyWhere: "Будь-де",
     clearWhen: "Очистити",
+    fromOpen: "від {date}",
+    pickWhen: "Оберіть термін",
+    applyWhen: "Застосувати",
   },
   dropdown: {
     suggested: "ЗАПРОПОНОВАНІ СПЕЦІАЛІЗАЦІЇ",

@@ -63,10 +63,10 @@ export function HeroSearch({ mode, seedKeys = [] }: { mode: SearchMode; seedKeys
       if (where.city.code) params.set("code", where.city.code);
       params.set("maxDistanceKm", String(where.distanceKm));
     }
-    // Carry the "when" range (local ISO yyyy-mm-dd). Jobs filter by it; specialists get a warning.
+    // Carry the "when" term (local ISO yyyy-mm-dd). Open-ended (no end) sends only `from`.
     if (when.from) {
       params.set("from", toISODate(when.from));
-      params.set("to", toISODate(when.to ?? when.from));
+      if (when.to) params.set("to", toISODate(when.to));
     }
     const qs = params.toString();
     router.push(`${base}${qs ? `?${qs}` : ""}`);

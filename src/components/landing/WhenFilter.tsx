@@ -53,23 +53,16 @@ function parseISO(s?: string): Date | null {
   return new Date(y, m - 1, d);
 }
 
-/** ISO from/to strings → WhenValue (used by the filter sidebars, which store ISO strings). */
+/** ISO from/to strings → WhenValue (used by the filter sidebars, which store ISO strings).
+ *  An open-ended term ("from X onward") keeps `to` null. */
 export function isoToWhen(from?: string, to?: string): WhenValue {
-  const f = parseISO(from);
-  return { preset: null, from: f, to: parseISO(to) ?? f };
+  return { preset: null, from: parseISO(from), to: parseISO(to) };
 }
 
-/** WhenValue → ISO from/to strings (undefined when nothing selected). */
+/** WhenValue → ISO from/to strings. `to` stays undefined for an open-ended ("from X") term. */
 export function whenToISO(v: WhenValue): { fromDate?: string; toDate?: string } {
   if (!v.from) return { fromDate: undefined, toDate: undefined };
-  return { fromDate: whenISO(v.from), toDate: whenISO(v.to ?? v.from) };
-}
-
-/** Format a [from, to] range for the trigger ("12 cze" or "12–14 cze"). */
-function formatRange(from: Date, to: Date | null, tag: string): string {
-  const opts: Intl.DateTimeFormatOptions = { day: "numeric", month: "short" };
-  if (!to || from.getTime() === to.getTime()) return from.toLocaleDateString(tag, opts);
-  return `${from.toLocaleDateString(tag, { day: "numeric" })}–${to.toLocaleDateString(tag, opts)}`;
+  return { fromDate: whenISO(v.from), toDate: v.to ? whenISO(v.to) : undefined };
 }
 
 export function WhenFilter({
@@ -86,11 +79,20 @@ export function WhenFilter({
   const { t, locale } = useI18n();
   const [month, setMonth] = useState<Date>(value.from ?? new Date());
 
+  // Human label for the chosen term: single day, range, or open-ended ("from X onward").
+  const whenLabel = (from: Date, to: Date | null): string => {
+    const tag = intlTags[locale];
+    const opts: Intl.DateTimeFormatOptions = { day: "numeric", month: "short" };
+    if (!to) return t("filters.fromOpen", { date: from.toLocaleDateString(tag, opts) });
+    if (from.getTime() === to.getTime()) return from.toLocaleDateString(tag, opts);
+    return `${from.toLocaleDateString(tag, { day: "numeric" })}–${to.toLocaleDateString(tag, opts)}`;
+  };
+
   const empty = !value.preset && !value.from;
   const displayLabel = value.preset
     ? t(`filters.${value.preset}`)
     : value.from
-      ? formatRange(value.from, value.to, intlTags[locale])
+      ? whenLabel(value.from, value.to)
       : t("filters.anyWhen");
 
   return (
@@ -150,14 +152,29 @@ export function WhenFilter({
               locale={dpLocales[locale]}
               month={month}
               onMonthChange={setMonth}
-              selected={value.from ? { from: value.from, to: value.to ?? value.from } : undefined}
+              selected={value.from ? { from: value.from, to: value.to ?? undefined } : undefined}
               disabled={{ before: new Date() }}
-              onSelect={(range) => {
-                onChange({ preset: null, from: range?.from ?? null, to: range?.to ?? range?.from ?? null });
-                // Close once a full range (or single day re-click) is chosen.
-                if (range?.from && range?.to) close();
-              }}
+              // Never auto-close: let the user build the range (or pick just a start = open-ended),
+              // then confirm with "Apply". Store exactly what DayPicker reports (no coercion).
+              onSelect={(range) =>
+                onChange({ preset: null, from: range?.from ?? null, to: range?.to ?? null })
+              }
             />
+          </div>
+
+          {/* Summary + confirm. A start with no end = open-ended ("from X onward"). */}
+          <div className="mt-2 flex items-center justify-between gap-2 border-t border-line-2 pt-3">
+            <span className="text-[12px] text-ink-2">
+              {value.from ? whenLabel(value.from, value.to) : t("filters.pickWhen")}
+            </span>
+            <button
+              type="button"
+              disabled={!value.from}
+              onClick={close}
+              className="cursor-pointer rounded-tile bg-ink px-3.5 py-1.5 text-xs font-bold text-on-dark transition-opacity hover:opacity-90 disabled:cursor-default disabled:opacity-40"
+            >
+              {t("filters.applyWhen")}
+            </button>
           </div>
         </div>
       )}

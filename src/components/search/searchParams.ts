@@ -76,10 +76,8 @@ export function serializeSearchFilters(f: SpecialistFilters, view: ResultsView):
   if (f.kyc) p.set("kyc", "1");
   if (f.languages?.length) p.set("languages", f.languages.join(","));
   if (f.sort) p.set("sort", f.sort);
-  if (f.fromDate && f.toDate) {
-    p.set("from", f.fromDate);
-    p.set("to", f.toDate);
-  }
+  if (f.fromDate) p.set("from", f.fromDate);
+  if (f.toDate) p.set("to", f.toDate);
   if (view !== "list") p.set("view", view);
   return p.toString();
 }

@@ -68,6 +68,9 @@ const pl = {
     anyWhen: "Dowolny termin",
     anyWhere: "Wszędzie",
     clearWhen: "Wyczyść",
+    fromOpen: "od {date}",
+    pickWhen: "Wybierz termin",
+    applyWhen: "Zastosuj",
   },
   dropdown: {
     suggested: "SUGEROWANE SPECJALIZACJE",

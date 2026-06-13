@@ -69,6 +69,9 @@ const en: Dictionary = {
     anyWhen: "Any date",
     anyWhere: "Anywhere",
     clearWhen: "Clear",
+    fromOpen: "from {date}",
+    pickWhen: "Pick a term",
+    applyWhen: "Apply",
   },
   dropdown: {
     suggested: "SUGGESTED SPECIALIZATIONS",
