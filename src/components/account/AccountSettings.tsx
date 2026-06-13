@@ -102,7 +102,6 @@ export function AccountSettings() {
         <div className="flex flex-col gap-1">
           <ToggleRow label={t("account.notifEmail")} on={notif.email} onChange={(v) => setNotif((n) => ({ ...n, email: v }))} />
           <ToggleRow label={t("account.notifPush")} on={notif.push} onChange={(v) => setNotif((n) => ({ ...n, push: v }))} />
-          <ToggleRow label={t("account.notifSms")} on={notif.sms} onChange={(v) => setNotif((n) => ({ ...n, sms: v }))} />
         </div>
       </section>
 
@@ -146,11 +145,6 @@ export function AccountSettings() {
         <h2 className="text-[15px] font-semibold text-danger">{t("account.dangerZone")}</h2>
         <p className="mt-1.5 text-[13px] leading-relaxed text-ink-2">{t("account.dangerDesc")}</p>
         <div className="mt-4 divide-y divide-danger/15">
-          <GdprRow
-            title={t("account.deactivate")}
-            desc={t("account.deactivateDesc")}
-            action={<Button variant="outline" className="rounded-tile border-danger/40 px-3.5 py-2 text-[13px] text-danger">{t("account.deactivateBtn")}</Button>}
-          />
           <GdprRow
             title={t("account.deleteAccount")}
             desc={t("account.deleteDesc")}
