@@ -36,17 +36,19 @@ export function HeaderAuth() {
 
     return (
       <div className="flex items-center gap-1.5 sm:gap-2">
-        {walletReady ? (
-          <Link
-            href="/account/tokens"
-            className="hidden items-center gap-1.5 rounded-full bg-pill px-3 py-1.5 text-xs font-semibold text-ink transition-colors hover:bg-line-2 sm:inline-flex"
-          >
-            <Coins className="h-3.5 w-3.5 text-[#e0a400]" />
-            {t("results.tokens", { n: balance })}
-          </Link>
-        ) : (
-          <Skeleton className="hidden h-[30px] w-24 rounded-full sm:block" />
-        )}
+        {/* Tokens are an employer-only concept — specialists never see a balance. */}
+        {user.role === "employer" &&
+          (walletReady ? (
+            <Link
+              href="/account/tokens"
+              className="hidden items-center gap-1.5 rounded-full bg-pill px-3 py-1.5 text-xs font-semibold text-ink transition-colors hover:bg-line-2 sm:inline-flex"
+            >
+              <Coins className="h-3.5 w-3.5 text-[#e0a400]" />
+              {t("results.tokens", { n: balance })}
+            </Link>
+          ) : (
+            <Skeleton className="hidden h-[30px] w-24 rounded-full sm:block" />
+          ))}
 
         <NotificationBell />
 
