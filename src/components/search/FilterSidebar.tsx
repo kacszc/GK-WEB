@@ -100,16 +100,6 @@ export function FilterSidebar({
     >
       <LocationPicker value={userLocation} onLocate={onLocate} onClear={onClearLocation} />
 
-      {/* When — a date/range; flags specialists not fully free in the term (warning on the card). */}
-      <Section title={t("filters.when")}>
-        <WhenFilter
-          fullWidth
-          align="start"
-          value={isoToWhen(filters.fromDate, filters.toDate)}
-          onChange={(v) => onPatch(whenToISO(v))}
-        />
-      </Section>
-
       {/* Industry → specialization. Clicking an industry selects the whole industry; expand to
           refine by ticking/unticking individual specializations (across industries too). */}
       <Section title={t("results.fIndustry")}>
@@ -179,10 +169,31 @@ export function FilterSidebar({
               key={a.code}
               label={a.label}
               checked={filters.availability?.includes(value) ?? false}
-              onChange={() => onPatch({ availability: toggle(filters.availability, value) })}
+              onChange={() => {
+                const next = toggle(filters.availability, value);
+                // Deselecting "specific date" drops the picked term so it doesn't linger.
+                const clearTerm = value === "date" && !next.includes("date");
+                onPatch(
+                  clearTerm
+                    ? { availability: next, fromDate: undefined, toDate: undefined }
+                    : { availability: next },
+                );
+              }}
             />
           );
         })}
+
+        {/* "When" range — only for the "specific date" option; now/this-week imply their own window. */}
+        {(filters.availability?.includes("date") || filters.fromDate) && (
+          <div className="mt-2">
+            <WhenFilter
+              fullWidth
+              align="start"
+              value={isoToWhen(filters.fromDate, filters.toDate)}
+              onChange={(v) => onPatch(whenToISO(v))}
+            />
+          </div>
+        )}
       </Section>
 
       {/* Distance — clearing the radius (maxDistanceKm = undefined) drops the geo limit so results
