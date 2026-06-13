@@ -43,11 +43,15 @@ export function JobsScreen({
   initialProfession,
   initialLocation = null,
   initialMaxDistanceKm,
+  initialFromDate,
+  initialToDate,
 }: {
   initialQuery: string;
   initialProfession?: string;
   initialLocation?: UserLocation | null;
   initialMaxDistanceKm?: number;
+  initialFromDate?: string;
+  initialToDate?: string;
 }) {
   const { t } = useI18n();
   // No distance cap by default → "Proponowane" (everyone). A limit applies only once the user sets it
@@ -56,6 +60,8 @@ export function JobsScreen({
     q: initialQuery || undefined,
     professions: initialProfession ? [initialProfession] : undefined,
     maxDistanceKm: initialMaxDistanceKm,
+    fromDate: initialFromDate,
+    toDate: initialToDate,
   });
   const [view, setView] = useState<ResultsView>("mapList");
   const isDesktop = useIsDesktop();
@@ -93,7 +99,8 @@ export function JobsScreen({
     (filters.industries?.length ?? 0) +
     (filters.customIndustries?.length ?? 0) +
     (filters.durations?.length ?? 0) +
-    (filters.rateMin != null ? 1 : 0);
+    (filters.rateMin != null ? 1 : 0) +
+    (filters.fromDate ? 1 : 0);
 
   const city = userLocation?.city ?? CITY;
   const sidebarProps = {

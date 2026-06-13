@@ -318,6 +318,10 @@ export type SpecialistSearch = {
   total: number;
   availableNow: number;
   availableWeek: number;
+  /** Days in the requested "when" range (null when none) — for the partial-availability warning. */
+  rangeDays?: number | null;
+  /** specialistId → how many days in the range they're NOT free (0/missing = fully available). */
+  rangeUnavailable?: Record<string, number>;
 };
 
 /** Search (autocomplete) response. */
@@ -328,11 +332,12 @@ export type SearchSuggestions = {
   totalCount: number;
 };
 
-/** "When" filter — a preset or a specific date. The display label is derived. */
+/** "When" filter — a preset or a date range [from, to] (single day = from === to). Label is derived. */
 export type WhenPreset = "today" | "tomorrow" | "weekend";
 export type WhenValue = {
-  date: Date | null;
   preset: WhenPreset | null;
+  from: Date | null;
+  to: Date | null;
 };
 
 /** "Where" filter — location + radius (km). */

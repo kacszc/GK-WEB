@@ -6,6 +6,7 @@ import { useI18n } from "@/i18n/I18nProvider";
 import { specialistsService, type JobFilters } from "@/services";
 import type { UserLocation, JobDuration } from "@/lib/types";
 import { LocationPicker } from "@/components/search/LocationPicker";
+import { WhenFilter, isoToWhen, whenToISO } from "@/components/landing/WhenFilter";
 import { cn } from "@/lib/cn";
 
 const DURATIONS: JobDuration[] = ["long_term", "few_weeks", "few_days", "one_day"];
@@ -85,6 +86,16 @@ export function JobsFilterSidebar({
       )}
     >
       <LocationPicker value={userLocation} onLocate={onLocate} onClear={onClearLocation} />
+
+      {/* When — date/range; the backend keeps only jobs whose work date(s) overlap it. */}
+      <Section title={t("filters.when")}>
+        <WhenFilter
+          fullWidth
+          align="start"
+          value={isoToWhen(filters.fromDate, filters.toDate)}
+          onChange={(v) => onPatch(whenToISO(v))}
+        />
+      </Section>
 
       <Section title={t("results.fIndustry")}>
         <div className="flex flex-wrap gap-1.5">

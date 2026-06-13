@@ -20,6 +20,8 @@ export default async function JobsPage({
         initialProfession={first(sp.profession)}
         initialLocation={parseLocation(sp)}
         initialMaxDistanceKm={Number.isFinite(md) ? md : undefined}
+        initialFromDate={first(sp.from)}
+        initialToDate={first(sp.to)}
       />
       <Footer />
     </>

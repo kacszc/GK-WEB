@@ -167,7 +167,13 @@ export function SearchScreen({
                 <>
                   <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                     {pageItems.map((s) => (
-                      <SpecialistCard key={s.id} s={s} href={`/specialist/${s.id}`} />
+                      <SpecialistCard
+                        key={s.id}
+                        s={s}
+                        href={`/specialist/${s.id}`}
+                        unavailableDays={data?.rangeUnavailable?.[s.id] ?? 0}
+                        rangeDays={data?.rangeDays}
+                      />
                     ))}
                   </div>
                   <div className="mt-8">
@@ -195,6 +201,8 @@ export function SearchScreen({
                       compact
                       active={activeId === s.id}
                       onSelect={setActiveId}
+                      unavailableDays={data?.rangeUnavailable?.[s.id] ?? 0}
+                      rangeDays={data?.rangeDays}
                     />
                   ))}
             </div>

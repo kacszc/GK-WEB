@@ -67,6 +67,7 @@ const pl = {
     upTo: "do {km} km",
     anyWhen: "Dowolny termin",
     anyWhere: "Wszędzie",
+    clearWhen: "Wyczyść",
   },
   dropdown: {
     suggested: "SUGEROWANE SPECJALIZACJE",
@@ -349,6 +350,8 @@ const pl = {
     cardAvailNow: "Dostępny teraz",
     cardAvailWeek: "W tym tygodniu",
     cardAvailDate: "Od {date}",
+    partialAvail: "Zajęty {busy} z {total} dni",
+    unavailableRange: "Niedostępny w tym terminie",
     topRated: "Top Rated",
     km: "{km} km",
     perHour: "{rate} zł/h",

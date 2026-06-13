@@ -8,6 +8,11 @@ import { searchService } from "@/services";
 import { recordSearch } from "@/lib/searchHistory";
 import type { SearchSuggestions, WhenValue, WhereValue, SearchMode, Specialization } from "@/lib/types";
 
+/** Local date → "yyyy-mm-dd" (avoids the UTC shift of toISOString for the user's own timezone). */
+function toISODate(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 export function HeroSearch({ mode, seedKeys = [] }: { mode: SearchMode; seedKeys?: Specialization[] }) {
   // Seed dropdown state from the landing payload so focus shows suggestions with no extra fetch.
   const seedState: SearchSuggestions = useMemo(
@@ -29,9 +34,9 @@ export function HeroSearch({ mode, seedKeys = [] }: { mode: SearchMode; seedKeys
   const typing = query.trim().length > 0;
   const results = typing ? fetched : seedState;
   const isLoading = typing ? loading : false;
-  // Default: nothing selected (placeholder). The user opts into a date; an empty search just
+  // Default: nothing selected (placeholder). The user opts into a date/range; an empty search just
   // falls through to the "no filters" results flow (everyone / proponowane).
-  const [when, setWhen] = useState<WhenValue>({ preset: null, date: null });
+  const [when, setWhen] = useState<WhenValue>({ preset: null, from: null, to: null });
   // Default: no city = "Proponowane" (no anchor, no range). Picking a city reveals the radius (25 km).
   const [where, setWhere] = useState<WhereValue>({ city: null, distanceKm: 25 });
 
@@ -57,6 +62,11 @@ export function HeroSearch({ mode, seedKeys = [] }: { mode: SearchMode; seedKeys
       if (where.city.city) params.set("city", where.city.city);
       if (where.city.code) params.set("code", where.city.code);
       params.set("maxDistanceKm", String(where.distanceKm));
+    }
+    // Carry the "when" range (local ISO yyyy-mm-dd). Jobs filter by it; specialists get a warning.
+    if (when.from) {
+      params.set("from", toISODate(when.from));
+      params.set("to", toISODate(when.to ?? when.from));
     }
     const qs = params.toString();
     router.push(`${base}${qs ? `?${qs}` : ""}`);

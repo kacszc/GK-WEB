@@ -29,6 +29,49 @@ export function presetDate(id: WhenPreset): Date {
   return d;
 }
 
+/** A preset resolved to a date range: today/tomorrow are single days, weekend is Sat–Sun. */
+export function presetRange(id: WhenPreset): { from: Date; to: Date } {
+  const from = presetDate(id);
+  if (id === "weekend") {
+    const to = new Date(from);
+    to.setDate(to.getDate() + 1); // Sunday
+    return { from, to };
+  }
+  return { from, to: from };
+}
+
+/** Local "yyyy-mm-dd" (no UTC shift). */
+export function whenISO(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+/** Parse a local "yyyy-mm-dd" to a midnight Date (null on blank/invalid). */
+function parseISO(s?: string): Date | null {
+  if (!s) return null;
+  const [y, m, d] = s.split("-").map(Number);
+  if (!y || !m || !d) return null;
+  return new Date(y, m - 1, d);
+}
+
+/** ISO from/to strings → WhenValue (used by the filter sidebars, which store ISO strings). */
+export function isoToWhen(from?: string, to?: string): WhenValue {
+  const f = parseISO(from);
+  return { preset: null, from: f, to: parseISO(to) ?? f };
+}
+
+/** WhenValue → ISO from/to strings (undefined when nothing selected). */
+export function whenToISO(v: WhenValue): { fromDate?: string; toDate?: string } {
+  if (!v.from) return { fromDate: undefined, toDate: undefined };
+  return { fromDate: whenISO(v.from), toDate: whenISO(v.to ?? v.from) };
+}
+
+/** Format a [from, to] range for the trigger ("12 cze" or "12–14 cze"). */
+function formatRange(from: Date, to: Date | null, tag: string): string {
+  const opts: Intl.DateTimeFormatOptions = { day: "numeric", month: "short" };
+  if (!to || from.getTime() === to.getTime()) return from.toLocaleDateString(tag, opts);
+  return `${from.toLocaleDateString(tag, { day: "numeric" })}–${to.toLocaleDateString(tag, opts)}`;
+}
+
 export function WhenFilter({
   value,
   onChange,
@@ -41,13 +84,13 @@ export function WhenFilter({
   fullWidth?: boolean;
 }) {
   const { t, locale } = useI18n();
-  const [month, setMonth] = useState<Date>(value.date ?? new Date());
+  const [month, setMonth] = useState<Date>(value.from ?? new Date());
 
-  const empty = !value.preset && !value.date;
+  const empty = !value.preset && !value.from;
   const displayLabel = value.preset
     ? t(`filters.${value.preset}`)
-    : value.date
-      ? value.date.toLocaleDateString(intlTags[locale], { day: "numeric", month: "short" })
+    : value.from
+      ? formatRange(value.from, value.to, intlTags[locale])
       : t("filters.anyWhen");
 
   return (
@@ -66,14 +109,15 @@ export function WhenFilter({
       )}
     >
       {({ close }) => (
-        <div className="w-[min(300px,calc(100vw-3rem))]">
+        <div className="w-[min(320px,calc(100vw-3rem))]">
           <div className="mb-3 flex flex-wrap gap-2">
             {presetKeys.map((id) => (
               <button
                 key={id}
                 type="button"
                 onClick={() => {
-                  onChange({ preset: id, date: presetDate(id) });
+                  const { from, to } = presetRange(id);
+                  onChange({ preset: id, from, to });
                   close();
                 }}
                 className={cn(
@@ -86,21 +130,32 @@ export function WhenFilter({
                 {t(`filters.${id}`)}
               </button>
             ))}
+            {!empty && (
+              <button
+                type="button"
+                onClick={() => {
+                  onChange({ preset: null, from: null, to: null });
+                  close();
+                }}
+                className="cursor-pointer rounded-full border border-line-2 px-3 py-1.5 text-xs font-semibold text-ink-3 transition-colors hover:bg-muted"
+              >
+                {t("filters.clearWhen")}
+              </button>
+            )}
           </div>
 
           <div className="rdp-skill">
             <DayPicker
-              mode="single"
+              mode="range"
               locale={dpLocales[locale]}
               month={month}
               onMonthChange={setMonth}
-              selected={value.date ?? undefined}
+              selected={value.from ? { from: value.from, to: value.to ?? value.from } : undefined}
               disabled={{ before: new Date() }}
-              onSelect={(d) => {
-                if (d) {
-                  onChange({ preset: null, date: d });
-                  close();
-                }
+              onSelect={(range) => {
+                onChange({ preset: null, from: range?.from ?? null, to: range?.to ?? range?.from ?? null });
+                // Close once a full range (or single day re-click) is chosen.
+                if (range?.from && range?.to) close();
               }}
             />
           </div>

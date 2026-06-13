@@ -7,6 +7,7 @@ import { useI18n } from "@/i18n/I18nProvider";
 import { specialistsService, type SpecialistFilters } from "@/services";
 import type { Availability, UserLocation } from "@/lib/types";
 import { LocationPicker } from "./LocationPicker";
+import { WhenFilter, isoToWhen, whenToISO } from "@/components/landing/WhenFilter";
 import { cn } from "@/lib/cn";
 
 type Props = {
@@ -98,6 +99,16 @@ export function FilterSidebar({
       )}
     >
       <LocationPicker value={userLocation} onLocate={onLocate} onClear={onClearLocation} />
+
+      {/* When — a date/range; flags specialists not fully free in the term (warning on the card). */}
+      <Section title={t("filters.when")}>
+        <WhenFilter
+          fullWidth
+          align="start"
+          value={isoToWhen(filters.fromDate, filters.toDate)}
+          onChange={(v) => onPatch(whenToISO(v))}
+        />
+      </Section>
 
       {/* Industry → specialization. Clicking an industry selects the whole industry; expand to
           refine by ticking/unticking individual specializations (across industries too). */}

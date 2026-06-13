@@ -70,6 +70,9 @@ export type JobFilters = {
   rateMin?: number;
   near?: { lat: number; lng: number };
   maxDistanceKm?: number;
+  /** "When" range (ISO yyyy-mm-dd): only jobs whose work date(s) overlap it (undated jobs always match). */
+  fromDate?: string;
+  toDate?: string;
   page?: number; // 0-indexed page (server-side pagination)
   size?: number; // page size
   locale?: string;
@@ -127,6 +130,8 @@ export const jobsService = {
     if (filters.district) params.set("district", filters.district);
     if (filters.q) params.set("q", filters.q);
     if (filters.rateMin != null) params.set("rateMin", String(filters.rateMin));
+    if (filters.fromDate) params.set("from", filters.fromDate);
+    if (filters.toDate) params.set("to", filters.toDate);
     if (filters.page != null) params.set("page", String(filters.page));
     if (filters.size != null) params.set("size", String(filters.size));
     const qs = params.toString();

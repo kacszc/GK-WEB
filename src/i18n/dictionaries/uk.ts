@@ -68,6 +68,7 @@ const uk: Dictionary = {
     upTo: "до {km} км",
     anyWhen: "Будь-яка дата",
     anyWhere: "Будь-де",
+    clearWhen: "Очистити",
   },
   dropdown: {
     suggested: "ЗАПРОПОНОВАНІ СПЕЦІАЛІЗАЦІЇ",
@@ -350,6 +351,8 @@ const uk: Dictionary = {
     cardAvailNow: "Доступний зараз",
     cardAvailWeek: "Цього тижня",
     cardAvailDate: "Від {date}",
+    partialAvail: "Зайнятий {busy} з {total} дн.",
+    unavailableRange: "Недоступний у цей період",
     topRated: "Top Rated",
     km: "{km} км",
     perHour: "{rate} zł/год",

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Star, ShieldCheck, Award, MapPin } from "lucide-react";
+import { Star, ShieldCheck, Award, MapPin, CalendarX } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -90,15 +90,23 @@ export function SpecialistCard({
   active = false,
   onSelect,
   href,
+  unavailableDays = 0,
+  rangeDays,
 }: {
   s: Specialist;
   compact?: boolean;
   active?: boolean;
   onSelect?: (id: string) => void;
   href?: string;
+  /** Days in the requested "when" range this specialist is NOT free (0 = fully available). */
+  unavailableDays?: number;
+  /** Total days in the requested range — for the "X / Y days" warning. */
+  rangeDays?: number | null;
 }) {
   const { t } = useI18n();
   const { open } = useContact();
+  // Partial-availability warning for the chosen "when" range (we don't hide the specialist).
+  const fullyBusy = rangeDays != null && unavailableDays >= rangeDays;
   const className = cn(
     "block rounded-panel border bg-surface p-4 text-left transition-shadow",
     active ? "border-ink shadow-search" : "border-line-3 hover:shadow-sm",
@@ -120,6 +128,14 @@ export function SpecialistCard({
 
       {/* Tags */}
       <div className="mt-2.5 flex flex-wrap gap-1.5">
+        {unavailableDays > 0 && (
+          <Tag className="bg-[#fdecec] text-[#b42318]">
+            <CalendarX className="h-3 w-3" />
+            {fullyBusy
+              ? t("results.unavailableRange")
+              : t("results.partialAvail", { busy: unavailableDays, total: rangeDays ?? 0 })}
+          </Tag>
+        )}
         <AvailabilityTag s={s} />
         {s.kyc && (
           <Tag className="bg-[#e7efff] text-[#1158ed]">

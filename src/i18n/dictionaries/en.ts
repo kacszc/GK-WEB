@@ -68,6 +68,7 @@ const en: Dictionary = {
     upTo: "up to {km} km",
     anyWhen: "Any date",
     anyWhere: "Anywhere",
+    clearWhen: "Clear",
   },
   dropdown: {
     suggested: "SUGGESTED SPECIALIZATIONS",
@@ -350,6 +351,8 @@ const en: Dictionary = {
     cardAvailNow: "Available now",
     cardAvailWeek: "This week",
     cardAvailDate: "From {date}",
+    partialAvail: "Busy {busy} of {total} days",
+    unavailableRange: "Unavailable in this term",
     topRated: "Top Rated",
     km: "{km} km",
     perHour: "{rate} zł/h",

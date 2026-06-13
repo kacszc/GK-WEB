@@ -101,6 +101,9 @@ export type SpecialistFilters = {
   languages?: string[];
   sort?: SpecialistSort;
   near?: { lng: number; lat: number };
+  /** "When" range (ISO yyyy-mm-dd) — flags specialists not fully free in the term (warning, not a cut). */
+  fromDate?: string;
+  toDate?: string;
   page?: number; // 0-indexed page (server-side pagination)
   size?: number; // page size
   locale?: string;
@@ -128,6 +131,8 @@ export const specialistsService = {
     if (filters.kyc) params.set("kyc", "true");
     if (filters.languages?.length) params.set("languages", filters.languages.join(","));
     if (filters.sort) params.set("sort", filters.sort);
+    if (filters.fromDate) params.set("from", filters.fromDate);
+    if (filters.toDate) params.set("to", filters.toDate);
     if (filters.page != null) params.set("page", String(filters.page));
     if (filters.size != null) params.set("size", String(filters.size));
     const qs = params.toString();
@@ -137,12 +142,16 @@ export const specialistsService = {
       total: number;
       availableNow: number;
       availableWeek: number;
+      rangeDays?: number | null;
+      rangeUnavailable?: Record<string, number>;
     }>(`/api/specialists${qs ? `?${qs}` : ""}`, { locale: filters.locale });
     return {
       items: data.items.map(toSpecialist),
       total: data.total,
       availableNow: data.availableNow,
       availableWeek: data.availableWeek,
+      rangeDays: data.rangeDays ?? null,
+      rangeUnavailable: data.rangeUnavailable ?? {},
     };
   },
 
