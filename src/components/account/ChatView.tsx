@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Send } from "lucide-react";
 import { messagesService } from "@/services";
 import { Avatar } from "@/components/ui/Avatar";
@@ -20,6 +20,7 @@ export function ChatView({ id }: { id: string }) {
   const extra = extraByThread[id] ?? [];
   const listRef = useRef<HTMLDivElement>(null);
 
+  const queryClient = useQueryClient();
   const { data: convos = [] } = useQuery({
     queryKey: ["conversations"],
     queryFn: messagesService.getThreads,
@@ -28,6 +29,12 @@ export function ChatView({ id }: { id: string }) {
     queryKey: ["thread", id],
     queryFn: () => messagesService.getThread(id),
   });
+
+  // Opening a thread marks it read server-side — refresh the inbox + header unread badge so the
+  // count clears immediately (prefix-invalidates both ["conversations"] and the unread-count query).
+  useEffect(() => {
+    if (thread) queryClient.invalidateQueries({ queryKey: ["conversations"] });
+  }, [thread, id, queryClient]);
 
   // Append a message, de-duping by id so optimistic + live frames don't double.
   const append = useCallback(
