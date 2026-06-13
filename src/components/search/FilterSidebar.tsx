@@ -160,7 +160,7 @@ export function FilterSidebar({
         )}
       </Section>
 
-      {/* Availability */}
+      {/* Availability status (self-declared by the specialist) — a plain status filter. */}
       <Section title={t("results.fAvailability")}>
         {schema?.availability.map((a) => {
           const value = a.code.toLowerCase() as Availability;
@@ -169,31 +169,21 @@ export function FilterSidebar({
               key={a.code}
               label={a.label}
               checked={filters.availability?.includes(value) ?? false}
-              onChange={() => {
-                const next = toggle(filters.availability, value);
-                // Deselecting "specific date" drops the picked term so it doesn't linger.
-                const clearTerm = value === "date" && !next.includes("date");
-                onPatch(
-                  clearTerm
-                    ? { availability: next, fromDate: undefined, toDate: undefined }
-                    : { availability: next },
-                );
-              }}
+              onChange={() => onPatch({ availability: toggle(filters.availability, value) })}
             />
           );
         })}
+      </Section>
 
-        {/* "When" range — only for the "specific date" option; now/this-week imply their own window. */}
-        {(filters.availability?.includes("date") || filters.fromDate) && (
-          <div className="mt-2">
-            <WhenFilter
-              fullWidth
-              align="start"
-              value={isoToWhen(filters.fromDate, filters.toDate)}
-              onChange={(v) => onPatch(whenToISO(v))}
-            />
-          </div>
-        )}
+      {/* When — the term YOU need someone for. Independent of the status filter: it never excludes,
+          it only badges each specialist with their availability for that term (busy / unavailable). */}
+      <Section title={t("filters.when")}>
+        <WhenFilter
+          fullWidth
+          align="start"
+          value={isoToWhen(filters.fromDate, filters.toDate)}
+          onChange={(v) => onPatch(whenToISO(v))}
+        />
       </Section>
 
       {/* Distance — clearing the radius (maxDistanceKm = undefined) drops the geo limit so results
