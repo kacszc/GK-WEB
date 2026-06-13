@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Coins, Check, Loader2, CreditCard } from "lucide-react";
 import { Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { walletService } from "@/services";
 import { useWallet } from "@/lib/WalletProvider";
+import { useAuth } from "@/lib/AuthProvider";
 import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
 import { formatMoney } from "@/lib/money";
@@ -16,11 +18,23 @@ const priceOf = (p: TokenPackage) => Math.round(p.tokens * p.pricePerToken);
 
 export function TokenPackages() {
   const { t } = useI18n();
+  const { user } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
   const [selected, setSelected] = useState<TokenPackage | null>(null);
   const { data: packages = [] } = useQuery({
     queryKey: ["tokenPackages"],
     queryFn: walletService.getPackages,
   });
+
+  // Buying requires an account. Signed out → go to login (remembering where to return), not a 401.
+  const startBuy = (p: TokenPackage) => {
+    if (!user) {
+      router.push(`/login?redirect=${encodeURIComponent(pathname)}`);
+      return;
+    }
+    setSelected(p);
+  };
 
   return (
     <>
@@ -48,7 +62,7 @@ export function TokenPackages() {
             </div>
             <Button
               variant={p.popular ? "gradient" : "dark"}
-              onClick={() => setSelected(p)}
+              onClick={() => startBuy(p)}
               className="mt-4 w-full rounded-tile py-2.5 text-[13px]"
             >
               {t("tokens.buy")}
