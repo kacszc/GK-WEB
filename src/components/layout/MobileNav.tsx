@@ -26,16 +26,20 @@ export function MobileNav() {
         <nav className="flex flex-col gap-0.5">
           <MenuLink href="/pricing" onClick={close}>{t("nav.pricing")}</MenuLink>
           <MenuLink href="/how-it-works" onClick={close}>{t("nav.howItWorks")}</MenuLink>
-          {user?.role === "specialist" ? (
-            <MenuLink href="/jobs" onClick={close}>
-              <Search className="h-4 w-4" />
-              {t("nav.findWork")}
-            </MenuLink>
-          ) : (
-            <MenuLink href="/post-job" onClick={close}>
-              <Plus className="h-4 w-4" />
-              {t("nav.addJob")}
-            </MenuLink>
+          {/* The job CTA needs an account: specialist → find work, employer → post a job.
+              Signed-out visitors only get pricing/how-it-works + sign in / register below. */}
+          {ready && user && (
+            user.role === "specialist" ? (
+              <MenuLink href="/jobs" onClick={close}>
+                <Search className="h-4 w-4" />
+                {t("nav.findWork")}
+              </MenuLink>
+            ) : (
+              <MenuLink href="/post-job" onClick={close}>
+                <Plus className="h-4 w-4" />
+                {t("nav.addJob")}
+              </MenuLink>
+            )
           )}
           <hr className="my-2 border-line" />
           {ready && user ? (
