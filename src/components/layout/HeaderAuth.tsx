@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LogOut, Coins, Settings, Briefcase, LayoutGrid, Compass } from "lucide-react";
+import { LogOut, Coins, Settings, Briefcase, LayoutGrid } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { Popover } from "@/components/ui/Popover";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -9,13 +9,11 @@ import { NotificationBell } from "@/components/layout/NotificationBell";
 import { MessagesBell } from "@/components/layout/MessagesBell";
 import { useAuth } from "@/lib/AuthProvider";
 import { useWallet } from "@/lib/WalletProvider";
-import { useTour } from "@/lib/TourProvider";
 import { useI18n } from "@/i18n/I18nProvider";
 
 export function HeaderAuth() {
   const { user, ready, signOut } = useAuth();
   const { balance, ready: walletReady } = useWallet();
-  const { open: openTour } = useTour();
   const { t } = useI18n();
 
   // While auth/wallet are restoring, show placeholders sized like the loaded
@@ -85,16 +83,6 @@ export function HeaderAuth() {
               <MenuItem href="/account/settings" onClick={close} icon={<Settings className="h-4 w-4 text-ink-3" />}>
                 {t("auth.settings")}
               </MenuItem>
-              <button
-                onClick={() => {
-                  openTour();
-                  close();
-                }}
-                className="flex w-full items-center gap-2 rounded-tile px-3 py-2 text-left text-sm text-ink hover:bg-muted"
-              >
-                <Compass className="h-4 w-4 text-brand-violet" />
-                {t("tour.reopen")}
-              </button>
               <hr className="my-1 border-line" />
               <button
                 onClick={() => {

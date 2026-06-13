@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/Button";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { LocationPicker } from "@/components/search/LocationPicker";
 import { useAuth } from "@/lib/AuthProvider";
-import { markTourPending } from "@/lib/TourProvider";
 import { onboardingService } from "@/services";
 import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
@@ -60,11 +59,6 @@ export function WorkerOnboarding({
   const [langs, setLangs] = useState<string[]>(["Polski"]);
   const [result, setResult] = useState<WorkerOnboardingResult | null>(null);
   const [busy, setBusy] = useState(false);
-
-  // Finished onboarding → show the platform tour on the next page the user navigates to.
-  useEffect(() => {
-    if (step === "done") markTourPending();
-  }, [step]);
 
   const { data: industries = [] } = useQuery({
     queryKey: ["industries"],
@@ -275,8 +269,10 @@ export function WorkerOnboarding({
                 <p className="text-[12px] leading-snug text-ink-3">{t("onboarding.wTrustHint")}</p>
               </div>
             </div>
+            {/* "Zaczynamy" → dashboard, where the platform tour auto-opens (it ends with the
+                role-appropriate next step). */}
             <Button variant="dark" onClick={() => router.push("/account")} className="mt-5 w-full rounded-tile py-3 text-sm">
-              {t("onboarding.wGoDashboard")}
+              {t("tour.finish")}
             </Button>
             <button onClick={() => router.push("/account/settings")} className="mt-3 block w-full text-center text-[13px] font-medium text-ink-3 hover:text-ink">
               {t("onboarding.wFinishLater")}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, CheckCircle2, Gift } from "lucide-react";
@@ -9,7 +9,6 @@ import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { useWallet } from "@/lib/WalletProvider";
 import { useAuth } from "@/lib/AuthProvider";
 import { LocationPicker } from "@/components/search/LocationPicker";
-import { markTourPending } from "@/lib/TourProvider";
 import { onboardingService } from "@/services";
 import { useI18n } from "@/i18n/I18nProvider";
 import type { GusCompany, EmployerOnboardingResult, UserLocation } from "@/lib/types";
@@ -49,11 +48,6 @@ export function EmployerOnboarding({ initialEmail = "" }: { initialEmail?: strin
   const location = loc?.city ?? loc?.label ?? "";
   const [result, setResult] = useState<EmployerOnboardingResult | null>(null);
   const [busy, setBusy] = useState(false);
-
-  // Finished onboarding → show the platform tour on the next page the user navigates to.
-  useEffect(() => {
-    if (step === "done") markTourPending();
-  }, [step]);
 
   const { data: industryOptions = [] } = useQuery({
     queryKey: ["industries"],
@@ -188,8 +182,9 @@ export function EmployerOnboarding({ initialEmail = "" }: { initialEmail?: strin
                 <p className="text-[12px] leading-snug text-on-dark/80">{t("onboarding.eGiftDesc", { n: result.bonusTokens })}</p>
               </div>
             </div>
-            <Button variant="dark" onClick={() => router.push("/post-job")} className="mt-5 w-full rounded-tile py-3 text-sm">
-              {t("onboarding.ePostJob")}
+            {/* "Zaczynamy" → dashboard, where the platform tour auto-opens (it ends with "Dodaj zlecenie"). */}
+            <Button variant="dark" onClick={() => router.push("/account")} className="mt-5 w-full rounded-tile py-3 text-sm">
+              {t("tour.finish")}
             </Button>
           </OnboardingCard>
         )}

@@ -7,16 +7,18 @@ import { useAuth } from "@/lib/AuthProvider";
 import { useI18n } from "@/i18n/I18nProvider";
 import type { UserRole } from "@/lib/types";
 
-/** Set by the onboarding success screen; the provider opens the tour on the next page the user lands on. */
-const PENDING_KEY = "skill_tour_pending";
+const seenKey = (role: UserRole) => `skill_tour_seen_${role}`;
+/** Pages where the tour may auto-open for a first-time signed-in user (logged-in "home" surfaces). */
+const HOME_PATHS = new Set(["/", "/account"]);
 
 type TourContextValue = { open: () => void };
 const TourContext = createContext<TourContextValue | null>(null);
 
 /**
- * Mounts the platform tour once (app-wide) and exposes `open()` so it can be triggered from anywhere
- * (e.g. the header menu). After onboarding we don't show it on the onboarding screen — instead a
- * "pending" flag is set, and the tour opens on the next page the user navigates to.
+ * Mounts the platform tour once (app-wide). It auto-opens ONCE per role the first time a signed-in
+ * user lands on the landing or /account — so it shows whether or not they finished onboarding, and
+ * even if they bailed mid-way. `open()` re-launches it manually (e.g. the /account guide button).
+ * The final card carries the role-appropriate next step (employer → post a job, specialist → publish).
  */
 export function TourProvider({ children }: { children: React.ReactNode }) {
   const { user, ready } = useAuth();
@@ -26,16 +28,18 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
 
   const role: UserRole = user?.role === "employer" ? "employer" : "specialist";
 
-  // Open once on the destination after onboarding (a route change clears the pending flag).
   useEffect(() => {
     if (!ready || !user || typeof window === "undefined") return;
-    if (localStorage.getItem(PENDING_KEY)) {
-      localStorage.removeItem(PENDING_KEY);
-      // Legitimate: react to a route change + external (localStorage) flag set during onboarding.
+    if (HOME_PATHS.has(pathname) && !localStorage.getItem(seenKey(role))) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setOpen(true);
     }
-  }, [pathname, ready, user]);
+  }, [pathname, ready, user, role]);
+
+  const close = () => {
+    setOpen(false);
+    if (typeof window !== "undefined") localStorage.setItem(seenKey(role), "1");
+  };
 
   const finishActions: TourAction[] =
     role === "employer"
@@ -45,14 +49,14 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
         ]
       : [
           { label: t("nav.findWork"), href: "/jobs" },
-          { label: t("account.navOverview"), href: "/account", primary: true },
+          { label: t("offer.publish"), href: "/account", primary: true },
         ];
 
   return (
     <TourContext.Provider value={{ open: () => setOpen(true) }}>
       {children}
       {ready && user && (
-        <PlatformTour open={open} onClose={() => setOpen(false)} role={role} finishActions={finishActions} />
+        <PlatformTour open={open} onClose={close} role={role} finishActions={finishActions} />
       )}
     </TourContext.Provider>
   );
@@ -61,9 +65,4 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
 /** Open the platform tour from anywhere (no-op outside the provider). */
 export function useTour(): TourContextValue {
   return useContext(TourContext) ?? { open: () => {} };
-}
-
-/** Mark the tour to open on the next page (called when onboarding completes). */
-export function markTourPending() {
-  if (typeof window !== "undefined") localStorage.setItem(PENDING_KEY, "1");
 }
