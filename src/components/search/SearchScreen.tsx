@@ -22,6 +22,26 @@ const CITY = "Warszawa";
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
+/** Local "yyyy-mm-dd" for `n` days from today. */
+function isoFromToday(addDays: number): string {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() + addDays);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+/**
+ * The date window used to flag partial availability (badge only — never excludes). An explicit
+ * date range wins; otherwise "this week" → next 7 days, "now" → today. No availability → no window.
+ */
+function effectiveRange(f: SpecialistFilters): { from: string; to: string } | null {
+  if (f.fromDate && f.toDate) return { from: f.fromDate, to: f.toDate };
+  const av = f.availability ?? [];
+  if (av.includes("week")) return { from: isoFromToday(0), to: isoFromToday(6) };
+  if (av.includes("now")) return { from: isoFromToday(0), to: isoFromToday(0) };
+  return null;
+}
+
 /** True at >= lg (1024px). Lets us drop the desktop-only split view on mobile. */
 function useIsDesktop() {
   return useSyncExternalStore(
@@ -76,11 +96,18 @@ export function SearchScreen({
     (filters.minTrust ? 1 : 0) +
     (filters.maxDistanceKm != null ? 1 : 0);
 
+  // Effective "when" window for the availability badge — NEVER filters specialists out (the backend
+  // only uses it to count busy days). An explicit date range wins; otherwise the availability filter
+  // implies one (today for "now", the next 7 days for "this week") so blocked specialists get badged.
+  const range = effectiveRange(filters);
+
   // Server-side pagination: the list view fetches one page; the map views fetch a larger single
   // batch so all pins show (the side list just scrolls). Backend sorts (promoted first) + paginates.
   const isListView = effectiveView === "list";
   const queryFilters: SpecialistFilters = {
     ...filters,
+    fromDate: range?.from,
+    toDate: range?.to,
     near: userLocation ? { lng: userLocation.lng, lat: userLocation.lat } : undefined,
     page: isListView ? page - 1 : 0,
     size: isListView ? PAGE_SIZE : MAP_BATCH,
