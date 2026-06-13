@@ -2,13 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MailCheck, Loader2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { LocationPicker } from "@/components/search/LocationPicker";
+import { PlatformTour, useTourAutoOpen, type TourAction } from "@/components/onboarding/PlatformTour";
 import { useAuth } from "@/lib/AuthProvider";
-import { onboardingService } from "@/services";
+import { useToast } from "@/lib/ToastProvider";
+import { onboardingService, accountService } from "@/services";
 import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
 import type { WorkerOnboardingResult, UserLocation } from "@/lib/types";
@@ -59,6 +61,25 @@ export function WorkerOnboarding({
   const [langs, setLangs] = useState<string[]>(["Polski"]);
   const [result, setResult] = useState<WorkerOnboardingResult | null>(null);
   const [busy, setBusy] = useState(false);
+
+  // Tour auto-opens on the success step. The profile was just created (complete, still a draft),
+  // so the final card offers to publish the offer right away or jump into job search.
+  const tour = useTourAutoOpen("specialist", step === "done");
+  const { show } = useToast();
+  const qc = useQueryClient();
+  const publish = useMutation({
+    mutationFn: () => accountService.publishMyProfile(),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["mySpecialistProfile"] });
+      show({ title: t("offer.publishedToast") });
+      router.push("/account");
+    },
+    onError: () => show({ title: t("offer.error") }),
+  });
+  const tourFinish: TourAction[] = [
+    { label: t("nav.findWork"), href: "/jobs" },
+    { label: t("offer.publish"), onClick: () => publish.mutate(), primary: true },
+  ];
 
   const { data: industries = [] } = useQuery({
     queryKey: ["industries"],
@@ -278,6 +299,8 @@ export function WorkerOnboarding({
           </OnboardingCard>
         )}
       </main>
+
+      <PlatformTour open={tour.open} onClose={tour.close} role="specialist" finishActions={tourFinish} />
     </div>
   );
 }
