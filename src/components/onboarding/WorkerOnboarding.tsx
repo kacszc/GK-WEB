@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { LocationPicker } from "@/components/search/LocationPicker";
 import { useAuth } from "@/lib/AuthProvider";
+import { markTourPending } from "@/lib/TourProvider";
 import { onboardingService } from "@/services";
 import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
@@ -59,6 +60,11 @@ export function WorkerOnboarding({
   const [langs, setLangs] = useState<string[]>(["Polski"]);
   const [result, setResult] = useState<WorkerOnboardingResult | null>(null);
   const [busy, setBusy] = useState(false);
+
+  // Finished onboarding → show the platform tour on the next page the user navigates to.
+  useEffect(() => {
+    if (step === "done") markTourPending();
+  }, [step]);
 
   const { data: industries = [] } = useQuery({
     queryKey: ["industries"],

@@ -1,16 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Briefcase, MessageSquare, Coins, Plus, Search, Compass, Send } from "lucide-react";
 import { accountService, messagesService, applicationsService } from "@/services";
 import { PromoteProfile } from "./PromoteProfile";
 import { SpecialistOfferStatus } from "./SpecialistOfferStatus";
-import { PlatformTour, useTourAutoOpen, type TourAction } from "@/components/onboarding/PlatformTour";
 import { Skeleton, SkeletonCard } from "@/components/ui/Skeleton";
 import { useAuth } from "@/lib/AuthProvider";
 import { useWallet } from "@/lib/WalletProvider";
-import { useToast } from "@/lib/ToastProvider";
+import { useTour } from "@/lib/TourProvider";
 import { useI18n } from "@/i18n/I18nProvider";
 import type { UserRole } from "@/lib/types";
 
@@ -18,6 +17,7 @@ export function AccountOverview() {
   const { t } = useI18n();
   const { user, ready: authReady } = useAuth();
   const { balance, ready: walletReady } = useWallet();
+  const { open: openTour } = useTour();
   const role: UserRole = user?.role === "employer" ? "employer" : "specialist";
   const isEmployer = role === "employer";
 
@@ -36,26 +36,6 @@ export function AccountOverview() {
     queryKey: ["conversations"],
     queryFn: messagesService.getThreads,
   });
-  // Specialist offer state — drives the tour's final-card CTAs (publish vs finish setup).
-  const { data: specProfile } = useQuery({
-    queryKey: ["mySpecialistProfile"],
-    queryFn: () => accountService.getMySpecialistProfile(),
-    enabled: authReady && !isEmployer,
-  });
-
-  const { show } = useToast();
-  const qc = useQueryClient();
-  const publish = useMutation({
-    mutationFn: () => accountService.publishMyProfile(),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["mySpecialistProfile"] });
-      show({ title: t("offer.publishedToast") });
-    },
-    onError: () => show({ title: t("offer.error") }),
-  });
-
-  // Auto-open the tour once per role on the first /account visit (also fires after onboarding).
-  const { open: tourOpen, close: closeTour, reopen: openTour } = useTourAutoOpen(role, authReady && !!user);
 
   // Show a skeleton until auth/wallet are restored and the stat data arrives,
   // so the greeting and stat values don't flash empty/default values.
@@ -65,22 +45,6 @@ export function AccountOverview() {
 
   const activeJobs = jobs.filter((j) => j.status === "active").length;
   const unread = convos.reduce((n, c) => n + c.unread, 0);
-
-  // Final tour card → two contextual next steps. Employer: find a specialist + post a job.
-  // Specialist: find work + (finish setup → onboarding | publish the offer | already live).
-  const finishActions: TourAction[] = isEmployer
-    ? [
-        { label: t("account.quickSearch"), href: "/search" },
-        { label: t("account.quickPost"), href: "/post-job", primary: true },
-      ]
-    : [
-        { label: t("nav.findWork"), href: "/jobs", primary: specProfile?.published === true },
-        ...(!specProfile || !specProfile.complete
-          ? [{ label: t("tour.finishSetup"), href: "/onboarding/specialist", primary: true }]
-          : !specProfile.published
-            ? [{ label: t("offer.publish"), onClick: () => publish.mutate(), primary: true }]
-            : []),
-      ];
 
   return (
     <div className="flex flex-col gap-6">
@@ -99,8 +63,6 @@ export function AccountOverview() {
           {t("tour.reopen")}
         </button>
       </div>
-
-      <PlatformTour open={tourOpen} onClose={closeTour} role={role} finishActions={finishActions} />
 
       {isEmployer ? (
         <>

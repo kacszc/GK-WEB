@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, CheckCircle2, Gift } from "lucide-react";
@@ -9,6 +9,7 @@ import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { useWallet } from "@/lib/WalletProvider";
 import { useAuth } from "@/lib/AuthProvider";
 import { LocationPicker } from "@/components/search/LocationPicker";
+import { markTourPending } from "@/lib/TourProvider";
 import { onboardingService } from "@/services";
 import { useI18n } from "@/i18n/I18nProvider";
 import type { GusCompany, EmployerOnboardingResult, UserLocation } from "@/lib/types";
@@ -48,6 +49,11 @@ export function EmployerOnboarding({ initialEmail = "" }: { initialEmail?: strin
   const location = loc?.city ?? loc?.label ?? "";
   const [result, setResult] = useState<EmployerOnboardingResult | null>(null);
   const [busy, setBusy] = useState(false);
+
+  // Finished onboarding → show the platform tour on the next page the user navigates to.
+  useEffect(() => {
+    if (step === "done") markTourPending();
+  }, [step]);
 
   const { data: industryOptions = [] } = useQuery({
     queryKey: ["industries"],

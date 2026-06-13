@@ -15,6 +15,7 @@ import { ErrorToaster } from "@/components/layout/ErrorToaster";
 import { VerifyNotice } from "@/components/layout/VerifyNotice";
 import { AnnouncementBar } from "@/components/layout/AnnouncementBar";
 import { CookieConsentProvider } from "@/lib/CookieConsentProvider";
+import { TourProvider } from "@/lib/TourProvider";
 import { CookieConsent } from "@/components/legal/CookieConsent";
 
 const inter = Inter({
@@ -68,6 +69,7 @@ export default async function RootLayout({
                 <WalletProvider>
                   <ContactProvider>
                     <CookieConsentProvider>
+                      <TourProvider>
                       <AnnouncementBar />
                       <VerifyNotice variant="banner" />
                       {children}
@@ -77,6 +79,7 @@ export default async function RootLayout({
                       <Suspense fallback={null}>
                         <FirebaseAnalytics />
                       </Suspense>
+                      </TourProvider>
                     </CookieConsentProvider>
                   </ContactProvider>
                 </WalletProvider>
