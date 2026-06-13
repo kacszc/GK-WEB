@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu, X, Plus, Search, LogOut } from "lucide-react";
+import { Menu, X, Plus, Search, LogOut, LayoutGrid, Settings } from "lucide-react";
 import { Popover } from "@/components/ui/Popover";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useAuth } from "@/lib/AuthProvider";
@@ -45,6 +45,14 @@ export function MobileNav() {
           {ready && user ? (
             <>
               <span className="truncate px-3 py-1 text-[12px] text-ink-3">{user.email}</span>
+              <MenuLink href="/account" onClick={close}>
+                <LayoutGrid className="h-4 w-4 text-ink-3" />
+                {t("account.navOverview")}
+              </MenuLink>
+              <MenuLink href="/account/settings" onClick={close}>
+                <Settings className="h-4 w-4 text-ink-3" />
+                {t("auth.settings")}
+              </MenuLink>
               <button
                 onClick={() => {
                   signOut();
