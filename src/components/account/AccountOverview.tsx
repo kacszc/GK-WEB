@@ -1,65 +1,133 @@
 "use client";
 
 import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
-import { Briefcase, MessageSquare, Coins, Plus, Search } from "lucide-react";
-import { accountService, messagesService } from "@/services";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Briefcase, MessageSquare, Coins, Plus, Search, Compass, Send } from "lucide-react";
+import { accountService, messagesService, applicationsService } from "@/services";
 import { PromoteProfile } from "./PromoteProfile";
+import { SpecialistOfferStatus } from "./SpecialistOfferStatus";
+import { PlatformTour, useTourAutoOpen, type TourAction } from "@/components/onboarding/PlatformTour";
 import { Skeleton, SkeletonCard } from "@/components/ui/Skeleton";
 import { useAuth } from "@/lib/AuthProvider";
 import { useWallet } from "@/lib/WalletProvider";
+import { useToast } from "@/lib/ToastProvider";
 import { useI18n } from "@/i18n/I18nProvider";
+import type { UserRole } from "@/lib/types";
 
 export function AccountOverview() {
   const { t } = useI18n();
   const { user, ready: authReady } = useAuth();
   const { balance, ready: walletReady } = useWallet();
+  const role: UserRole = user?.role === "employer" ? "employer" : "specialist";
+  const isEmployer = role === "employer";
+
+  // Jobs are employer-only; applications are specialist-only — fetch only what the role uses.
   const { data: jobs = [], isLoading: jobsLoading } = useQuery({
     queryKey: ["myJobs"],
     queryFn: accountService.getMyJobs,
+    enabled: authReady && isEmployer,
+  });
+  const { data: applications = [], isLoading: appsLoading } = useQuery({
+    queryKey: ["myApplications"],
+    queryFn: () => applicationsService.getMine(),
+    enabled: authReady && !isEmployer,
   });
   const { data: convos = [], isLoading: convosLoading } = useQuery({
     queryKey: ["conversations"],
     queryFn: messagesService.getThreads,
   });
+  // Specialist offer state — drives the tour's final-card CTAs (publish vs finish setup).
+  const { data: specProfile } = useQuery({
+    queryKey: ["mySpecialistProfile"],
+    queryFn: () => accountService.getMySpecialistProfile(),
+    enabled: authReady && !isEmployer,
+  });
+
+  const { show } = useToast();
+  const qc = useQueryClient();
+  const publish = useMutation({
+    mutationFn: () => accountService.publishMyProfile(),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["mySpecialistProfile"] });
+      show({ title: t("offer.publishedToast") });
+    },
+    onError: () => show({ title: t("offer.error") }),
+  });
+
+  // Auto-open the tour once per role on the first /account visit (also fires after onboarding).
+  const { open: tourOpen, close: closeTour, reopen: openTour } = useTourAutoOpen(role, authReady && !!user);
 
   // Show a skeleton until auth/wallet are restored and the stat data arrives,
   // so the greeting and stat values don't flash empty/default values.
-  if (!authReady || !walletReady || jobsLoading || convosLoading) {
+  if (!authReady || !walletReady || jobsLoading || appsLoading || convosLoading) {
     return <OverviewSkeleton />;
   }
 
   const activeJobs = jobs.filter((j) => j.status === "active").length;
   const unread = convos.reduce((n, c) => n + c.unread, 0);
 
+  // Final tour card → two contextual next steps. Employer: find a specialist + post a job.
+  // Specialist: find work + (finish setup → onboarding | publish the offer | already live).
+  const finishActions: TourAction[] = isEmployer
+    ? [
+        { label: t("account.quickSearch"), href: "/search" },
+        { label: t("account.quickPost"), href: "/post-job", primary: true },
+      ]
+    : [
+        { label: t("nav.findWork"), href: "/jobs", primary: specProfile?.published === true },
+        ...(!specProfile || !specProfile.complete
+          ? [{ label: t("tour.finishSetup"), href: "/onboarding/specialist", primary: true }]
+          : !specProfile.published
+            ? [{ label: t("offer.publish"), onClick: () => publish.mutate(), primary: true }]
+            : []),
+      ];
+
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-[-0.5px] text-ink">
-          {t("account.greeting", { name: user?.name ?? "" })}
-        </h1>
-        <p className="mt-1 text-[13px] text-ink-3">{t("account.overviewSubtitle")}</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-[-0.5px] text-ink">
+            {t("account.greeting", { name: user?.name ?? "" })}
+          </h1>
+          <p className="mt-1 text-[13px] text-ink-3">{t("account.overviewSubtitle")}</p>
+        </div>
+        <button
+          onClick={openTour}
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-tile border border-line-3 bg-surface px-3 py-2 text-[13px] font-semibold text-ink transition-shadow hover:shadow-sm"
+        >
+          <Compass className="h-4 w-4 text-brand-violet" />
+          {t("tour.reopen")}
+        </button>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-3">
-        <Stat icon={<Briefcase className="h-4 w-4" />} value={activeJobs} label={t("account.statActiveJobs")} href="/account/jobs" />
-        <Stat icon={<MessageSquare className="h-4 w-4" />} value={unread} label={t("account.statMessages")} href="/account/messages" />
-        <Stat icon={<Coins className="h-4 w-4 text-[#e0a400]" />} value={balance} label={t("account.statTokens")} href="/account/tokens" />
-      </div>
+      <PlatformTour open={tourOpen} onClose={closeTour} role={role} finishActions={finishActions} />
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        {user?.role === "specialist" ? (
-          <>
-            <PromoteProfile />
-            <Quick href="/jobs" icon={<Search className="h-5 w-5" />} label={t("nav.findWork")} />
-          </>
-        ) : (
-          <>
+      {isEmployer ? (
+        <>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <Stat icon={<Briefcase className="h-4 w-4" />} value={activeJobs} label={t("account.statActiveJobs")} href="/account/jobs" />
+            <Stat icon={<MessageSquare className="h-4 w-4" />} value={unread} label={t("account.statMessages")} href="/account/messages" />
+            <Stat icon={<Coins className="h-4 w-4 text-[#e0a400]" />} value={balance} label={t("account.statTokens")} href="/account/tokens" />
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
             <Quick href="/post-job" icon={<Plus className="h-5 w-5" />} label={t("account.quickPost")} dark />
             <Quick href="/search" icon={<Search className="h-5 w-5" />} label={t("account.quickSearch")} />
-          </>
-        )}
-      </div>
+          </div>
+        </>
+      ) : (
+        <>
+          {/* Offer visibility — publish/hide/finish the specialist's listing (draft by default). */}
+          <SpecialistOfferStatus />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Stat icon={<Send className="h-4 w-4" />} value={applications.length} label={t("account.statApplications")} href="/account/applications" />
+            <Stat icon={<MessageSquare className="h-4 w-4" />} value={unread} label={t("account.statMessages")} href="/account/messages" />
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <PromoteProfile />
+            <Quick href="/jobs" icon={<Search className="h-5 w-5" />} label={t("nav.findWork")} />
+          </div>
+        </>
+      )}
     </div>
   );
 }

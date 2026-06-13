@@ -77,6 +77,10 @@ export type MySpecialistProfile = {
   languages: string[];
   availability: string | null;
   kycVerified: boolean;
+  /** Whether the offer is visible in search (false = draft/hidden). */
+  published: boolean;
+  /** Whether the profile has enough data to be published. */
+  complete: boolean;
 };
 
 /** The signed-in employer's own company profile, including registry fields (NIP/REGON/address). */
@@ -217,5 +221,13 @@ export const accountService = {
   /** Boost the current specialist's own profile (sorts first in search). Payment not wired yet — grants it. */
   async boostMyProfile(days: number): Promise<{ promotedUntil: string }> {
     return apiPost<{ promotedUntil: string }>("/api/me/specialist-profile/boost", { days });
+  },
+  /** Publish the offer — make it visible in search. 422 if the profile is incomplete. */
+  async publishMyProfile(): Promise<{ published: boolean }> {
+    return apiPost<{ published: boolean }>("/api/me/specialist-profile/publish", {});
+  },
+  /** Hide the offer — remove it from search (keeps all data). */
+  async unpublishMyProfile(): Promise<{ published: boolean }> {
+    return apiPost<{ published: boolean }>("/api/me/specialist-profile/unpublish", {});
   },
 };
