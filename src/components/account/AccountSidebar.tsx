@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, Settings, Briefcase, MessageSquare, Bookmark, Clock, Coins, ImageIcon, CalendarDays, BarChart3, Scale, BellRing, Send, Award } from "lucide-react";
+import { LayoutGrid, Settings, Briefcase, MessageSquare, Bookmark, Clock, Coins, ImageIcon, CalendarDays, BarChart3, Scale, BellRing, Bell, Send, Award } from "lucide-react";
 import { useAuth } from "@/lib/AuthProvider";
 import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
 
 const items = [
   { href: "/account", key: "account.navOverview", icon: LayoutGrid },
+  { href: "/account/notifications", key: "notifications.title", icon: Bell },
   { href: "/account/jobs", key: "account.navJobs", icon: Briefcase, role: "employer" as const },
   { href: "/account/applications", key: "applications.navTitle", icon: Send, role: "specialist" as const },
   { href: "/account/messages", key: "account.navMessages", icon: MessageSquare },
