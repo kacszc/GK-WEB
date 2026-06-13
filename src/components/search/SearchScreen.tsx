@@ -214,8 +214,15 @@ export function SearchScreen({
           </div>
         )}
 
-        {/* Map + List view (desktop only — coerced to list on mobile). Empty → overlay on the map. */}
-        {effectiveView === "mapList" && (
+        {/* Map + List view (desktop only — coerced to list on mobile). No results → drop the map and
+            show the plain empty state (like the list view), since an empty map is pointless. */}
+        {effectiveView === "mapList" && total === 0 && !isLoading && (
+          <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
+            {sidebar}
+            <Empty t={t} />
+          </div>
+        )}
+        {effectiveView === "mapList" && !(total === 0 && !isLoading) && (
           <div className="grid gap-4 lg:h-[calc(100vh-220px)] lg:grid-rows-[minmax(0,1fr)] lg:grid-cols-[200px_minmax(300px,400px)_1fr]">
             {sidebar}
             <div className="flex flex-col gap-3 overflow-y-auto pr-1">
