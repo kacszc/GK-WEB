@@ -6,6 +6,7 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Popover } from "@/components/ui/Popover";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { NotificationBell } from "@/components/layout/NotificationBell";
+import { MessagesBell } from "@/components/layout/MessagesBell";
 import { useAuth } from "@/lib/AuthProvider";
 import { useWallet } from "@/lib/WalletProvider";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -50,6 +51,7 @@ export function HeaderAuth() {
             <Skeleton className="hidden h-[30px] w-24 rounded-full sm:block" />
           ))}
 
+        <MessagesBell />
         <NotificationBell />
 
         <Popover
