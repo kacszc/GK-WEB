@@ -37,7 +37,7 @@ export function WhereFilter({
 
   const triggerValue = value.city
     ? `${value.city.city ?? value.city.label} · ${t("filters.upTo", { km: value.distanceKm })}`
-    : t("results.allPoland");
+    : t("filters.anyWhere");
 
   return (
     <Popover
@@ -50,6 +50,7 @@ export function WhereFilter({
           value={triggerValue}
           open={open}
           fullWidth={fullWidth}
+          placeholder={!value.city}
         />
       )}
     >

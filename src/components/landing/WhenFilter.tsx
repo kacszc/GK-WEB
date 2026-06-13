@@ -43,11 +43,12 @@ export function WhenFilter({
   const { t, locale } = useI18n();
   const [month, setMonth] = useState<Date>(value.date ?? new Date());
 
+  const empty = !value.preset && !value.date;
   const displayLabel = value.preset
     ? t(`filters.${value.preset}`)
     : value.date
       ? value.date.toLocaleDateString(intlTags[locale], { day: "numeric", month: "short" })
-      : t("filters.today");
+      : t("filters.anyWhen");
 
   return (
     <Popover
@@ -60,6 +61,7 @@ export function WhenFilter({
           value={displayLabel}
           open={open}
           fullWidth={fullWidth}
+          placeholder={empty}
         />
       )}
     >

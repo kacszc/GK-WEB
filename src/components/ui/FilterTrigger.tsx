@@ -8,6 +8,7 @@ export function FilterTrigger({
   value,
   open,
   fullWidth = false,
+  placeholder = false,
 }: {
   icon: React.ReactNode;
   label: string;
@@ -15,6 +16,8 @@ export function FilterTrigger({
   open: boolean;
   /** Stretch to fill the parent (used in the full-width mobile search row). */
   fullWidth?: boolean;
+  /** Render the value as a muted placeholder (nothing selected yet). */
+  placeholder?: boolean;
 }) {
   return (
     <span
@@ -27,7 +30,7 @@ export function FilterTrigger({
       {icon}
       <span className="flex-1 text-left leading-tight">
         <span className="block text-[11px] font-semibold text-ink-3">{label}</span>
-        <span className="block text-[13px] font-bold text-ink">{value}</span>
+        <span className={cn("block text-[13px]", placeholder ? "font-medium text-ink-4" : "font-bold text-ink")}>{value}</span>
       </span>
       <ChevronDown
         className={cn("h-3.5 w-3.5 text-ink-3 transition-transform", open && "rotate-180")}

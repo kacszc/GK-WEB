@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { SearchBar } from "./SearchBar";
 import { AutocompleteDropdown } from "./AutocompleteDropdown";
-import { presetDate } from "./WhenFilter";
 import { searchService } from "@/services";
 import { recordSearch } from "@/lib/searchHistory";
 import type { SearchSuggestions, WhenValue, WhereValue, SearchMode, Specialization } from "@/lib/types";
@@ -30,10 +29,9 @@ export function HeroSearch({ mode, seedKeys = [] }: { mode: SearchMode; seedKeys
   const typing = query.trim().length > 0;
   const results = typing ? fetched : seedState;
   const isLoading = typing ? loading : false;
-  const [when, setWhen] = useState<WhenValue>(() => ({
-    preset: "today",
-    date: presetDate("today"),
-  }));
+  // Default: nothing selected (placeholder). The user opts into a date; an empty search just
+  // falls through to the "no filters" results flow (everyone / proponowane).
+  const [when, setWhen] = useState<WhenValue>({ preset: null, date: null });
   // Default: no city = "Proponowane" (no anchor, no range). Picking a city reveals the radius (25 km).
   const [where, setWhere] = useState<WhereValue>({ city: null, distanceKm: 25 });
 
