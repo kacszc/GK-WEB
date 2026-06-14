@@ -27,11 +27,11 @@ export async function Header() {
           <HeaderAuth />
         </nav>
 
-        {/* Mobile */}
+        {/* Mobile — language first (left of the bells), matching the account/search top bars. */}
         <div className="flex items-center gap-2 md:hidden">
+          <LanguageSwitcher />
           {/* Messages + notifications shortcuts (signed in) — same controls as the app top bars. */}
           <HeaderMobileAuth />
-          <LanguageSwitcher />
           <MobileNav />
         </div>
       </div>
