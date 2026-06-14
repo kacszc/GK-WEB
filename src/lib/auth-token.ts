@@ -13,6 +13,14 @@ import { firebaseAuth } from "@/lib/firebase";
  */
 export async function getCurrentIdToken(forceRefresh = false): Promise<string | null> {
   if (typeof window === "undefined") return null;
+  // Wait for Firebase to restore the persisted session before reading currentUser. On a fresh
+  // reload `currentUser` is null during the restore window, so without this an API call fired by a
+  // component gated on the (localStorage-mirrored) user would go out token-less and 401.
+  try {
+    await firebaseAuth.authStateReady();
+  } catch {
+    // Older SDK / unavailable — fall through to a best-effort read.
+  }
   const user = firebaseAuth.currentUser;
   if (!user) return null;
   try {

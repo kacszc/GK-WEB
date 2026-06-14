@@ -150,6 +150,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const getIdToken = useCallback(async (forceRefresh = false) => {
+    // Wait for the persisted session to restore so a caller (e.g. the STOMP socket) doesn't read a
+    // null currentUser during the load window and connect token-less.
+    try {
+      await firebaseAuth.authStateReady();
+    } catch {
+      // ignore — best-effort read below
+    }
     const fb = firebaseAuth.currentUser;
     if (!fb) return null;
     try {
