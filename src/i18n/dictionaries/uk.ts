@@ -507,6 +507,9 @@ const uk: Dictionary = {
   notifications: {
     title: "Сповіщення",
     markAll: "Позначити всі",
+    prev: "Попередня",
+    next: "Наступна",
+    pageOf: "Сторінка {n} з {total}",
     empty: "Немає сповіщень.",
     now: "щойно",
     minsAgo: "{n} хв тому",

@@ -506,6 +506,9 @@ const pl = {
   notifications: {
     title: "Powiadomienia",
     markAll: "Oznacz wszystkie",
+    prev: "Poprzednia",
+    next: "Następna",
+    pageOf: "Strona {n} z {total}",
     empty: "Brak powiadomień.",
     now: "teraz",
     minsAgo: "{n} min temu",

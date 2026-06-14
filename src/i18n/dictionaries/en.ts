@@ -507,6 +507,9 @@ const en: Dictionary = {
   notifications: {
     title: "Notifications",
     markAll: "Mark all read",
+    prev: "Previous",
+    next: "Next",
+    pageOf: "Page {n} of {total}",
     empty: "No notifications.",
     now: "now",
     minsAgo: "{n} min ago",

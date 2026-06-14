@@ -1,6 +1,15 @@
 import type { Notification } from "@/lib/types";
 import { apiGet, apiPost } from "@/lib/api-client";
 
+/** A backend page of notifications + totals (newest first). */
+export type NotificationPage = {
+  items: Notification[];
+  total: number;
+  unread: number;
+  page: number;
+  size: number;
+};
+
 export const notificationsService = {
   /** Unread badge count. Returns 0 on failure / signed out. */
   async unreadCount(): Promise<number> {
@@ -12,12 +21,23 @@ export const notificationsService = {
     }
   },
 
-  /** Inbox list. Returns [] on failure / signed out. */
+  /** Inbox list (full). Returns [] on failure / signed out. Used by the bell/toaster. */
   async list(): Promise<Notification[]> {
     try {
       return await apiGet<Notification[]>("/api/notifications");
     } catch {
       return [];
+    }
+  },
+
+  /** One backend page of the inbox (newest first) + totals. Empty page on failure / signed out. */
+  async listPage(page: number, size: number): Promise<NotificationPage> {
+    try {
+      return await apiGet<NotificationPage>(
+        `/api/notifications/page?page=${page}&size=${size}`,
+      );
+    } catch {
+      return { items: [], total: 0, unread: 0, page, size };
     }
   },
 
