@@ -234,6 +234,22 @@ export function FilterSidebar({
         />
       </Section>
 
+      {/* Reliability — separate behavioural score; opt-in (0 = any). */}
+      <Section title={t("results.fMinReliability")}>
+        <div className="flex items-center justify-between text-[13px] font-bold text-success">
+          <span>{(filters.minReliability ?? 0) > 0 ? filters.minReliability : t("results.fAny")}</span>
+          <span className="text-ink-4">{t("results.fTo100")}</span>
+        </div>
+        <input
+          type="range"
+          min={0}
+          max={100}
+          value={filters.minReliability ?? 0}
+          onChange={(e) => onPatch({ minReliability: Number(e.target.value) })}
+          className="mt-1 w-full cursor-pointer accent-brand-violet"
+        />
+      </Section>
+
       {/* Advanced — collapsed by default to keep the panel light */}
       <div>
         <button

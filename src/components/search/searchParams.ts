@@ -36,6 +36,8 @@ export function parseSearchFilters(sp: SearchParamsInput): { filters: Specialist
     industries: csv(first(sp.industries)),
     customIndustries: csv(first(sp.customIndustries)),
     minTrust: numOr(first(sp.minTrust), DEFAULT_TRUST),
+    // Reliability is an opt-in cut: 0 / absent means "any" (don't reduce results unexpectedly).
+    minReliability: numOrUndef(first(sp.minReliability)),
     // No distance cap by default → "Proponowane" (everyone). A limit applies only once the user sets it.
     maxDistanceKm: numOrUndef(first(sp.maxDistanceKm)),
     // Present (even empty) → user-controlled; absent → default. Lets the user clear it explicitly.
@@ -70,6 +72,7 @@ export function serializeSearchFilters(f: SpecialistFilters, view: ResultsView):
   if (f.customIndustries?.length) p.set("customIndustries", f.customIndustries.join(","));
   p.set("availability", (f.availability ?? []).join(",")); // always present to preserve "cleared"
   if (f.minTrust != null) p.set("minTrust", String(f.minTrust));
+  if (f.minReliability != null && f.minReliability > 0) p.set("minReliability", String(f.minReliability));
   if (f.maxDistanceKm != null) p.set("maxDistanceKm", String(f.maxDistanceKm));
   if (f.rateMin != null) p.set("rateMin", String(f.rateMin));
   if (f.rateMax != null) p.set("rateMax", String(f.rateMax));

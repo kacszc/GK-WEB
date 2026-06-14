@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useContact } from "@/lib/ContactProvider";
+import { contactTokenCost } from "@/lib/contactCost";
 import { cn } from "@/lib/cn";
 import type { Specialist } from "@/lib/types";
 
@@ -198,7 +199,7 @@ export function SpecialistCard({
           className="rounded-tile px-3 py-2 text-[12px]"
         >
           {t("results.contact")}
-          <span className="font-normal opacity-70">{t("results.tok", { n: 3 })}</span>
+          <span className="font-normal opacity-70">{t("results.tok", { n: contactTokenCost(s.trustScore) })}</span>
         </Button>
       </div>
     </>

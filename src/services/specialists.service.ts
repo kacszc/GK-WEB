@@ -8,6 +8,8 @@ type SpecialistDto = {
   headline: string;
   district: string;
   trustScore: number;
+  reliabilityScore?: number; // 0–100 behavioural score (distinct from trust)
+  noShowCount?: number; // public no-show counter
   rating: number | null;
   reviews: number | null;
   rateFrom: number;
@@ -20,7 +22,7 @@ type SpecialistDto = {
   memberSince?: number; // year, e.g. 2026 (0 when unknown)
   repeatClientsPct?: number; // % of completed jobs from repeat employers
   certifications?: string[]; // display labels (specialist-managed)
-  specializations?: { code: string; label: string }[]; // localized labels
+  specializations?: { code: string; label: string; confirmations?: number }[]; // localized + confirm counts
   languages?: string[]; // codes, e.g. ["pl","en"] — localized in the UI
 };
 
@@ -47,6 +49,8 @@ function toSpecialist(d: SpecialistDto, i: number): Specialist {
     avatarIndex: i,
     role: d.headline,
     trustScore: d.trustScore,
+    reliabilityScore: d.reliabilityScore,
+    noShowCount: d.noShowCount,
     availability: availabilityFromBackend(d.availability),
     kyc: d.trustScore >= 70,
     topRated: (d.rating ?? 0) >= 4.8,
@@ -92,6 +96,7 @@ export type SpecialistFilters = {
   industries?: string[]; // whole-industry codes (any-of) — selected as a unit, no small codes ticked
   customIndustries?: string[]; // "Inne" per industry — matches specialists with a custom role in that industry
   minTrust?: number;
+  minReliability?: number;
   maxDistanceKm?: number;
   availability?: Availability[];
   specialties?: string[];
@@ -123,6 +128,7 @@ export const specialistsService = {
     if (filters.industries?.length) params.set("industries", filters.industries.join(","));
     if (filters.customIndustries?.length) params.set("customIndustries", filters.customIndustries.join(","));
     if (filters.minTrust != null) params.set("minTrust", String(filters.minTrust));
+    if (filters.minReliability != null) params.set("minReliability", String(filters.minReliability));
     if (filters.availability?.length) {
       params.set("availability", filters.availability.map((a) => a.toUpperCase()).join(","));
     }
@@ -162,7 +168,7 @@ export const specialistsService = {
       ...toSpecialist(dto, 0),
       // Detail endpoint provides the real specialization labels + language codes (the search
       // card DTO doesn't), so override the empty defaults from toSpecialist.
-      specialties: (dto.specializations ?? []).map((s) => ({ label: s.label, count: 0 })),
+      specialties: (dto.specializations ?? []).map((s) => ({ label: s.label, count: s.confirmations ?? 0 })),
       languages: dto.languages ?? [],
     };
     return {
