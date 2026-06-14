@@ -35,7 +35,18 @@ export function NotificationToaster() {
       if (seen.current.has(n.id)) return;
       seen.current.add(n.id);
       if (!n.read) show({ title: n.title, body: n.body ?? undefined, href: n.link ?? undefined });
-      if (live) queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      if (live) {
+        // Update the bell badge straight from the socket payload. We do NOT invalidate/refetch the
+        // list here: the notification row may not be committed yet (the live frame is sent inside the
+        // creating transaction), so a refetch could miss it and reset the badge. Optimistic insert +
+        // the periodic poll keep it consistent.
+        queryClient.setQueryData<Notification[]>(["notifications", "list"], (prev = []) =>
+          prev.some((x) => x.id === n.id) ? prev : [n, ...prev],
+        );
+        // A live message notification → bump the header's messages unread badge (the message itself
+        // is already committed before this notification fires, so a refetch is safe).
+        if (n.type === "MESSAGE") queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      }
     },
     [show, queryClient],
   );
