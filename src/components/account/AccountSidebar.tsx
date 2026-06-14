@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutGrid, Settings, Briefcase, MessageSquare, Bookmark, Clock, Coins, ImageIcon, CalendarDays, BarChart3, Scale, BellRing, Bell, Send, Award } from "lucide-react";
@@ -32,13 +33,26 @@ export function AccountSidebar() {
   const pathname = usePathname();
   const visible = items.filter((it) => !it.role || it.role === user?.role);
 
+  const navRef = useRef<HTMLElement | null>(null);
+  const activeRef = useRef<HTMLAnchorElement | null>(null);
+
+  // On mobile the sidebar is a horizontal scroller; bring the active item into view so the
+  // selection is visible after navigating (e.g. to "Settings" at the far right).
+  useEffect(() => {
+    const nav = navRef.current;
+    if (nav && activeRef.current && nav.scrollWidth > nav.clientWidth) {
+      activeRef.current.scrollIntoView({ block: "nearest", inline: "center" });
+    }
+  }, [pathname]);
+
   return (
-    <nav className="flex gap-1 overflow-x-auto lg:flex-col lg:gap-0.5">
+    <nav ref={navRef} className="flex gap-1 overflow-x-auto lg:flex-col lg:gap-0.5">
       {visible.map(({ href, key, icon: Icon }) => {
         const active = href === "/account" ? pathname === "/account" : pathname.startsWith(href);
         return (
           <Link
             key={href}
+            ref={active ? activeRef : undefined}
             href={href}
             className={cn(
               "flex shrink-0 items-center gap-2.5 rounded-tile px-3 py-2.5 text-sm font-medium transition-colors",
