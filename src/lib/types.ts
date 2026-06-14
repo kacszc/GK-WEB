@@ -86,6 +86,18 @@ export type MyJob = {
   postedAgo: string;
 };
 
+/** One completed job in the user's history (either role), with whether they've reviewed it yet. */
+export type CompletedJobHistory = {
+  jobId: string;
+  title: string;
+  counterpartyId: string | null;
+  counterpartyName: string | null;
+  /** Who the current user would review: "worker" (they're the employer) or "employer" (they're the specialist). */
+  subjectKind: "worker" | "employer";
+  completedAt: string | null;
+  reviewed: boolean;
+};
+
 /** A conversation in the messages inbox. */
 export type Conversation = {
   id: string;

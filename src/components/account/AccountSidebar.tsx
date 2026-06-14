@@ -22,7 +22,7 @@ const items = [
   { href: "/account/reports", key: "reports.title", icon: BarChart3, role: "employer" as const },
   { href: "/account/disputes", key: "dispute.listTitle", icon: Scale },
   { href: "/account/tokens", key: "tokens.walletTitle", icon: Coins, role: "employer" as const },
-  { href: "/account/history", key: "account.navHistory", icon: Clock, role: "employer" as const },
+  { href: "/account/history", key: "account.navHistory", icon: Clock },
   { href: "/account/settings", key: "account.navSettings", icon: Settings },
 ];
 

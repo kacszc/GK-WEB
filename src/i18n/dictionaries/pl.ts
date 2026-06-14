@@ -697,6 +697,15 @@ const pl = {
     statusInProgress: "W trakcie",
     statusCompleted: "Zakończone",
   },
+  history: {
+    title: "Historia zleceń",
+    subtitle: "Twoje zakończone zlecenia.",
+    empty: "Brak zakończonych zleceń.",
+    rate: "Oceń",
+    rated: "Oceniono",
+    doneOn: "zakończono {date}",
+    counterpartyFallback: "Druga strona",
+  },
   reviews: {
     title: "Opinie",
     sortNewest: "Najnowsze",

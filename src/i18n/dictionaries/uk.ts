@@ -698,6 +698,15 @@ const uk: Dictionary = {
     statusInProgress: "В процесі",
     statusCompleted: "Завершено",
   },
+  history: {
+    title: "Історія замовлень",
+    subtitle: "Ваші завершені замовлення.",
+    empty: "Ще немає завершених замовлень.",
+    rate: "Оцінити",
+    rated: "Оцінено",
+    doneOn: "завершено {date}",
+    counterpartyFallback: "Інша сторона",
+  },
   reviews: {
     title: "Відгуки",
     sortNewest: "Найновіші",

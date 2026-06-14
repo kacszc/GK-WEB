@@ -698,6 +698,15 @@ const en: Dictionary = {
     statusInProgress: "In progress",
     statusCompleted: "Completed",
   },
+  history: {
+    title: "Job history",
+    subtitle: "Your completed jobs.",
+    empty: "No completed jobs yet.",
+    rate: "Rate",
+    rated: "Rated",
+    doneOn: "completed {date}",
+    counterpartyFallback: "Counterparty",
+  },
   reviews: {
     title: "Reviews",
     sortNewest: "Newest",

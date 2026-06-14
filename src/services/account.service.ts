@@ -1,4 +1,4 @@
-import type { MyJob, SavedContact, ActivityItem, ActivityType, Applicant } from "@/lib/types";
+import type { MyJob, SavedContact, ActivityItem, ActivityType, Applicant, CompletedJobHistory } from "@/lib/types";
 import { apiGet, apiPost, ApiError } from "@/lib/api-client";
 
 /** Resolve an owner-profile GET, treating "not created yet" (404) as null rather than an error. */
@@ -211,6 +211,14 @@ export const accountService = {
   async confirmCompletion(jobId: string): Promise<{ ok: true }> {
     await apiPost(`/api/jobs/${encodeURIComponent(jobId)}/complete`);
     return { ok: true };
+  },
+  /** Current user's completed-jobs history (both roles) with per-job review status. [] on failure. */
+  async getCompletedHistory(): Promise<CompletedJobHistory[]> {
+    try {
+      return await apiGet<CompletedJobHistory[]>("/api/me/history/completed");
+    } catch {
+      return [];
+    }
   },
   /**
    * Employer confirms a specialist's specialization (one click) — requires a completed job between

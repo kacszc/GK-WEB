@@ -1,10 +1,6 @@
-import { HistoryList } from "@/components/account/HistoryList";
-import { EmployerOnly } from "@/components/account/EmployerOnly";
+import { CompletedJobsHistory } from "@/components/account/CompletedJobsHistory";
 
+// Completed-jobs history is available to both roles (employer + specialist).
 export default function Page() {
-  return (
-    <EmployerOnly>
-      <HistoryList />
-    </EmployerOnly>
-  );
+  return <CompletedJobsHistory />;
 }
