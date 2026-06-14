@@ -15,6 +15,8 @@ import {
   Globe,
   Share2,
   Bookmark,
+  Gauge,
+  AlertTriangle,
   Image as ImageIcon,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -27,9 +29,11 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { useSpecialist } from "@/hooks/useSpecialist";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useContact } from "@/lib/ContactProvider";
-import { reviewsService, portfolioService } from "@/services";
+import { contactTokenCost } from "@/lib/contactCost";
+import { portfolioService } from "@/services";
+import { ReviewsSection } from "@/components/reviews/ReviewsSection";
 import { cn } from "@/lib/cn";
-import type { SpecialistProfile, Review, PortfolioItem } from "@/lib/types";
+import type { SpecialistProfile, PortfolioItem } from "@/lib/types";
 
 const LANG_KEY: Record<string, string> = {
   pl: "results.langPl",
@@ -70,12 +74,6 @@ export function SpecialistProfileScreen({ id }: { id: string }) {
 
 function Profile({ s, t }: { s: SpecialistProfile; t: (k: string, p?: Record<string, string | number>) => string }) {
   const { open } = useContact();
-  // Reviews come from the backend; `s.reviewList` is an empty fallback (no mock data).
-  const { data: backendReviews = [] } = useQuery({
-    queryKey: ["reviews", s.id],
-    queryFn: () => reviewsService.listForSubject(s.id),
-  });
-  const reviews: Review[] = backendReviews.length > 0 ? backendReviews : s.reviewList;
   // Public portfolio (empty when none / backend down → section hidden).
   const { data: portfolio = [] } = useQuery({
     queryKey: ["portfolio", "public", s.id],
@@ -109,6 +107,12 @@ function Profile({ s, t }: { s: SpecialistProfile; t: (k: string, p?: Record<str
                 {t("results.topRated")}
               </Tag>
             )}
+            {(s.noShowCount ?? 0) > 0 && (
+              <Tag className="bg-[#fdecec] text-[#c0322b]">
+                <AlertTriangle className="h-3 w-3" />
+                {t("profile.noShows", { count: s.noShowCount ?? 0 })}
+              </Tag>
+            )}
           </div>
 
           <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-ink-2">
@@ -138,7 +142,7 @@ function Profile({ s, t }: { s: SpecialistProfile; t: (k: string, p?: Record<str
             className="rounded-tile px-4 py-2.5 text-[13px]"
           >
             {t("results.contact")}
-            <span className="font-normal opacity-70">{t("results.tok", { n: 3 })}</span>
+            <span className="font-normal opacity-70">{t("results.tok", { n: contactTokenCost(s.trustScore) })}</span>
           </Button>
           <button className="grid h-10 w-10 place-items-center rounded-tile border border-line-2 text-ink-2 hover:bg-muted">
             <Bookmark className="h-4 w-4" />
@@ -175,6 +179,9 @@ function Profile({ s, t }: { s: SpecialistProfile; t: (k: string, p?: Record<str
           <Section title={t("profile.stats")}>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <Stat icon={<Briefcase className="h-4 w-4" />} value={String(s.completedJobs)} label={t("profile.completedJobs")} />
+              {(s.reliabilityScore ?? 0) > 0 && (
+                <Stat icon={<Gauge className="h-4 w-4" />} value={`${s.reliabilityScore}%`} label={t("profile.reliability")} />
+              )}
               {/* Hidden until the backend computes these (no fabricated zeros). */}
               {s.responseTimeMin > 0 && (
                 <Stat icon={<Clock className="h-4 w-4" />} value={t("profile.responseValue", { min: s.responseTimeMin })} label={t("profile.responseTime")} />
@@ -221,25 +228,7 @@ function Profile({ s, t }: { s: SpecialistProfile; t: (k: string, p?: Record<str
             </Section>
           )}
 
-          {reviews.length > 0 && (
-          <Section title={`${t("profile.reviews")} · ${t("profile.reviewsCount", { count: s.reviews })}`}>
-            <div className="flex flex-col gap-3">
-              {reviews.map((r, i) => (
-                <div key={i} className="rounded-tile border border-line-3 p-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-ink">{r.author}</span>
-                    <span className="inline-flex items-center gap-1 text-[12px] text-ink-2">
-                      <Star className="h-3.5 w-3.5 fill-current text-[#e0a400]" />
-                      {r.rating.toFixed(1)}
-                    </span>
-                  </div>
-                  <p className="mt-1.5 text-[13px] leading-relaxed text-ink-2">{r.text}</p>
-                  <p className="mt-2 text-[11px] text-ink-4">{r.date}</p>
-                </div>
-              ))}
-            </div>
-          </Section>
-          )}
+          <ReviewsSection subjectId={s.id} subjectKind="worker" />
         </div>
 
         {/* Contact sidebar */}
@@ -252,7 +241,7 @@ function Profile({ s, t }: { s: SpecialistProfile; t: (k: string, p?: Record<str
               className="mt-3 w-full rounded-tile py-3 text-sm"
             >
               {t("results.contact")}
-              <span className="font-normal opacity-80">{t("results.tok", { n: 3 })}</span>
+              <span className="font-normal opacity-80">{t("results.tok", { n: contactTokenCost(s.trustScore) })}</span>
             </Button>
             {s.responseTimeMin > 0 && (
               <p className="mt-2 text-center text-[12px] text-ink-3">

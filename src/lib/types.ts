@@ -75,6 +75,8 @@ export type MyJob = {
   id: string;
   title: string;
   profession: string;
+  /** Catalog specialization code (empty for "Other"/custom roles) — used to confirm the hired skill. */
+  professionCode?: string;
   district: string;
   status: MyJobStatus;
   applicants: number;
@@ -93,6 +95,9 @@ export type Conversation = {
   lastMessage: string;
   time: string;
   unread: number;
+  /** Optional job this conversation is about (shown as a small tile). */
+  jobId?: string;
+  jobTitle?: string;
 };
 
 /** A single chat message in a conversation thread. */
@@ -165,6 +170,8 @@ export type Specialist = {
   avatarIndex: number;
   role: string; // e.g. "Barmanka, kelner"
   trustScore: number; // 0–100
+  reliabilityScore?: number; // 0–100 behavioural track record (distinct from Trust Score)
+  noShowCount?: number; // public counter: no-shows without notice
   availability: Availability;
   availableFrom?: string; // for availability === "date"
   kyc: boolean;
@@ -283,10 +290,21 @@ export type UserLocation = {
 
 /** A single review on a specialist profile. */
 export type Review = {
+  id?: string;
   author: string;
   rating: number;
   date: string;
   text: string;
+  /** Per-category scores (1–5), only those that apply to the review's direction. */
+  punctuality?: number | null;
+  quality?: number | null;
+  communication?: number | null;
+  payment?: number | null;
+  conditions?: number | null;
+  /** Incident flag codes, e.g. "NO_SHOW", "LATE_PAYMENT". */
+  flags?: string[];
+  /** Single public reply from the reviewed party. */
+  reply?: string | null;
 };
 
 /** A notification in the bell inbox (backend DTO). */

@@ -3,11 +3,10 @@
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { BadgeCheck, MapPin, Globe, Mail, Star, ShieldCheck, ArrowRight } from "lucide-react";
-import { Avatar } from "@/components/ui/Avatar";
+import { ReviewsSection } from "@/components/reviews/ReviewsSection";
 import { employersService } from "@/services";
 import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
-import type { EmployerProfile } from "@/lib/types";
 
 export function EmployerProfileScreen({ id }: { id: string }) {
   const { t } = useI18n();
@@ -121,12 +120,10 @@ export function EmployerProfileScreen({ id }: { id: string }) {
                 </div>
               </div>
             )}
-            <div className="mt-5 flex flex-col gap-4">
-              {e.reviews.map((rv) => (
-                <ReviewCard key={rv.id} r={rv} trustLabel={t("employer.trust")} />
-              ))}
-            </div>
           </Section>
+
+          {/* Two-sided reviews (worker → employer): summary + sort + per-review categories/flags. */}
+          <ReviewsSection subjectId={id} subjectKind="employer" />
         </div>
 
         {/* Right rail */}
@@ -181,25 +178,3 @@ function Stat({ value, label, sub }: { value: string; label: string; sub: string
   );
 }
 
-function ReviewCard({ r, trustLabel }: { r: EmployerProfile["reviews"][number]; trustLabel: string }) {
-  return (
-    <div className="rounded-tile border border-line-3 p-4">
-      <div className="flex items-start gap-3">
-        <Avatar name={r.author} index={r.avatarIndex} size={36} />
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-[13px] font-semibold text-ink">{r.author} · {trustLabel} {r.trustScore}</span>
-            <span className="inline-flex items-center gap-1 text-[12px] text-ink-4">
-              <span className="inline-flex items-center gap-0.5 text-[#e0a400]">
-                {Array.from({ length: r.rating }).map((_, i) => <Star key={i} className="h-3 w-3 fill-current" />)}
-              </span>
-              {r.time}
-            </span>
-          </div>
-          <p className="text-[12px] text-ink-3">{r.role}</p>
-          <p className="mt-2 text-[13px] leading-relaxed text-ink-2">{r.text}</p>
-        </div>
-      </div>
-    </div>
-  );
-}

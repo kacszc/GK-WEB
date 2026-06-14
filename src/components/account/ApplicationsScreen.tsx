@@ -3,10 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Send, MapPin, Coins, BadgeCheck, XCircle, Loader2, MessageSquare } from "lucide-react";
+import { Send, MapPin, Coins, BadgeCheck, XCircle, Loader2, MessageSquare, Star } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
 import { MessageComposerDialog, type MessageTarget } from "@/components/messages/MessageComposerDialog";
+import { ReviewDialog } from "@/components/reviews/ReviewDialog";
 import {
   applicationsService,
   WITHDRAW_REASONS,
@@ -28,6 +29,7 @@ export function ApplicationsScreen() {
   });
 
   const [withdrawing, setWithdrawing] = useState<MyApplication | null>(null);
+  const [reviewing, setReviewing] = useState<MyApplication | null>(null);
   const [msgTo, setMsgTo] = useState<MessageTarget | null>(null);
 
   function formatDate(iso: string | null): string {
@@ -93,7 +95,7 @@ export function ApplicationsScreen() {
                 <StatusBadge status={a.status} t={t} />
                 {a.employerId && (
                   <button
-                    onClick={() => setMsgTo({ id: a.employerId, name: a.employer || t("applications.employerFallback") })}
+                    onClick={() => setMsgTo({ id: a.employerId, name: a.employer || t("applications.employerFallback"), jobId: a.jobId, jobTitle: a.title })}
                     className="inline-flex items-center gap-1 text-[12px] font-medium text-ink-3 hover:text-ink"
                   >
                     <MessageSquare className="h-3.5 w-3.5" />
@@ -109,6 +111,16 @@ export function ApplicationsScreen() {
                     {t("applications.withdraw")}
                   </button>
                 )}
+                {/* Rate the employer once the job is done (worker → employer review). */}
+                {a.status === "SELECTED" && a.jobStatus === "COMPLETED" && a.employerId && (
+                  <button
+                    onClick={() => setReviewing(a)}
+                    className="inline-flex items-center gap-1 text-[12px] font-medium text-ink-3 hover:text-ink"
+                  >
+                    <Star className="h-3.5 w-3.5" />
+                    {t("applications.rateEmployer")}
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -116,6 +128,16 @@ export function ApplicationsScreen() {
       )}
 
       <WithdrawDialog application={withdrawing} onClose={() => setWithdrawing(null)} />
+      {reviewing && (
+        <ReviewDialog
+          open={!!reviewing}
+          jobId={reviewing.jobId}
+          subjectId={reviewing.employerId}
+          subjectKind="employer"
+          onClose={() => setReviewing(null)}
+          onDone={() => setReviewing(null)}
+        />
+      )}
       <MessageComposerDialog target={msgTo} onClose={() => setMsgTo(null)} />
     </div>
   );

@@ -47,6 +47,7 @@ function appliedAgo(iso: string): string {
 type MyJobDto = {
   id: string;
   title: string;
+  professionCode?: string;
   profession: string;
   district: string;
   status: "active" | "filled" | "completed" | "expired";
@@ -119,6 +120,7 @@ function toMyJob(d: MyJobDto): MyJob {
     id: d.id,
     title: d.title,
     profession: d.profession,
+    professionCode: d.professionCode || undefined,
     district: d.district,
     status: d.status,
     applicants: d.applicants,
@@ -209,6 +211,20 @@ export const accountService = {
   async confirmCompletion(jobId: string): Promise<{ ok: true }> {
     await apiPost(`/api/jobs/${encodeURIComponent(jobId)}/complete`);
     return { ok: true };
+  },
+  /**
+   * Employer confirms a specialist's specialization (one click) — requires a completed job between
+   * them. Returns the new confirmation count for that code.
+   */
+  async confirmSpecialization(
+    specialistId: string,
+    code: string,
+    jobId: string,
+  ): Promise<{ code: string; confirmations: number }> {
+    return apiPost<{ code: string; confirmations: number }>(
+      `/api/specialists/${encodeURIComponent(specialistId)}/confirm-specialization`,
+      { code, jobId },
+    );
   },
   /** The current specialist's own profile (localized specialization labels); null if not created yet. */
   async getMySpecialistProfile(locale?: string): Promise<MySpecialistProfile | null> {
