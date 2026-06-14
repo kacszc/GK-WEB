@@ -52,7 +52,7 @@ export function CompletedJobsHistory() {
           {items.map((it, i) => (
             <div
               key={it.jobId}
-              className={`flex items-center gap-3 px-4 py-3.5 ${i > 0 ? "border-t border-line" : ""}`}
+              className={`flex min-w-0 items-center gap-3 px-3 py-3.5 sm:px-4 ${i > 0 ? "border-t border-line" : ""}`}
             >
               <Avatar name={it.counterpartyName ?? "?"} index={i} size={40} />
               <div className="min-w-0 flex-1">

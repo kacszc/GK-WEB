@@ -3,6 +3,7 @@ import { LanguageSwitcher } from "./LanguageSwitcher";
 import { MobileNav } from "./MobileNav";
 import { HeaderAuth } from "./HeaderAuth";
 import { HeaderCta } from "./HeaderCta";
+import { HeaderMobileAuth } from "./HeaderMobileAuth";
 import { getI18n } from "@/i18n/server";
 
 export async function Header() {
@@ -28,6 +29,8 @@ export async function Header() {
 
         {/* Mobile */}
         <div className="flex items-center gap-2 md:hidden">
+          {/* Messages + notifications shortcuts (signed in) — same controls as the app top bars. */}
+          <HeaderMobileAuth />
           <LanguageSwitcher />
           <MobileNav />
         </div>
