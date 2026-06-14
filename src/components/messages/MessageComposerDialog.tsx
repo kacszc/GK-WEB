@@ -11,7 +11,7 @@ import { useI18n } from "@/i18n/I18nProvider";
 import { useToast } from "@/lib/ToastProvider";
 import { requestErrorToast } from "@/lib/errorToast";
 
-export type MessageTarget = { id: string; name: string };
+export type MessageTarget = { id: string; name: string; jobId?: string; jobTitle?: string };
 
 /**
  * Compose the first message to a job-flow counterparty (applicant ↔ employer), then drop the
@@ -41,7 +41,7 @@ export function MessageComposerDialog({
     if (!target || !text.trim()) return;
     setSending(true);
     try {
-      const { threadId } = await messagesService.send(target.id, text.trim());
+      const { threadId } = await messagesService.send(target.id, text.trim(), target.jobId);
       onClose();
       router.push(`/account/messages/${threadId}`);
     } catch (e) {
@@ -57,7 +57,12 @@ export function MessageComposerDialog({
         <>
           <div className="flex items-center gap-3 rounded-tile bg-subtle p-3">
             <Avatar name={target.name} index={0} size={40} />
-            <p className="truncate text-sm font-semibold text-ink">{target.name}</p>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-ink">{target.name}</p>
+              {target.jobTitle && (
+                <p className="truncate text-[12px] text-ink-3">{t("messageCompose.aboutJob", { job: target.jobTitle })}</p>
+              )}
+            </div>
           </div>
           <textarea
             value={text}

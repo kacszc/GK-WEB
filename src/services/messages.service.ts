@@ -11,6 +11,8 @@ type ThreadDto = {
   lastMessageText: string | null;
   lastMessageAt: string | null;
   unread: number;
+  jobId: string | null;
+  jobTitle: string | null;
 };
 
 /** A single message inside a thread. */
@@ -28,6 +30,8 @@ type ThreadDetailDto = {
   threadId: string;
   counterpartyId: string;
   counterpartyName: string | null;
+  jobId: string | null;
+  jobTitle: string | null;
   messages: MessageView[];
 };
 
@@ -73,6 +77,8 @@ function toConversation(d: ThreadDto): Conversation {
     lastMessage: d.lastMessageText ?? "",
     time: timeAgo(d.lastMessageAt),
     unread: d.unread ?? 0,
+    jobId: d.jobId ?? undefined,
+    jobTitle: d.jobTitle ?? undefined,
   };
 }
 
@@ -85,8 +91,8 @@ export const messagesService = {
    * Start (or continue) a conversation with a user by id. Creates the thread on first contact.
    * Returns the thread id so the caller can navigate to the live conversation.
    */
-  async send(recipientId: string, text: string): Promise<{ ok: true; threadId: string }> {
-    const view = await apiPost<MessageView>("/api/messages", { recipientId, text });
+  async send(recipientId: string, text: string, jobId?: string): Promise<{ ok: true; threadId: string }> {
+    const view = await apiPost<MessageView>("/api/messages", { recipientId, text, jobId });
     return { ok: true, threadId: view.threadId };
   },
 
@@ -110,6 +116,8 @@ export const messagesService = {
         lastMessage: "",
         time: "",
         unread: 0,
+        jobId: dto.jobId ?? undefined,
+        jobTitle: dto.jobTitle ?? undefined,
       },
       messages: dto.messages.map(toChatMessage),
     };

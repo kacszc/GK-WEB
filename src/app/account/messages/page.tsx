@@ -1,4 +1,4 @@
-import { MessagesList } from "@/components/account/MessagesList";
+import { MessagesScreen } from "@/components/account/MessagesScreen";
 export default function Page() {
-  return <MessagesList />;
+  return <MessagesScreen />;
 }
