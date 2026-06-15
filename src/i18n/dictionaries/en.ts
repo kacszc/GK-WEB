@@ -787,6 +787,7 @@ const en: Dictionary = {
     wCompanyNamePlaceholder: "e.g. Skill Ltd.",
     wEmail: "E-mail",
     wEmailPlaceholder: "e.g. anna.k@email.com",
+    emailFromAccount: "Your account e-mail (from registration).",
     wPhone: "Phone (optional)",
     wPhonePlaceholder: "+48 600 ***",
     // worker · step 1.5 verification

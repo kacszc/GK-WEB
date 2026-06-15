@@ -786,6 +786,7 @@ const pl = {
     wCompanyNamePlaceholder: "np. Skill Sp. z o.o.",
     wEmail: "E-mail",
     wEmailPlaceholder: "np. anna.k@email.com",
+    emailFromAccount: "Adres e-mail z Twojego konta (z rejestracji).",
     wPhone: "Telefon (opcjonalnie)",
     wPhonePlaceholder: "+48 600 ***",
     // worker · step 1.5 verification

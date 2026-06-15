@@ -102,7 +102,15 @@ export function EmployerOnboarding({ initialEmail = "" }: { initialEmail?: strin
                 <input value={nip} onChange={(e) => setNip(e.target.value)} placeholder={t("onboarding.eNipPlaceholder")} className={fieldInput} />
               </Field>
               <Field label={t("onboarding.eEmail")}>
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t("onboarding.eEmailPlaceholder")} className={fieldInput} />
+                {/* Account email (from registration) — fixed, not editable. */}
+                <input
+                  type="email"
+                  value={email}
+                  readOnly
+                  aria-readonly
+                  className="w-full cursor-not-allowed rounded-tile border border-line-2 bg-muted px-3.5 py-2.5 text-sm text-ink-2 outline-none"
+                />
+                <p className="mt-1 text-[12px] text-ink-4">{t("onboarding.emailFromAccount")}</p>
               </Field>
             </div>
             <Button variant="dark" onClick={verifyGus} disabled={!nipOk(nip) || !emailOk(email) || busy} className="mt-5 w-full rounded-tile py-3 text-sm disabled:opacity-40">

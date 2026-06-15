@@ -160,7 +160,15 @@ export function WorkerOnboarding({
                 </Field>
               )}
               <Field label={t("onboarding.wEmail")}>
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t("onboarding.wEmailPlaceholder")} className={fieldInput} />
+                {/* Account email (from registration) — fixed, not editable. */}
+                <input
+                  type="email"
+                  value={email}
+                  readOnly
+                  aria-readonly
+                  className="w-full cursor-not-allowed rounded-tile border border-line-2 bg-muted px-3.5 py-2.5 text-sm text-ink-2 outline-none"
+                />
+                <p className="mt-1 text-[12px] text-ink-4">{t("onboarding.emailFromAccount")}</p>
               </Field>
               <Field label={t("onboarding.wPhone")}>
                 <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={t("onboarding.wPhonePlaceholder")} className={fieldInput} />
