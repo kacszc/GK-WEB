@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Rocket, Loader2, Check } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Rocket, Loader2, Check, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
 import { accountService } from "@/services";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useToast } from "@/lib/ToastProvider";
+import { isPromoted, formatPromotedUntil } from "@/lib/promotion";
 import { cn } from "@/lib/cn";
 
 const DAY_OPTIONS = [7, 14, 30];
@@ -17,11 +18,18 @@ const DAY_OPTIONS = [7, 14, 30];
  * not wired yet — confirming just grants the boost (the profile sorts first in search).
  */
 export function PromoteProfile() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { show } = useToast();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [days, setDays] = useState(7);
+
+  // Shares the cache with SpecialistOfferStatus (same key) — no extra fetch.
+  const { data: profile } = useQuery({
+    queryKey: ["mySpecialistProfile"],
+    queryFn: () => accountService.getMySpecialistProfile(),
+  });
+  const promoted = isPromoted(profile?.promotedUntil);
 
   const boost = useMutation({
     mutationFn: () => accountService.boostMyProfile(days),
@@ -31,6 +39,23 @@ export function PromoteProfile() {
       setOpen(false);
     },
   });
+
+  // Already promoted → show the active-until state instead of the (blocked) promote action.
+  if (promoted) {
+    return (
+      <div className="flex items-center gap-3 rounded-panel border border-brand-violet/30 bg-[#f6f3ff] p-5 text-ink">
+        <span className="grid h-10 w-10 place-items-center rounded-tile bg-white text-brand-violet">
+          <Sparkles className="h-5 w-5" />
+        </span>
+        <span>
+          <span className="block text-[15px] font-semibold">{t("account.promoteActive")}</span>
+          <span className="block text-[12px] text-ink-3">
+            {t("account.promotedUntil", { date: formatPromotedUntil(profile!.promotedUntil!, locale) })}
+          </span>
+        </span>
+      </div>
+    );
+  }
 
   return (
     <>

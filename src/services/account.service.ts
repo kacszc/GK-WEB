@@ -56,6 +56,7 @@ type MyJobDto = {
   rateDisclosed?: boolean;
   currency?: string;
   rateType?: JobRateType;
+  promotedUntil?: string | null;
   createdAt: string;
 };
 
@@ -83,6 +84,8 @@ export type MySpecialistProfile = {
   published: boolean;
   /** Whether the profile has enough data to be published. */
   complete: boolean;
+  /** Paid-promotion end (ISO) — null/past = not promoted. */
+  promotedUntil?: string | null;
 };
 
 /** The signed-in employer's own company profile, including registry fields (NIP/REGON/address). */
@@ -129,6 +132,7 @@ function toMyJob(d: MyJobDto): MyJob {
     rateDisclosed: d.rateDisclosed ?? true,
     currency: d.currency ?? "PLN",
     rateType: d.rateType ?? "hourly",
+    promotedUntil: d.promotedUntil ?? null,
     postedAgo: appliedAgo(d.createdAt),
   };
 }

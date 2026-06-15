@@ -3,8 +3,10 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, MapPin, Star, Check, Loader2, CheckCircle2, MessageSquare, Pencil, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, MapPin, Star, Check, Loader2, CheckCircle2, MessageSquare, Pencil, Eye, EyeOff, Rocket, Sparkles } from "lucide-react";
 import { accountService, jobsService } from "@/services";
+import { isPromoted, formatPromotedUntil } from "@/lib/promotion";
+import { BoostJobDialog } from "@/components/account/BoostJobDialog";
 import { MessageComposerDialog, type MessageTarget } from "@/components/messages/MessageComposerDialog";
 import { jobRateLabel } from "@/lib/jobRate";
 import { Avatar } from "@/components/ui/Avatar";
@@ -22,7 +24,7 @@ import type { Applicant, Dispute } from "@/lib/types";
 type Phase = "applicants" | "inProgress" | "completed";
 
 export function JobDetailScreen({ id }: { id: string }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { show } = useToast();
   const queryClient = useQueryClient();
   const { data: job } = useQuery({ queryKey: ["job", id], queryFn: () => accountService.getJob(id) });
@@ -48,6 +50,7 @@ export function JobDetailScreen({ id }: { id: string }) {
   const [msgTo, setMsgTo] = useState<MessageTarget | null>(null);
   const [lifecycleBusy, setLifecycleBusy] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [boostOpen, setBoostOpen] = useState(false);
 
   // Publish a draft / re-show an unpublished job, or hide an active one — owner lifecycle controls.
   async function setPublished(publish: boolean) {
@@ -189,6 +192,22 @@ export function JobDetailScreen({ id }: { id: string }) {
               {t("jobDetail.unpublish")}
             </button>
           )}
+          {/* Promote: only an active job can be boosted; while promoted, show the end date instead. */}
+          {job?.status === "active" &&
+            (isPromoted(job.promotedUntil) ? (
+              <span className="inline-flex items-center gap-1.5 rounded-tile bg-[#f3effe] px-3.5 py-2 text-[13px] font-medium text-brand-violet">
+                <Sparkles className="h-3.5 w-3.5" />
+                {t("account.promotedUntil", { date: formatPromotedUntil(job.promotedUntil!, locale) })}
+              </span>
+            ) : (
+              <button
+                onClick={() => setBoostOpen(true)}
+                className="inline-flex items-center gap-1.5 rounded-tile border border-line-2 bg-surface px-3.5 py-2 text-[13px] font-medium text-brand-violet transition-colors hover:bg-muted"
+              >
+                <Rocket className="h-3.5 w-3.5" />
+                {t("jobDetail.promote")}
+              </button>
+            ))}
         </div>
       )}
 
@@ -397,6 +416,12 @@ export function JobDetailScreen({ id }: { id: string }) {
         open={editOpen}
         onClose={() => setEditOpen(false)}
       />
+
+      <BoostJobDialog
+        job={boostOpen && job ? { id, title: job.title } : null}
+        onClose={() => setBoostOpen(false)}
+      />
+
 
     </div>
   );

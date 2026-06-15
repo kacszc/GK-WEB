@@ -84,6 +84,8 @@ export type MyJob = {
   rateDisclosed: boolean;
   currency: string;
   rateType: JobRateType;
+  /** Paid-promotion end (ISO) — null/past = not promoted. While in the future the job ranks first. */
+  promotedUntil?: string | null;
   postedAgo: string;
 };
 
