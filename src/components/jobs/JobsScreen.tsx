@@ -366,7 +366,7 @@ function ApplyDialog({ job, onClose }: { job: JobPosting | null; onClose: () => 
           <div className="rounded-tile bg-subtle p-3">
             <p className="text-sm font-semibold text-ink">{job.title}</p>
             <p className="text-[12px] text-ink-3">
-              {job.employer} · {job.district} · {t("results.perHour", { rate: job.rate })}
+              {job.employer} · {job.district} · {jobRateLabel(job, t)}
             </p>
           </div>
           {!user ? (

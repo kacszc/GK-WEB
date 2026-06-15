@@ -3,8 +3,8 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, MapPin, Star, Check, Loader2, CheckCircle2, MessageSquare } from "lucide-react";
-import { accountService } from "@/services";
+import { ArrowLeft, MapPin, Star, Check, Loader2, CheckCircle2, MessageSquare, Pencil, Eye, EyeOff } from "lucide-react";
+import { accountService, jobsService } from "@/services";
 import { MessageComposerDialog, type MessageTarget } from "@/components/messages/MessageComposerDialog";
 import { jobRateLabel } from "@/lib/jobRate";
 import { Avatar } from "@/components/ui/Avatar";
@@ -45,6 +45,24 @@ export function JobDetailScreen({ id }: { id: string }) {
   const [disputeOpen, setDisputeOpen] = useState(false);
   const [dispute, setDispute] = useState<Dispute | null>(null);
   const [msgTo, setMsgTo] = useState<MessageTarget | null>(null);
+  const [lifecycleBusy, setLifecycleBusy] = useState(false);
+
+  // Publish a draft / re-show an unpublished job, or hide an active one — owner lifecycle controls.
+  async function setPublished(publish: boolean) {
+    setLifecycleBusy(true);
+    try {
+      await (publish ? jobsService.publish(id) : jobsService.unpublish(id));
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["job", id] }),
+        queryClient.invalidateQueries({ queryKey: ["myJobs"] }),
+      ]);
+      show({ title: t(publish ? "jobDetail.publishedToast" : "jobDetail.unpublishedToast") });
+    } catch (e) {
+      show(requestErrorToast(e, t));
+    } finally {
+      setLifecycleBusy(false);
+    }
+  }
 
   async function select(a: Applicant) {
     if (!a.applicationId) return;
@@ -91,11 +109,22 @@ export function JobDetailScreen({ id }: { id: string }) {
   }
 
   const statusBadge =
-    phase === "inProgress"
-      ? { text: t("jobDetail.statusInProgress"), cls: "bg-[#fdf0cf] text-[#8a6400]" }
-      : phase === "completed"
-        ? { text: t("jobDetail.statusCompleted"), cls: "bg-success-chip text-success-chip-text" }
-        : null;
+    job?.status === "draft"
+      ? { text: t("jobDetail.statusDraft"), cls: "bg-pill text-ink-2" }
+      : job?.status === "unpublished"
+        ? { text: t("jobDetail.statusUnpublished"), cls: "bg-pill text-ink-3" }
+        : phase === "inProgress"
+          ? { text: t("jobDetail.statusInProgress"), cls: "bg-[#fdf0cf] text-[#8a6400]" }
+          : phase === "completed"
+            ? { text: t("jobDetail.statusCompleted"), cls: "bg-success-chip text-success-chip-text" }
+            : job?.status === "active"
+              ? { text: t("jobDetail.statusActive"), cls: "bg-success-chip text-success-chip-text" }
+              : null;
+
+  // Owner lifecycle controls: edit unless completed; publish a draft/hidden job, or hide an active one.
+  const canEdit = job != null && job.status !== "completed";
+  const canPublish = job?.status === "draft" || job?.status === "unpublished";
+  const canUnpublish = job?.status === "active";
 
   return (
     <div className="flex flex-col gap-5">
@@ -118,12 +147,58 @@ export function JobDetailScreen({ id }: { id: string }) {
       {job && (
         <p className="-mt-3 text-[13px] text-ink-3">
           {job.profession} · {job.district} ·{" "}
-          {jobRateLabel({ rate: job.rate, rateDisclosed: job.rateDisclosed, currency: job.currency }, t)}
+          {jobRateLabel(
+            { rate: job.rate, rateDisclosed: job.rateDisclosed, currency: job.currency, rateType: job.rateType },
+            t,
+          )}
         </p>
       )}
 
-      {/* Phase: applicants */}
-      {phase === "applicants" && (
+      {/* Owner lifecycle controls — edit / publish / unpublish. */}
+      {(canEdit || canPublish || canUnpublish) && (
+        <div className="flex flex-wrap gap-2">
+          {canEdit && (
+            <Link
+              href={`/account/jobs/${id}/edit`}
+              className="inline-flex items-center gap-1.5 rounded-tile border border-line-2 bg-surface px-3.5 py-2 text-[13px] font-medium text-ink transition-colors hover:bg-muted"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+              {t("jobDetail.edit")}
+            </Link>
+          )}
+          {canPublish && (
+            <Button
+              variant="dark"
+              onClick={() => setPublished(true)}
+              disabled={lifecycleBusy}
+              className="rounded-tile px-3.5 py-2 text-[13px]"
+            >
+              {lifecycleBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Eye className="h-3.5 w-3.5" />}
+              {t("jobDetail.publish")}
+            </Button>
+          )}
+          {canUnpublish && (
+            <button
+              onClick={() => setPublished(false)}
+              disabled={lifecycleBusy}
+              className="inline-flex items-center gap-1.5 rounded-tile border border-line-2 bg-surface px-3.5 py-2 text-[13px] font-medium text-ink transition-colors hover:bg-muted disabled:opacity-60"
+            >
+              {lifecycleBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <EyeOff className="h-3.5 w-3.5" />}
+              {t("jobDetail.unpublish")}
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Draft/hidden jobs have no public applicants yet — explain the state. */}
+      {(job?.status === "draft" || job?.status === "unpublished") && (
+        <p className="rounded-panel border border-dashed border-line-2 bg-muted/40 px-4 py-3 text-[13px] text-ink-2">
+          {t(job.status === "draft" ? "jobDetail.draftHint" : "jobDetail.unpublishedHint")}
+        </p>
+      )}
+
+      {/* Phase: applicants (hidden for not-yet-public draft/unpublished jobs) */}
+      {phase === "applicants" && job?.status !== "draft" && job?.status !== "unpublished" && (
         <section>
           <h2 className="mb-3 text-[15px] font-semibold text-ink">
             {t("jobDetail.applicants", { n: applicants.length })}

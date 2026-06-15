@@ -1,4 +1,4 @@
-import type { MyJob, SavedContact, ActivityItem, ActivityType, Applicant, CompletedJobHistory } from "@/lib/types";
+import type { MyJob, SavedContact, ActivityItem, ActivityType, Applicant, CompletedJobHistory, JobRateType } from "@/lib/types";
 import { apiGet, apiPost, ApiError } from "@/lib/api-client";
 
 /** Resolve an owner-profile GET, treating "not created yet" (404) as null rather than an error. */
@@ -50,11 +50,12 @@ type MyJobDto = {
   professionCode?: string;
   profession: string;
   district: string;
-  status: "active" | "filled" | "completed" | "expired";
+  status: "draft" | "active" | "unpublished" | "filled" | "completed" | "expired";
   applicants: number;
   rate: number;
   rateDisclosed?: boolean;
   currency?: string;
+  rateType?: JobRateType;
   createdAt: string;
 };
 
@@ -127,6 +128,7 @@ function toMyJob(d: MyJobDto): MyJob {
     rate: d.rate,
     rateDisclosed: d.rateDisclosed ?? true,
     currency: d.currency ?? "PLN",
+    rateType: d.rateType ?? "hourly",
     postedAgo: appliedAgo(d.createdAt),
   };
 }

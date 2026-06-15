@@ -1,5 +1,13 @@
-import type { JobDraft, JobResult, JobPosting, JobDuration, JobEngagement } from "@/lib/types";
-import { apiGet, apiPost } from "@/lib/api-client";
+import type {
+  JobDraft,
+  JobResult,
+  JobPosting,
+  JobDuration,
+  JobEngagement,
+  JobRateType,
+  MyJobStatus,
+} from "@/lib/types";
+import { apiGet, apiPost, apiPut } from "@/lib/api-client";
 
 /** Backend job DTO (list + detail). */
 type JobDto = {
@@ -8,8 +16,10 @@ type JobDto = {
   profession: string;
   district: string;
   rateFrom: number;
+  rateTo?: number | null;
   rateDisclosed?: boolean;
   currency?: string;
+  rateType?: JobRateType;
   people: number;
   status: string;
   createdAt: string;
@@ -22,7 +32,21 @@ type JobDto = {
   hours?: number;
   employer?: string;
   employerVerified?: boolean;
+  // Detail-only — used to prefill the edit form (owner).
+  professionCode?: string;
+  customProfession?: string;
+  industryCode?: string;
+  latitude?: number;
+  longitude?: number;
+  radiusKm?: number;
+  engagement?: string;
+  duration?: string;
+  workDate?: string | null;
+  workDateTo?: string | null;
 };
+
+/** A job's editable content (owner edit form) + its lifecycle status. */
+export type EditableJob = { draft: JobDraft; status: MyJobStatus };
 
 /** Backend sends an ISO timestamp → render a relative label. */
 function formatPosted(value: string): string {
@@ -52,10 +76,75 @@ function toJobPosting(d: JobDto): JobPosting {
     postedAgo: formatPosted(d.createdAt),
     description: d.description ?? "",
     promoted: d.promoted ?? false,
-    lat: d.lat,
-    lng: d.lng,
+    lat: d.lat ?? d.latitude,
+    lng: d.lng ?? d.longitude,
     rateDisclosed: d.rateDisclosed ?? true,
     currency: d.currency ?? "PLN",
+    rateType: d.rateType ?? "hourly",
+    rateTo: d.rateTo ?? null,
+  };
+}
+
+/** Build the POST/PUT body shared by create + update from a draft. */
+function toJobBody(draft: JobDraft) {
+  const isOther = !draft.profession;
+  return {
+    title: draft.title,
+    professionCode: isOther ? null : draft.profession,
+    industryCode: draft.industry,
+    customProfession: isOther ? draft.customProfession.trim() : null,
+    description: draft.description,
+    district: draft.district,
+    // City/zone centre (or a precise point); fall back to Warsaw centre only if nothing was picked.
+    latitude: draft.lat ?? 52.2297,
+    longitude: draft.lng ?? 21.0122,
+    radiusKm: draft.radiusKm,
+    people: draft.people,
+    rateFrom: draft.rateUndisclosed ? 0 : (draft.rate ?? 0),
+    rateTo: draft.rateUndisclosed ? null : draft.rateTo,
+    rateDisclosed: !draft.rateUndisclosed,
+    currency: draft.currency,
+    rateType: draft.rateType,
+    hours: draft.hours,
+    engagement: draft.engagement,
+    duration: draft.duration || null,
+    workDate: draft.date ? draft.date.toISOString().slice(0, 10) : null,
+    workDateTo: draft.dateTo ? draft.dateTo.toISOString().slice(0, 10) : null,
+  };
+}
+
+/** Adapt a backend detail DTO to an editable draft (owner edit form prefill). */
+function toEditableJob(d: JobDto): EditableJob {
+  return {
+    status: (d.status?.toLowerCase() as MyJobStatus) ?? "active",
+    draft: {
+      industry: d.industryCode ?? "",
+      profession: d.professionCode ?? "",
+      customProfession: d.customProfession ?? "",
+      title: d.title ?? "",
+      description: d.description ?? "",
+      duration: (d.duration as JobDuration) ?? "",
+      date: d.workDate ? new Date(d.workDate) : null,
+      dateTo: d.workDateTo ? new Date(d.workDateTo) : null,
+      // Location is stored as district + point (no curated city code) — keep them; the employer can
+      // re-pick a city to change it. cityName left blank (district carries the label in the summary).
+      cityCode: "",
+      cityName: "",
+      district: d.district ?? "",
+      lat: d.latitude ?? d.lat ?? null,
+      lng: d.longitude ?? d.lng ?? null,
+      radiusKm: d.radiusKm ?? 10,
+      people: d.people ?? 1,
+      rate: d.rateDisclosed === false ? null : (d.rateFrom ?? null),
+      rateTo: d.rateTo ?? null,
+      rateUndisclosed: d.rateDisclosed === false,
+      currency: d.currency ?? "PLN",
+      rateType: d.rateType ?? "hourly",
+      engagement: (d.engagement as JobEngagement) ?? "full_time",
+      hours: d.hours ?? null,
+      contactMethod: "app",
+      phone: "",
+    },
   };
 }
 
@@ -82,36 +171,36 @@ export type JobFilters = {
 export type JobSearchResult = { items: JobPosting[]; total: number };
 
 export const jobsService = {
-  /** Publish a job posting and return its id + a cosmetic "notified N specialists" estimate. */
-  async create(draft: JobDraft): Promise<JobResult> {
-    // TODO(geocoder): district → lat/lng. For now default to Warsaw centre (matches profile defaults).
-    // One role per job: either a catalog specialization code, or "Inne" with a custom label.
-    const isOther = !draft.profession;
-    const dto = await apiPost<JobDto>("/api/jobs", {
-      title: draft.title,
-      professionCode: isOther ? null : draft.profession,
-      industryCode: draft.industry,
-      customProfession: isOther ? draft.customProfession.trim() : null,
-      description: draft.description,
-      district: draft.district,
-      // Picked on the map when available; otherwise default to Warsaw centre (no geocoder yet).
-      latitude: draft.lat ?? 52.2297,
-      longitude: draft.lng ?? 21.0122,
-      radiusKm: draft.radiusKm,
-      people: draft.people,
-      rateFrom: draft.rateUndisclosed ? 0 : (draft.rate ?? 0),
-      rateTo: draft.rateUndisclosed ? null : draft.rateTo,
-      rateDisclosed: !draft.rateUndisclosed,
-      currency: draft.currency,
-      hours: draft.hours,
-      engagement: draft.engagement,
-      duration: draft.duration || null,
-      workDate: draft.date ? draft.date.toISOString().slice(0, 10) : null,
-      workDateTo: draft.dateTo ? draft.dateTo.toISOString().slice(0, 10) : null,
-    });
-    // Cosmetic estimate (the backend doesn't compute reach yet).
-    const notifiedCount = Math.max(8, draft.people * 11);
-    return { id: dto.id, notifiedCount };
+  /**
+   * Create a job posting. {@code publish} true → goes live immediately (specialists notified);
+   * false → saved as a private draft. Returns the new job's id + status.
+   */
+  async create(draft: JobDraft, publish = true): Promise<JobResult> {
+    const dto = await apiPost<JobDto>("/api/jobs", { ...toJobBody(draft), publish });
+    return { id: dto.id, status: (dto.status?.toLowerCase() as MyJobStatus) ?? "active" };
+  },
+
+  /** Edit an owned job (owner only). Returns the updated status. */
+  async update(id: string, draft: JobDraft): Promise<JobResult> {
+    const dto = await apiPut<JobDto>(`/api/jobs/${encodeURIComponent(id)}`, toJobBody(draft));
+    return { id: dto.id, status: (dto.status?.toLowerCase() as MyJobStatus) ?? "active" };
+  },
+
+  /** Publish a draft / re-show an unpublished job (owner only). */
+  async publish(id: string): Promise<{ status: MyJobStatus }> {
+    const dto = await apiPost<JobDto>(`/api/jobs/${encodeURIComponent(id)}/publish`, {});
+    return { status: (dto.status?.toLowerCase() as MyJobStatus) ?? "active" };
+  },
+
+  /** Hide an active job from search (owner only). */
+  async unpublish(id: string): Promise<{ status: MyJobStatus }> {
+    const dto = await apiPost<JobDto>(`/api/jobs/${encodeURIComponent(id)}/unpublish`, {});
+    return { status: (dto.status?.toLowerCase() as MyJobStatus) ?? "unpublished" };
+  },
+
+  /** Full editable content of an owned job (to prefill the edit form). */
+  async getEditable(id: string, locale?: string): Promise<EditableJob> {
+    return toEditableJob(await apiGet<JobDto>(`/api/jobs/${encodeURIComponent(id)}`, { locale }));
   },
 
   /** Browse public job postings (job-seeker side). Backend sorts (promoted first) + paginates. */

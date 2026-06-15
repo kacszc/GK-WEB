@@ -17,13 +17,17 @@ const BOOST_PER_DAY = 5;
 const DAY_OPTIONS = [3, 7, 14];
 
 const statusStyle: Record<MyJobStatus, string> = {
+  draft: "bg-pill text-ink-2",
   active: "bg-success-chip text-success-chip-text",
+  unpublished: "bg-pill text-ink-3",
   filled: "bg-[#e7efff] text-[#1158ed]",
   completed: "bg-pill text-ink-2",
   expired: "bg-pill text-ink-3",
 };
 const statusKey: Record<MyJobStatus, string> = {
+  draft: "account.statusDraft",
   active: "account.statusActive",
+  unpublished: "account.statusUnpublished",
   filled: "account.statusFilled",
   completed: "account.statusCompleted",
   expired: "account.statusExpired",

@@ -8,7 +8,7 @@ export { contentService } from "./content.service";
 export type { Announcement } from "./content.service";
 export { landingService } from "./landing.service";
 export { geoService } from "./geo.service";
-export type { GeoCity, GeoZone } from "./geo.service";
+export type { GeoCity, GeoZone, GeoCitySuggestion } from "./geo.service";
 export { alertsService } from "./alerts.service";
 export type { JobAlert, AlertDraft } from "./alerts.service";
 export { specialistAlertsService } from "./specialistAlerts.service";
@@ -20,7 +20,7 @@ export type { Certification, CertificationDraft } from "./certifications.service
 export { specialistsService } from "./specialists.service";
 export type { SpecialistFilters, SpecialistSort, SearchFilterSchema, FilterOption, FilterRange } from "./specialists.service";
 export { jobsService } from "./jobs.service";
-export type { JobFilters } from "./jobs.service";
+export type { JobFilters, EditableJob } from "./jobs.service";
 export { authService } from "./auth.service";
 export { messagesService } from "./messages.service";
 export { contactsService } from "./contacts.service";

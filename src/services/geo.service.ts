@@ -19,6 +19,15 @@ export type GeoZone = {
   polygon: GeoJSON.Geometry;
 };
 
+/** A geocoder city suggestion (any city worldwide) — no curated districts, just a centre point. */
+export type GeoCitySuggestion = {
+  name: string;
+  region: string; // state/county (may be empty)
+  country: string;
+  lat: number;
+  lng: number;
+};
+
 // Offline fallback so the city picker still works when the backend is down (zones just won't show).
 const FALLBACK_CITIES: GeoCity[] = PL_CITIES.map((c) => ({
   code: c.name,
@@ -42,6 +51,16 @@ export const geoService = {
   async getZones(cityCode: string): Promise<GeoZone[]> {
     try {
       return await apiGet<GeoZone[]>(`/api/geo/cities/${encodeURIComponent(cityCode)}/zones`);
+    } catch {
+      return [];
+    }
+  },
+
+  /** Autocomplete any city worldwide via the geocoder (cities outside the curated list). [] on error. */
+  async searchCities(q: string, locale?: string): Promise<GeoCitySuggestion[]> {
+    if (q.trim().length < 3) return [];
+    try {
+      return await apiGet<GeoCitySuggestion[]>(`/api/geo/search?q=${encodeURIComponent(q.trim())}`, { locale });
     } catch {
       return [];
     }

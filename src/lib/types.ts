@@ -70,7 +70,7 @@ export type SearchMode = "worker" | "job";
 export type UserRole = "employer" | "specialist";
 
 /** A job the user posted (employer dashboard). */
-export type MyJobStatus = "active" | "filled" | "completed" | "expired";
+export type MyJobStatus = "draft" | "active" | "unpublished" | "filled" | "completed" | "expired";
 export type MyJob = {
   id: string;
   title: string;
@@ -83,6 +83,7 @@ export type MyJob = {
   rate: number;
   rateDisclosed: boolean;
   currency: string;
+  rateType: JobRateType;
   postedAgo: string;
 };
 
@@ -205,6 +206,8 @@ export type Specialist = {
 export type JobDuration = "one_day" | "few_days" | "few_weeks" | "long_term";
 /** Workload type. hours_per_day uses an explicit hours value; full/part-time auto-fill hours. */
 export type JobEngagement = "full_time" | "part_time" | "hours_per_day";
+/** Pay model the rate is expressed in. */
+export type JobRateType = "hourly" | "monthly" | "per_job" | "daily";
 
 export type JobDraft = {
   industry: string; // branża code (always set)
@@ -215,26 +218,28 @@ export type JobDraft = {
   duration: JobDuration | ""; // job length — required
   date: Date | null; // optional concrete start date (toggle)
   dateTo: Date | null; // optional end date (range); null = single day / open
-  cityCode: string; // backend geo.city code (drives the district list)
+  cityCode: string; // backend geo.city code (drives the district list); "" for a geocoded city
+  cityName: string; // display name (curated city name OR a free-form geocoded place)
   district: string;
   lat: number | null; // city/zone centre or a precise map-picked point
   lng: number | null;
   radiusKm: number;
   people: number;
-  rate: number | null; // hourly rate "od"
-  rateTo: number | null; // hourly rate "do" (optional → "od X w górę")
+  rate: number | null; // rate "od"
+  rateTo: number | null; // rate "do" (optional → "od X w górę")
   rateUndisclosed: boolean; // "do ustalenia" — hide the figure
   currency: string; // ISO 4217 (PLN/EUR/USD…)
+  rateType: JobRateType; // hourly / monthly / per_job / daily
   engagement: JobEngagement; // pełny / pół etatu / godziny dziennie
   hours: number | null; // hours per day (auto for full/part time)
   contactMethod: "app" | "phone";
   phone: string;
 };
 
-/** Result of publishing a job. */
+/** Result of creating/publishing a job. */
 export type JobResult = {
   id: string;
-  notifiedCount: number;
+  status: MyJobStatus;
 };
 
 /** A public job posting (job-seeker side). */
@@ -257,6 +262,8 @@ export type JobPosting = {
   lng?: number;
   rateDisclosed?: boolean; // false → "to be agreed" (no figure)
   currency?: string; // ISO 4217 (default PLN)
+  rateType?: JobRateType; // pay model (default hourly)
+  rateTo?: number | null; // upper bound of the rate range (optional)
 };
 
 /** A token package available for purchase. */
