@@ -662,6 +662,7 @@ const uk: Dictionary = {
     deleteDesc: "Усі дані видаляються через 30 днів (згідно з GDPR)",
     deleteBtn: "Видалити акаунт",
     jobsTitle: "Мої замовлення",
+    addJob: "Додати нове замовлення",
     statusActive: "Активні",
     statusDraft: "Чернетка",
     statusUnpublished: "Приховано",

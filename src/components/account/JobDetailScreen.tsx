@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/Button";
 import { OpenDisputeDialog } from "@/components/dispute/OpenDisputeDialog";
 import { MediationView } from "@/components/dispute/MediationView";
 import { ReviewDialog } from "@/components/reviews/ReviewDialog";
+import { EditJobDialog } from "@/components/post-job/EditJobDialog";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useToast } from "@/lib/ToastProvider";
 import { requestErrorToast } from "@/lib/errorToast";
@@ -46,6 +47,7 @@ export function JobDetailScreen({ id }: { id: string }) {
   const [dispute, setDispute] = useState<Dispute | null>(null);
   const [msgTo, setMsgTo] = useState<MessageTarget | null>(null);
   const [lifecycleBusy, setLifecycleBusy] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
 
   // Publish a draft / re-show an unpublished job, or hide an active one — owner lifecycle controls.
   async function setPublished(publish: boolean) {
@@ -158,13 +160,13 @@ export function JobDetailScreen({ id }: { id: string }) {
       {(canEdit || canPublish || canUnpublish) && (
         <div className="flex flex-wrap gap-2">
           {canEdit && (
-            <Link
-              href={`/account/jobs/${id}/edit`}
+            <button
+              onClick={() => setEditOpen(true)}
               className="inline-flex items-center gap-1.5 rounded-tile border border-line-2 bg-surface px-3.5 py-2 text-[13px] font-medium text-ink transition-colors hover:bg-muted"
             >
               <Pencil className="h-3.5 w-3.5" />
               {t("jobDetail.edit")}
-            </Link>
+            </button>
           )}
           {canPublish && (
             <Button
@@ -389,6 +391,13 @@ export function JobDetailScreen({ id }: { id: string }) {
       />
 
       <MessageComposerDialog target={msgTo} onClose={() => setMsgTo(null)} />
+
+      <EditJobDialog
+        jobId={id}
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+      />
+
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { X } from "lucide-react";
 const sizes = {
   md: "sm:max-w-[440px]",
   lg: "sm:max-w-[640px]",
+  xl: "sm:max-w-[960px]",
 } as const;
 
 export function Dialog({

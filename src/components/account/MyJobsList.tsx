@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { MapPin, Users, Rocket, Loader2 } from "lucide-react";
+import { MapPin, Users, Rocket, Loader2, Plus } from "lucide-react";
 import { Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { accountService, walletService } from "@/services";
@@ -58,7 +58,16 @@ export function MyJobsList() {
 
   return (
     <div className="flex flex-col gap-5">
-      <h1 className="text-2xl font-bold tracking-[-0.5px] text-ink">{t("account.jobsTitle")}</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-bold tracking-[-0.5px] text-ink">{t("account.jobsTitle")}</h1>
+        <Link
+          href="/post-job"
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-tile bg-ink px-4 py-2.5 text-[13px] font-bold text-on-dark transition-colors hover:bg-ink/90"
+        >
+          <Plus className="h-4 w-4" />
+          {t("account.addJob")}
+        </Link>
+      </div>
 
       {isLoading ? (
         <Skeletons />

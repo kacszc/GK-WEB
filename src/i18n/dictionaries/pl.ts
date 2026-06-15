@@ -661,6 +661,7 @@ const pl = {
     deleteDesc: "Wszystkie dane usunięte po 30 dniach (zgodnie z RODO)",
     deleteBtn: "Usuń konto",
     jobsTitle: "Moje zlecenia",
+    addJob: "Dodaj nowe zlecenie",
     statusActive: "Aktywne",
     statusDraft: "Szkic",
     statusUnpublished: "Ukryte",

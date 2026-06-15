@@ -662,6 +662,7 @@ const en: Dictionary = {
     deleteDesc: "All data erased after 30 days (per GDPR)",
     deleteBtn: "Delete account",
     jobsTitle: "My jobs",
+    addJob: "Post a new job",
     statusActive: "Active",
     statusDraft: "Draft",
     statusUnpublished: "Hidden",

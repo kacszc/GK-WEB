@@ -62,7 +62,17 @@ const emptyDraft: JobDraft = {
   phone: "",
 };
 
-export function PostJobScreen({ jobId }: { jobId?: string }) {
+export function PostJobScreen({
+  jobId,
+  asDialog = false,
+  onSaved,
+}: {
+  jobId?: string;
+  /** Rendered inside a modal (no page chrome / auth guards) — used for in-account editing. */
+  asDialog?: boolean;
+  /** Called after a successful edit save (dialog mode closes instead of navigating). */
+  onSaved?: () => void;
+}) {
   const { t, locale } = useI18n();
   const { user, ready } = useAuth();
   const router = useRouter();
@@ -191,7 +201,8 @@ export function PostJobScreen({ jobId }: { jobId?: string }) {
         queryClient.invalidateQueries({ queryKey: ["job", jobId] });
         queryClient.invalidateQueries({ queryKey: ["editableJob", jobId] });
         show({ title: t("postJob.editSaved") });
-        router.push(`/account/jobs/${jobId}`);
+        if (onSaved) onSaved();
+        else router.push(`/account/jobs/${jobId}`);
       },
       onError: (e) => show(requestErrorToast(e, t)),
     });
@@ -269,7 +280,8 @@ export function PostJobScreen({ jobId }: { jobId?: string }) {
   }
 
   // Not logged in → prompt to sign in instead of rendering the form (publishing requires an account).
-  if (ready && !user) {
+  // In dialog mode we're already inside the authenticated account area, so skip these guards.
+  if (!asDialog && ready && !user) {
     return (
       <>
         <SearchTopbar category={t("postJob.title")} />
@@ -278,7 +290,7 @@ export function PostJobScreen({ jobId }: { jobId?: string }) {
             <h1 className="text-lg font-bold text-ink">{t("postJob.title")}</h1>
             <p className="mt-2 text-sm text-ink-2">{t("postJob.loginRequired")}</p>
             <Link
-              href={`/login?redirect=${encodeURIComponent(jobId ? `/account/jobs/${jobId}/edit` : "/post-job")}`}
+              href={`/login?redirect=${encodeURIComponent("/post-job")}`}
               className="mt-5 inline-flex w-full items-center justify-center rounded-tile bg-ink px-4 py-2.5 text-sm font-bold text-on-dark hover:bg-ink/90"
             >
               {t("auth.loginCta")}
@@ -290,7 +302,7 @@ export function PostJobScreen({ jobId }: { jobId?: string }) {
   }
 
   // Logged in but a specialist → posting jobs is employer-only (the backend enforces ROLE_EMPLOYER).
-  if (ready && user && user.role !== "employer") {
+  if (!asDialog && ready && user && user.role !== "employer") {
     return (
       <>
         <SearchTopbar category={t("postJob.title")} />
@@ -312,27 +324,11 @@ export function PostJobScreen({ jobId }: { jobId?: string }) {
 
   const screenTitle = isEdit ? t("postJob.editTitle") : t("postJob.title");
 
-  return (
-    <>
-      <SearchTopbar category={screenTitle} />
-      <main className="mx-auto flex w-full max-w-[1280px] flex-1 flex-col gap-6 px-4 pt-6 pb-20 sm:px-8">
-        <Link
-          href={isEdit ? `/account/jobs/${jobId}` : "/"}
-          className="inline-flex items-center gap-1.5 self-start text-[13px] font-medium text-ink-2 hover:text-ink"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          {isEdit ? t("jobDetail.back") : t("postJob.title")}
-        </Link>
-
-        <div>
-          <h1 className="text-2xl font-bold tracking-[-0.5px] text-ink">{screenTitle}</h1>
-          <p className="mt-1 text-[13px] text-ink-3">{isEdit ? t("postJob.editSubtitle") : t("postJob.subtitle")}</p>
-        </div>
-
-        {isEdit && loadingEditable ? (
-          <div className="skeleton h-[60vh] rounded-panel" />
-        ) : (
-          <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+  const body =
+    isEdit && loadingEditable ? (
+      <div className="skeleton h-[60vh] rounded-panel" />
+    ) : (
+      <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
             <div className="flex flex-col gap-6">
               {/* Profession: branża → specjalizacja (codes), with an "Inne" custom option */}
               <SectionCard title={t("postJob.sProfession")} hint={t("postJob.sProfessionHint")}>
@@ -747,8 +743,32 @@ export function PostJobScreen({ jobId }: { jobId?: string }) {
                 )}
               </div>
             </aside>
-          </div>
-        )}
+      </div>
+    );
+
+  // Dialog mode (in-account editing): just the form, the modal provides the chrome.
+  if (asDialog) {
+    return body;
+  }
+
+  return (
+    <>
+      <SearchTopbar category={screenTitle} />
+      <main className="mx-auto flex w-full max-w-[1280px] flex-1 flex-col gap-6 px-4 pt-6 pb-20 sm:px-8">
+        <Link
+          href={isEdit ? `/account/jobs/${jobId}` : "/"}
+          className="inline-flex items-center gap-1.5 self-start text-[13px] font-medium text-ink-2 hover:text-ink"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          {isEdit ? t("jobDetail.back") : t("postJob.title")}
+        </Link>
+
+        <div>
+          <h1 className="text-2xl font-bold tracking-[-0.5px] text-ink">{screenTitle}</h1>
+          <p className="mt-1 text-[13px] text-ink-3">{isEdit ? t("postJob.editSubtitle") : t("postJob.subtitle")}</p>
+        </div>
+
+        {body}
       </main>
     </>
   );
