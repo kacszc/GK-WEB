@@ -257,7 +257,9 @@ export type JobPosting = {
   when: Availability;
   whenDate?: string;
   employer: string;
+  employerId?: string; // for linking to the company profile
   employerVerified: boolean;
+  employerLogoUrl?: string | null; // company logo (CDN URL) shown on the card
   postedAgo: string;
   description: string;
   promoted?: boolean; // paid promotion (boost) — sorts to the top
@@ -619,6 +621,8 @@ export type EmployerProfile = {
   name: string;
   initial: string;
   verified: boolean;
+  logoUrl?: string | null;
+  coverUrl?: string | null;
   industries: string[];
   location: string;
   website: string;

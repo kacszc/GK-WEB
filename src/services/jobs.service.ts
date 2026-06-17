@@ -31,7 +31,9 @@ type JobDto = {
   description?: string;
   hours?: number;
   employer?: string;
+  employerId?: string;
   employerVerified?: boolean;
+  employerLogoUrl?: string | null;
   // Detail-only — used to prefill the edit form (owner).
   professionCode?: string;
   customProfession?: string;
@@ -72,7 +74,9 @@ function toJobPosting(d: JobDto): JobPosting {
     hours: d.hours ?? 0,
     when: "now",
     employer: d.employer ?? "",
+    employerId: d.employerId,
     employerVerified: d.employerVerified ?? false,
+    employerLogoUrl: d.employerLogoUrl ?? null,
     postedAgo: formatPosted(d.createdAt),
     description: d.description ?? "",
     promoted: d.promoted ?? false,
@@ -157,6 +161,7 @@ export type JobFilters = {
   engagements?: JobEngagement[];
   district?: string;
   rateMin?: number;
+  employerId?: string; // only this company's jobs (for the company profile)
   near?: { lat: number; lng: number };
   maxDistanceKm?: number;
   /** "When" range (ISO yyyy-mm-dd): only jobs whose work date(s) overlap it (undated jobs always match). */
@@ -219,6 +224,7 @@ export const jobsService = {
     if (filters.district) params.set("district", filters.district);
     if (filters.q) params.set("q", filters.q);
     if (filters.rateMin != null) params.set("rateMin", String(filters.rateMin));
+    if (filters.employerId) params.set("employerId", filters.employerId);
     if (filters.fromDate) params.set("from", filters.fromDate);
     if (filters.toDate) params.set("to", filters.toDate);
     if (filters.page != null) params.set("page", String(filters.page));

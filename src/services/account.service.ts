@@ -98,6 +98,25 @@ export type MyEmployerProfile = {
   verified: boolean;
   industries: string[];
   monthlyHires: string | null;
+  description: string | null;
+  logoUrl: string | null;
+  coverUrl: string | null;
+  website: string | null;
+};
+
+/** Editable company-profile fields (settings form → POST /api/me/employer-profile). */
+export type EmployerProfileUpdate = {
+  name: string;
+  nip?: string | null;
+  regon?: string | null;
+  address?: string | null;
+  city?: string | null;
+  industries?: string[];
+  monthlyHires?: string | null;
+  description?: string | null;
+  logoUrl?: string | null;
+  coverUrl?: string | null;
+  website?: string | null;
 };
 
 /** Notification row (also used as the activity feed source). */
@@ -247,6 +266,11 @@ export const accountService = {
   /** The current employer's own company profile (incl. NIP/REGON/address); null if not created yet. */
   async getMyEmployerProfile(locale?: string): Promise<MyEmployerProfile | null> {
     return optionalProfile<MyEmployerProfile>("/api/me/employer-profile", locale);
+  },
+  /** Save the current employer's company profile (branding + registry fields). */
+  async updateEmployerProfile(payload: EmployerProfileUpdate): Promise<{ ok: true }> {
+    await apiPost("/api/me/employer-profile", payload);
+    return { ok: true };
   },
   /** Boost the current specialist's own profile (sorts first in search). Payment not wired yet — grants it. */
   async boostMyProfile(days: number): Promise<{ promotedUntil: string }> {

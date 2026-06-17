@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useSyncExternalStore } from "react";
+import Link from "next/link";
+import Image from "next/image";
 import { MapPin, Clock, Coins, BadgeCheck, Check, Loader2 } from "lucide-react";
 import { SearchTopbar } from "@/components/search/SearchTopbar";
 import { ResultsToolbar, type ResultsView } from "@/components/search/ResultsToolbar";
@@ -280,6 +282,27 @@ function Tag({ children, className }: { children: React.ReactNode; className?: s
   );
 }
 
+/** Tiny company logo (or initial fallback) shown next to the employer name on a job card. */
+function CompanyBadge({ logoUrl, name }: { logoUrl?: string | null; name: string }) {
+  if (logoUrl) {
+    return (
+      <Image
+        src={logoUrl}
+        alt={name}
+        width={20}
+        height={20}
+        unoptimized
+        className="h-5 w-5 shrink-0 rounded-full object-cover"
+      />
+    );
+  }
+  return (
+    <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-pill text-[10px] font-bold text-ink-3">
+      {(name || "?").charAt(0).toUpperCase()}
+    </span>
+  );
+}
+
 function JobCard({ job, onApply }: { job: JobPosting; onApply: () => void }) {
   const { t } = useI18n();
   return (
@@ -314,12 +337,19 @@ function JobCard({ job, onApply }: { job: JobPosting; onApply: () => void }) {
       </div>
 
       <div className="mt-4 flex items-center justify-between gap-2 border-t border-line pt-3">
-        <span className="inline-flex items-center gap-1 text-[12px] text-ink-2">
-          {job.employer}
-          {job.employerVerified && <BadgeCheck className="h-3.5 w-3.5 text-[#1158ed]" />}
-          <span className="text-ink-4">· {job.postedAgo}</span>
+        <span className="inline-flex min-w-0 items-center gap-1.5 text-[12px] text-ink-2">
+          <CompanyBadge logoUrl={job.employerLogoUrl} name={job.employer} />
+          {job.employerId ? (
+            <Link href={`/employer/${job.employerId}`} className="truncate font-medium text-ink hover:underline">
+              {job.employer}
+            </Link>
+          ) : (
+            <span className="truncate">{job.employer}</span>
+          )}
+          {job.employerVerified && <BadgeCheck className="h-3.5 w-3.5 shrink-0 text-[#1158ed]" />}
+          <span className="shrink-0 text-ink-4">· {job.postedAgo}</span>
         </span>
-        <Button variant="dark" onClick={onApply} className="rounded-tile px-4 py-2 text-[13px]">
+        <Button variant="dark" onClick={onApply} className="shrink-0 rounded-tile px-4 py-2 text-[13px]">
           {t("jobs.apply")}
         </Button>
       </div>
@@ -366,7 +396,14 @@ function ApplyDialog({ job, onClose }: { job: JobPosting | null; onClose: () => 
           <div className="rounded-tile bg-subtle p-3">
             <p className="text-sm font-semibold text-ink">{job.title}</p>
             <p className="text-[12px] text-ink-3">
-              {job.employer} · {job.district} · {jobRateLabel(job, t)}
+              {job.employerId ? (
+                <Link href={`/employer/${job.employerId}`} className="font-medium text-brand-violet hover:underline">
+                  {job.employer}
+                </Link>
+              ) : (
+                job.employer
+              )}
+              {" · "}{job.district} · {jobRateLabel(job, t)}
             </p>
           </div>
           {!user ? (

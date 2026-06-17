@@ -7,6 +7,9 @@ type EmployerDto = {
   name: string;
   initial: string;
   verified: boolean;
+  logoUrl: string | null;
+  coverUrl: string | null;
+  website: string | null;
   industries: string[];
   city: string;
   rating: number | null;
@@ -30,9 +33,11 @@ function toEmployerProfile(d: EmployerDto): EmployerProfile {
     name: d.name,
     initial: d.initial,
     verified: d.verified,
+    logoUrl: d.logoUrl ?? null,
+    coverUrl: d.coverUrl ?? null,
     industries: d.industries,
     location: d.city,
-    website: "",
+    website: d.website ?? "",
     email: "",
     rating: d.rating ?? 0,
     completedJobs: d.completedJobs,

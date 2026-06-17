@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, FileClock, Bell, Loader2 } from "lucide-react";
+import { Check, FileClock, Bell, Loader2, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { inputClass } from "@/components/ui/Input";
 import { Toggle as Switch } from "@/components/ui/Toggle";
@@ -15,6 +16,8 @@ import { KycCard } from "@/components/account/KycCard";
 import { settingsService, accountService } from "@/services";
 import type { NotificationSettings } from "@/services";
 import { useAuth } from "@/lib/AuthProvider";
+import { useToast } from "@/lib/ToastProvider";
+import { requestErrorToast } from "@/lib/errorToast";
 import { useI18n } from "@/i18n/I18nProvider";
 
 const LANG_KEY: Record<string, string> = {
@@ -85,6 +88,8 @@ export function AccountSettings() {
       </section>
 
       <YourDetails />
+
+      <CompanyProfileEditor />
 
       <KycCard />
 
@@ -348,6 +353,160 @@ function ReadField({ label, value }: { label: string; value: string | null | und
         className="mt-1.5 w-full rounded-tile border border-line-2 bg-muted px-3 py-2.5 text-sm text-ink-3 outline-none"
       />
     </div>
+  );
+}
+
+/**
+ * Editable company profile (employers only): branding (logo/cover URLs + live preview), about and
+ * public info. Registry fields (NIP/REGON/address) stay in the read-only "Your details" above.
+ * Image fields take a CDN URL for now (file upload to Bunny lands later — the field stays the same).
+ */
+function CompanyProfileEditor() {
+  const { t, locale } = useI18n();
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const { show } = useToast();
+  const enabled = user?.role === "employer";
+
+  const { data: emp } = useQuery({
+    queryKey: ["myEmployerProfile", locale],
+    queryFn: () => accountService.getMyEmployerProfile(locale),
+    enabled,
+    retry: false,
+  });
+
+  const [seeded, setSeeded] = useState(false);
+  const [form, setForm] = useState({ name: "", city: "", website: "", description: "", logoUrl: "", coverUrl: "" });
+  // Seed once from the loaded profile (during render — React's recommended way, no effect/lint hit).
+  if (emp && !seeded) {
+    setSeeded(true);
+    setForm({
+      name: emp.name ?? "",
+      city: emp.city ?? "",
+      website: emp.website ?? "",
+      description: emp.description ?? "",
+      logoUrl: emp.logoUrl ?? "",
+      coverUrl: emp.coverUrl ?? "",
+    });
+  }
+  const set = (patch: Partial<typeof form>) => setForm((f) => ({ ...f, ...patch }));
+
+  const save = useMutation({
+    mutationFn: () =>
+      accountService.updateEmployerProfile({
+        // Carry registry fields through unchanged so the save never wipes them.
+        name: form.name.trim(),
+        nip: emp?.nip ?? null,
+        regon: emp?.regon ?? null,
+        address: emp?.address ?? null,
+        industries: emp?.industries,
+        monthlyHires: emp?.monthlyHires ?? null,
+        city: form.city,
+        website: form.website,
+        description: form.description,
+        logoUrl: form.logoUrl,
+        coverUrl: form.coverUrl,
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["myEmployerProfile"] });
+      qc.invalidateQueries({ queryKey: ["employer"] });
+      show({ title: t("account.profileSaved") });
+    },
+    onError: (e) => show(requestErrorToast(e, t)),
+  });
+
+  // Employers only; when the profile isn't created yet "Your details" already shows the setup prompt.
+  if (!enabled || !emp) return null;
+
+  const fieldInput = cn(inputClass(), "mt-1.5");
+
+  return (
+    <section className="rounded-panel border border-line-3 bg-surface p-6">
+      <div className="flex items-center gap-2">
+        <Building2 className="h-4 w-4 text-ink-3" />
+        <h2 className="text-[15px] font-semibold text-ink">{t("account.companyProfileTitle")}</h2>
+      </div>
+      <p className="mt-1 text-[12px] text-ink-3">{t("account.companyProfileSub")}</p>
+
+      {/* Cover preview + URL */}
+      <div className="mt-4">
+        <Label>{t("account.fieldCover")}</Label>
+        <div className="relative mt-1.5 h-28 w-full overflow-hidden rounded-tile border border-line-2 bg-gradient-to-r from-brand-violet to-brand-blue">
+          {form.coverUrl && (
+            <Image src={form.coverUrl} alt="" fill sizes="600px" className="object-cover" unoptimized />
+          )}
+        </div>
+        <input
+          value={form.coverUrl}
+          onChange={(e) => set({ coverUrl: e.target.value })}
+          placeholder="https://…"
+          className={fieldInput}
+        />
+      </div>
+
+      {/* Logo preview + URL */}
+      <div className="mt-4 flex items-end gap-3">
+        <span className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-soft border border-line-2 bg-pill text-xl font-bold text-ink-3">
+          {form.logoUrl ? (
+            <Image src={form.logoUrl} alt="" width={64} height={64} className="h-full w-full object-cover" unoptimized />
+          ) : (
+            (form.name || "?").charAt(0).toUpperCase()
+          )}
+        </span>
+        <div className="min-w-0 flex-1">
+          <Label>{t("account.fieldLogo")}</Label>
+          <input
+            value={form.logoUrl}
+            onChange={(e) => set({ logoUrl: e.target.value })}
+            placeholder="https://…"
+            className={fieldInput}
+          />
+        </div>
+      </div>
+      <p className="mt-1.5 text-[12px] text-ink-4">{t("account.imageUrlHint")}</p>
+
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <div>
+          <Label>{t("account.fieldCompany")}</Label>
+          <input value={form.name} onChange={(e) => set({ name: e.target.value })} className={fieldInput} />
+        </div>
+        <div>
+          <Label>{t("account.fieldCity")}</Label>
+          <input value={form.city} onChange={(e) => set({ city: e.target.value })} className={fieldInput} />
+        </div>
+        <div className="sm:col-span-2">
+          <Label>{t("account.fieldWebsite")}</Label>
+          <input
+            value={form.website}
+            onChange={(e) => set({ website: e.target.value })}
+            placeholder="https://…"
+            className={fieldInput}
+          />
+        </div>
+        <div className="sm:col-span-2">
+          <Label>{t("account.fieldDescription")}</Label>
+          <textarea
+            value={form.description}
+            onChange={(e) => set({ description: e.target.value })}
+            rows={4}
+            placeholder={t("account.descriptionPlaceholder")}
+            className={cn(fieldInput, "resize-y")}
+          />
+        </div>
+      </div>
+
+      <div className="mt-4 flex justify-end">
+        <Button
+          variant="dark"
+          onClick={() => save.mutate()}
+          disabled={save.isPending || !form.name.trim()}
+          className="rounded-tile px-5 py-2.5 text-sm"
+        >
+          {save.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+          {save.isPending ? t("account.savingProfile") : t("account.saveProfile")}
+        </Button>
+      </div>
+    </section>
   );
 }
 

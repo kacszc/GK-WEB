@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
-import { BadgeCheck, MapPin, Globe, Mail, Star, ShieldCheck, ArrowRight } from "lucide-react";
+import { BadgeCheck, MapPin, Globe, Star, ShieldCheck, ArrowRight } from "lucide-react";
 import { ReviewsSection } from "@/components/reviews/ReviewsSection";
-import { employersService } from "@/services";
+import { employersService, jobsService } from "@/services";
+import { jobRateLabel } from "@/lib/jobRate";
 import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
 
@@ -14,6 +16,12 @@ export function EmployerProfileScreen({ id }: { id: string }) {
     queryKey: ["employer", id],
     queryFn: () => employersService.getProfile(id),
   });
+  // The company's own currently-open jobs (public search filtered by employer).
+  const { data: jobs } = useQuery({
+    queryKey: ["employerJobs", id],
+    queryFn: () => jobsService.searchJobs({ employerId: id, size: 20 }),
+  });
+  const companyJobs = jobs?.items ?? [];
 
   if (isLoading || !e) {
     return (
@@ -26,14 +34,26 @@ export function EmployerProfileScreen({ id }: { id: string }) {
 
   return (
     <main className="flex-1">
+      {/* Cover banner — company photo, or a brand gradient fallback. */}
+      <div className="relative h-40 w-full overflow-hidden bg-gradient-to-r from-brand-violet to-brand-blue sm:h-52">
+        {e.coverUrl && (
+          <Image src={e.coverUrl} alt="" fill sizes="100vw" className="object-cover" unoptimized priority />
+        )}
+      </div>
+
       {/* Hero */}
       <div className="border-b border-line bg-surface">
-        <div className="mx-auto flex w-full max-w-[1080px] flex-col gap-6 px-4 py-8 sm:px-8 lg:flex-row lg:items-start lg:justify-between">
+        <div className="mx-auto flex w-full max-w-[1080px] flex-col gap-6 px-4 pb-8 sm:px-8 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex gap-4">
-            <span className="grid h-16 w-16 shrink-0 place-items-center rounded-soft bg-danger text-2xl font-bold text-on-dark">
-              {e.initial}
+            {/* Logo overlaps the cover; falls back to the initial tile. */}
+            <span className="-mt-10 grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-soft border-4 border-surface bg-danger text-3xl font-bold text-on-dark shadow-search">
+              {e.logoUrl ? (
+                <Image src={e.logoUrl} alt={e.name} width={80} height={80} className="h-full w-full object-cover" unoptimized />
+              ) : (
+                e.initial
+              )}
             </span>
-            <div>
+            <div className="pt-3">
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-2xl font-bold tracking-[-0.5px] text-ink">{e.name}</h1>
                 {e.verified && (
@@ -45,9 +65,20 @@ export function EmployerProfileScreen({ id }: { id: string }) {
               </div>
               <p className="mt-1 text-[13px] text-ink-2">{e.industries.join(" · ")}</p>
               <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-ink-3">
-                <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5 text-ink-4" />{e.location}</span>
-                <span className="inline-flex items-center gap-1"><Globe className="h-3.5 w-3.5 text-ink-4" />{e.website}</span>
-                <span className="inline-flex items-center gap-1"><Mail className="h-3.5 w-3.5 text-ink-4" />{e.email}</span>
+                {e.location && (
+                  <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5 text-ink-4" />{e.location}</span>
+                )}
+                {e.website && (
+                  <a
+                    href={e.website.startsWith("http") ? e.website : `https://${e.website}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-brand-violet hover:underline"
+                  >
+                    <Globe className="h-3.5 w-3.5" />
+                    {e.website.replace(/^https?:\/\//, "")}
+                  </a>
+                )}
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 <Badge className="bg-[#fff7da] text-[#8a6400]"><Star className="h-3 w-3 fill-current" />{e.rating.toFixed(1)} ocena</Badge>
@@ -128,26 +159,29 @@ export function EmployerProfileScreen({ id }: { id: string }) {
 
         {/* Right rail */}
         <div className="flex flex-col gap-6" id="jobs">
-          <Section title={t("employer.activeJobsTitle", { n: e.activeJobs.length })}>
-            <div className="flex flex-col gap-3">
-              {e.activeJobs.map((j) => (
-                <div key={j.id} className="rounded-tile border border-line-3 p-3">
-                  <p className="text-[14px] font-semibold text-ink">{j.title}</p>
-                  <p className="mt-0.5 text-[12px] text-ink-3">{j.meta}</p>
-                  <Link href="/jobs" className="mt-2 inline-flex items-center gap-1 text-[13px] font-semibold text-brand-violet hover:underline">
-                    {t("employer.applyJob")}
-                    <ArrowRight className="h-3.5 w-3.5" />
+          <Section title={t("employer.activeJobsTitle", { n: companyJobs.length })}>
+            {companyJobs.length === 0 ? (
+              <p className="text-[13px] text-ink-3">{t("employer.noActiveJobs")}</p>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {companyJobs.map((j) => (
+                  <Link
+                    key={j.id}
+                    href="/jobs"
+                    className="block rounded-tile border border-line-3 p-3 transition-colors hover:bg-muted"
+                  >
+                    <p className="text-[14px] font-semibold text-ink">{j.title}</p>
+                    <p className="mt-0.5 text-[12px] text-ink-3">
+                      {[j.profession, j.district].filter(Boolean).join(" · ")}
+                    </p>
+                    <p className="mt-1.5 inline-flex items-center gap-1 text-[13px] font-semibold text-brand-violet">
+                      {jobRateLabel(j, t)}
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </p>
                   </Link>
-                </div>
-              ))}
-            </div>
-          </Section>
-          <Section title={t("employer.eventsTitle")}>
-            <div className="grid grid-cols-2 gap-2">
-              {e.eventColors.map((c, i) => (
-                <div key={i} className="aspect-square rounded-tile" style={{ background: c }} />
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </Section>
         </div>
       </div>
