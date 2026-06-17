@@ -12,9 +12,10 @@ import { cn } from "@/lib/cn";
 
 export function EmployerProfileScreen({ id }: { id: string }) {
   const { t } = useI18n();
-  const { data: e, isLoading } = useQuery({
+  const { data: e, isLoading, isError } = useQuery({
     queryKey: ["employer", id],
     queryFn: () => employersService.getProfile(id),
+    retry: false,
   });
   // The company's own currently-open jobs (public search filtered by employer).
   const { data: jobs } = useQuery({
@@ -22,6 +23,20 @@ export function EmployerProfileScreen({ id }: { id: string }) {
     queryFn: () => jobsService.searchJobs({ employerId: id, size: 20 }),
   });
   const companyJobs = jobs?.items ?? [];
+
+  // Not found / backend error → a clear message instead of an endless skeleton.
+  if (isError || (!isLoading && !e)) {
+    return (
+      <main className="mx-auto grid min-h-[50vh] w-full max-w-[1080px] flex-1 place-items-center px-4 text-center">
+        <div>
+          <p className="text-sm font-semibold text-ink">{t("employer.notFound")}</p>
+          <Link href="/jobs" className="mt-4 inline-flex items-center rounded-full bg-ink px-5 py-2.5 text-sm font-bold text-on-dark hover:bg-ink/90">
+            {t("employer.backToJobs")}
+          </Link>
+        </div>
+      </main>
+    );
+  }
 
   if (isLoading || !e) {
     return (
@@ -105,11 +120,14 @@ export function EmployerProfileScreen({ id }: { id: string }) {
       <div className="mx-auto grid w-full max-w-[1080px] gap-6 px-4 py-10 sm:px-8 lg:grid-cols-[1fr_320px]">
         <div className="flex flex-col gap-6">
           {/* About */}
-          <Section title={t("employer.about")}>
-            <p className="text-[14px] leading-relaxed text-ink-2">{e.description}</p>
-          </Section>
+          {e.description && (
+            <Section title={t("employer.about")}>
+              <p className="text-[14px] leading-relaxed text-ink-2">{e.description}</p>
+            </Section>
+          )}
 
-          {/* Platform history */}
+          {/* Platform history — only when there's something to show. */}
+          {(e.completedJobs > 0 || e.hiredRoles.length > 0) && (
           <Section title={t("employer.historyTitle")}>
             <div className="grid gap-3 sm:grid-cols-3">
               <Stat value={String(e.completedJobs)} label={t("employer.statCompleted")} sub={t("employer.statCompletedSub", { date: e.memberSince })} />
@@ -125,8 +143,10 @@ export function EmployerProfileScreen({ id }: { id: string }) {
               ))}
             </div>
           </Section>
+          )}
 
-          {/* Reverse-trust ratings */}
+          {/* Reverse-trust ratings — only when the company has rating dimensions. */}
+          {e.ratings.length > 0 && (
           <Section title={t("employer.ratingsTitle")}>
             <p className="-mt-1 mb-4 text-[12px] text-ink-3">
               {t("employer.ratingsSub", { n: e.reviews.length, avg: e.rating.toFixed(1), flags: e.flags })}
@@ -152,6 +172,7 @@ export function EmployerProfileScreen({ id }: { id: string }) {
               </div>
             )}
           </Section>
+          )}
 
           {/* Two-sided reviews (worker → employer): summary + sort + per-review categories/flags. */}
           <ReviewsSection subjectId={id} subjectKind="employer" />

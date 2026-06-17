@@ -1032,6 +1032,8 @@ const uk: Dictionary = {
     trust: "Trust",
     activeJobsTitle: "Активні замовлення ({n})",
     noActiveJobs: "Немає активних замовлень.",
+    notFound: "Компанію не знайдено.",
+    backToJobs: "Назад до вакансій",
     applyJob: "Відгукнутися на замовлення",
     eventsTitle: "Фото з івентів",
   },

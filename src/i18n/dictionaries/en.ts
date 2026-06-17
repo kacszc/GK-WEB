@@ -1032,6 +1032,8 @@ const en: Dictionary = {
     trust: "Trust",
     activeJobsTitle: "Active jobs ({n})",
     noActiveJobs: "No active jobs.",
+    notFound: "Company not found.",
+    backToJobs: "Back to jobs",
     applyJob: "Apply for job",
     eventsTitle: "Event photos",
   },

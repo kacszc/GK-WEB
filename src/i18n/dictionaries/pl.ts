@@ -1031,6 +1031,8 @@ const pl = {
     trust: "Trust",
     activeJobsTitle: "Aktywne zlecenia ({n})",
     noActiveJobs: "Brak aktywnych zleceń.",
+    notFound: "Nie znaleziono firmy.",
+    backToJobs: "Wróć do ofert",
     applyJob: "Aplikuj na zlecenie",
     eventsTitle: "Zdjęcia z eventów",
   },
