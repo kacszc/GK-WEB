@@ -56,8 +56,9 @@ export function EmployerProfileScreen({ id }: { id: string }) {
         )}
       </div>
 
-      {/* Header below the cover: logo overlaps the cover's bottom edge; text on the light surface. */}
-      <div className="border-b border-line bg-surface">
+      {/* Header below the cover: logo overlaps the cover's bottom edge; text on the light surface.
+          relative z-10 so the overhanging avatar paints ABOVE the (positioned) cover, not behind it. */}
+      <div className="relative z-10 border-b border-line bg-surface">
         <div className="mx-auto w-full max-w-[1080px] px-4 sm:px-8">
           <div className="flex flex-col gap-4 pb-6 sm:flex-row sm:items-end sm:justify-between">
             <div className="flex items-end gap-4">
