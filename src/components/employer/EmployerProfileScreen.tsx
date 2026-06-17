@@ -61,14 +61,16 @@ export function EmployerProfileScreen({ id }: { id: string }) {
         <div className="mx-auto w-full max-w-[1080px] px-4 sm:px-8">
           <div className="flex flex-col gap-4 pb-6 sm:flex-row sm:items-end sm:justify-between">
             <div className="flex items-end gap-4">
-              <span className="-mt-12 grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-soft border-4 border-surface bg-danger text-3xl font-bold text-on-dark shadow-search sm:-mt-14">
+              {/* Avatar overhangs the cover (Facebook-style) — bigger + larger negative margin so it
+                  clearly sticks out above the header. */}
+              <span className="-mt-16 grid h-28 w-28 shrink-0 place-items-center overflow-hidden rounded-soft border-4 border-surface bg-danger text-4xl font-bold text-on-dark shadow-search sm:-mt-20 sm:h-32 sm:w-32">
                 {e.logoUrl ? (
-                  <Image src={e.logoUrl} alt={e.name} width={96} height={96} className="h-full w-full object-cover" unoptimized />
+                  <Image src={e.logoUrl} alt={e.name} width={128} height={128} className="h-full w-full object-cover" unoptimized />
                 ) : (
                   e.initial
                 )}
               </span>
-              <div className="pb-1">
+              <div className="pb-1 pt-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <h1 className="text-2xl font-bold tracking-[-0.5px] text-ink">{e.name}</h1>
                   {e.verified && (
