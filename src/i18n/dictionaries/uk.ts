@@ -700,6 +700,9 @@ const uk: Dictionary = {
     chatPlaceholder: "Напишіть повідомлення…",
     chatBack: "Повідомлення",
     chatSelect: "Оберіть розмову зі списку.",
+    chatToday: "Сьогодні",
+    chatYesterday: "Вчора",
+    chatStart: "Початок розмови",
   },
   jobDetail: {
     back: "Мої замовлення",

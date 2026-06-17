@@ -120,7 +120,8 @@ export type ChatMessage = {
   id: string;
   fromMe: boolean;
   text: string;
-  time: string;
+  time: string; // HH:MM clock label
+  createdAt: string; // ISO timestamp — for day grouping + scroll-up paging cursor
 };
 
 /** A saved specialist contact. */

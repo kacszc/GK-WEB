@@ -33,7 +33,11 @@ type ThreadDetailDto = {
   jobId: string | null;
   jobTitle: string | null;
   messages: MessageView[];
+  hasMore: boolean;
 };
+
+/** A page of older messages (ascending) loaded on scroll-up. */
+type MessagePageDto = { messages: MessageView[]; hasMore: boolean };
 
 // --- Adapters -------------------------------------------------------------
 
@@ -83,7 +87,7 @@ function toConversation(d: ThreadDto): Conversation {
 }
 
 export function toChatMessage(m: MessageView): ChatMessage {
-  return { id: m.id, fromMe: m.mine, text: m.text, time: clockTime(m.createdAt) };
+  return { id: m.id, fromMe: m.mine, text: m.text, time: clockTime(m.createdAt), createdAt: m.createdAt };
 }
 
 export const messagesService = {
@@ -102,10 +106,10 @@ export const messagesService = {
     return dtos.map(toConversation);
   },
 
-  /** Open a thread (marks it read server-side): header + messages. */
+  /** Open a thread (marks it read server-side): header + latest page of messages + hasMore (older). */
   async getThread(
     id: string,
-  ): Promise<{ conversation: Conversation | null; messages: ChatMessage[] }> {
+  ): Promise<{ conversation: Conversation | null; messages: ChatMessage[]; hasMore: boolean }> {
     const dto = await apiGet<ThreadDetailDto>(`/api/messages/threads/${encodeURIComponent(id)}`);
     return {
       conversation: {
@@ -120,7 +124,19 @@ export const messagesService = {
         jobTitle: dto.jobTitle ?? undefined,
       },
       messages: dto.messages.map(toChatMessage),
+      hasMore: dto.hasMore ?? false,
     };
+  },
+
+  /** Load the page of older messages before {@code beforeIso} (scroll-up history). */
+  async getOlderMessages(
+    threadId: string,
+    beforeIso: string,
+  ): Promise<{ messages: ChatMessage[]; hasMore: boolean }> {
+    const dto = await apiGet<MessagePageDto>(
+      `/api/messages/threads/${encodeURIComponent(threadId)}/messages?before=${encodeURIComponent(beforeIso)}`,
+    );
+    return { messages: dto.messages.map(toChatMessage), hasMore: dto.hasMore ?? false };
   },
 
   /** Post a message to an existing thread. Returns the created message (UI shape). */

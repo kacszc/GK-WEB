@@ -700,6 +700,9 @@ const en: Dictionary = {
     chatPlaceholder: "Type a message…",
     chatBack: "Messages",
     chatSelect: "Select a conversation from the list.",
+    chatToday: "Today",
+    chatYesterday: "Yesterday",
+    chatStart: "Start of the conversation",
   },
   jobDetail: {
     back: "My jobs",

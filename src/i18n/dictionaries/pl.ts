@@ -699,6 +699,9 @@ const pl = {
     chatPlaceholder: "Napisz wiadomość…",
     chatBack: "Wiadomości",
     chatSelect: "Wybierz rozmowę z listy.",
+    chatToday: "Dziś",
+    chatYesterday: "Wczoraj",
+    chatStart: "Początek rozmowy",
   },
   jobDetail: {
     back: "Moje zlecenia",
