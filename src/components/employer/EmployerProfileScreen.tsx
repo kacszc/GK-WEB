@@ -193,7 +193,7 @@ export function EmployerProfileScreen({ id }: { id: string }) {
                 {companyJobs.map((j) => (
                   <Link
                     key={j.id}
-                    href="/jobs"
+                    href={`/jobs/${j.id}`}
                     className="block rounded-tile border border-line-3 p-3 transition-colors hover:bg-muted"
                   >
                     <p className="text-[14px] font-semibold text-ink">{j.title}</p>

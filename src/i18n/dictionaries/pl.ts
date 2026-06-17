@@ -1127,6 +1127,7 @@ const pl = {
     apply: "Aplikuj",
     verified: "Zweryfikowany",
     empty: "Brak ofert dla wybranych filtrów",
+    notFound: "Nie znaleziono oferty.",
     applyTitle: "Aplikuj na ofertę",
     applyMessageLabel: "Wiadomość do pracodawcy",
     applyPlaceholder: "Przedstaw się i napisz, dlaczego pasujesz na to zlecenie…",

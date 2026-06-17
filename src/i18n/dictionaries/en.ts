@@ -1128,6 +1128,7 @@ const en: Dictionary = {
     apply: "Apply",
     verified: "Verified",
     empty: "No jobs for the selected filters",
+    notFound: "Job not found.",
     applyTitle: "Apply for this job",
     applyMessageLabel: "Message to the employer",
     applyPlaceholder: "Introduce yourself and say why you're a good fit…",
