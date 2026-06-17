@@ -49,69 +49,60 @@ export function EmployerProfileScreen({ id }: { id: string }) {
 
   return (
     <main className="flex-1">
-      {/* Cover banner — company photo, or a brand gradient fallback. */}
-      <div className="relative h-40 w-full overflow-hidden bg-gradient-to-r from-brand-violet to-brand-blue sm:h-52">
+      {/* Cover photo (Facebook-style banner) — image only, brand gradient fallback. */}
+      <div className="relative h-40 w-full overflow-hidden bg-gradient-to-r from-brand-violet to-brand-blue sm:h-60">
         {e.coverUrl && (
           <Image src={e.coverUrl} alt="" fill sizes="100vw" className="object-cover" unoptimized priority />
         )}
       </div>
 
-      {/* Hero */}
+      {/* Header below the cover: logo overlaps the cover's bottom edge; text on the light surface. */}
       <div className="border-b border-line bg-surface">
-        <div className="mx-auto flex w-full max-w-[1080px] flex-col gap-6 px-4 pb-8 sm:px-8 lg:flex-row lg:items-start lg:justify-between">
-          <div className="flex gap-4">
-            {/* Logo overlaps the cover; falls back to the initial tile. */}
-            <span className="-mt-10 grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-soft border-4 border-surface bg-danger text-3xl font-bold text-on-dark shadow-search">
-              {e.logoUrl ? (
-                <Image src={e.logoUrl} alt={e.name} width={80} height={80} className="h-full w-full object-cover" unoptimized />
-              ) : (
-                e.initial
-              )}
-            </span>
-            <div className="pt-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-2xl font-bold tracking-[-0.5px] text-ink">{e.name}</h1>
-                {e.verified && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-[#e7efff] px-2 py-0.5 text-[11px] font-semibold text-[#1158ed]">
-                    <BadgeCheck className="h-3 w-3" />
-                    {t("employer.verified")}
-                  </span>
+        <div className="mx-auto w-full max-w-[1080px] px-4 sm:px-8">
+          <div className="flex flex-col gap-4 pb-6 sm:flex-row sm:items-end sm:justify-between">
+            <div className="flex items-end gap-4">
+              <span className="-mt-12 grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-soft border-4 border-surface bg-danger text-3xl font-bold text-on-dark shadow-search sm:-mt-14">
+                {e.logoUrl ? (
+                  <Image src={e.logoUrl} alt={e.name} width={96} height={96} className="h-full w-full object-cover" unoptimized />
+                ) : (
+                  e.initial
                 )}
-              </div>
-              <p className="mt-1 text-[13px] text-ink-2">{e.industries.join(" · ")}</p>
-              <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-ink-3">
-                {e.location && (
-                  <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5 text-ink-4" />{e.location}</span>
-                )}
-                {e.website && (
-                  <a
-                    href={e.website.startsWith("http") ? e.website : `https://${e.website}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-brand-violet hover:underline"
-                  >
-                    <Globe className="h-3.5 w-3.5" />
-                    {e.website.replace(/^https?:\/\//, "")}
-                  </a>
-                )}
-              </div>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <Badge className="bg-[#fff7da] text-[#8a6400]"><Star className="h-3 w-3 fill-current" />{e.rating.toFixed(1)} ocena</Badge>
-                <Badge className="bg-success-chip text-success-chip-text">{e.completedJobs} zleceń zrealizowanych</Badge>
-                <Badge className="bg-pill text-ink-3">{t("employer.statCompletedSub", { date: e.memberSince })}</Badge>
+              </span>
+              <div className="pb-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="text-2xl font-bold tracking-[-0.5px] text-ink">{e.name}</h1>
+                  {e.verified && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-[#e7efff] px-2 py-0.5 text-[11px] font-semibold text-[#1158ed]">
+                      <BadgeCheck className="h-3 w-3" />
+                      {t("employer.verified")}
+                    </span>
+                  )}
+                </div>
+                {e.industries.length > 0 && <p className="mt-1 text-[13px] text-ink-2">{e.industries.join(" · ")}</p>}
+                <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-ink-3">
+                  {e.location && (
+                    <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5 text-ink-4" />{e.location}</span>
+                  )}
+                  {e.website && (
+                    <a
+                      href={e.website.startsWith("http") ? e.website : `https://${e.website}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-brand-violet hover:underline"
+                    >
+                      <Globe className="h-3.5 w-3.5" />
+                      {e.website.replace(/^https?:\/\//, "")}
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Seeking card */}
-          <div className="w-full rounded-panel bg-ink p-5 text-on-dark lg:w-[280px] lg:shrink-0">
-            <p className="text-[11px] font-bold uppercase tracking-[0.5px] text-on-dark/60">{t("employer.seeking")}</p>
-            <p className="mt-1 text-2xl font-bold">{t("employer.seekingPeople", { n: e.seekingCount })}</p>
-            <p className="mt-1 text-[12px] text-on-dark/70">{e.seekingRoles}</p>
-            <a href="#jobs" className="mt-4 inline-flex w-full items-center justify-center gap-1.5 rounded-tile bg-surface px-4 py-2.5 text-[13px] font-bold text-ink hover:bg-surface/90">
-              {t("employer.seekingCta")}
-              <ArrowRight className="h-4 w-4" />
-            </a>
+            <div className="flex flex-wrap gap-2 sm:pb-1">
+              <Badge className="bg-[#fff7da] text-[#8a6400]"><Star className="h-3 w-3 fill-current" />{e.rating.toFixed(1)} ocena</Badge>
+              <Badge className="bg-success-chip text-success-chip-text">{e.completedJobs} zleceń zrealizowanych</Badge>
+              {e.memberSince && <Badge className="bg-pill text-ink-3">{t("employer.statCompletedSub", { date: e.memberSince })}</Badge>}
+            </div>
           </div>
         </div>
       </div>
@@ -180,6 +171,17 @@ export function EmployerProfileScreen({ id }: { id: string }) {
 
         {/* Right rail */}
         <div className="flex flex-col gap-6" id="jobs">
+          {/* "Currently seeking" — moved out of the hero so it doesn't cover the cover photo. */}
+          <div className="rounded-panel bg-ink p-5 pr-4 text-on-dark">
+            <p className="text-[11px] font-bold uppercase tracking-[0.5px] text-on-dark/60">{t("employer.seeking")}</p>
+            <p className="mt-1 text-2xl font-bold">{t("employer.seekingPeople", { n: e.seekingCount })}</p>
+            {e.seekingRoles && <p className="mt-1 text-[12px] text-on-dark/70">{e.seekingRoles}</p>}
+            <a href="#jobs" className="mt-4 inline-flex w-full items-center justify-center gap-1.5 rounded-tile bg-surface px-4 py-2.5 text-[13px] font-bold text-ink hover:bg-surface/90">
+              {t("employer.seekingCta")}
+              <ArrowRight className="h-4 w-4" />
+            </a>
+          </div>
+
           <Section title={t("employer.activeJobsTitle", { n: companyJobs.length })}>
             {companyJobs.length === 0 ? (
               <p className="text-[13px] text-ink-3">{t("employer.noActiveJobs")}</p>
