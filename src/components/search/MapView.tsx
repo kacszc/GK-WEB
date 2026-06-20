@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useI18n } from "@/i18n/I18nProvider";
+import { useContact } from "@/lib/ContactProvider";
 import { geoService } from "@/services";
 import { avatarColors, initials } from "@/lib/avatar";
 import type { Specialist, Availability } from "@/lib/types";
@@ -36,7 +37,7 @@ function popupHtml(s: Specialist, t: TFunction): string {
       <p class="mt-2 text-[12px] text-ink-2">${s.district} · ${t("results.km", { km: s.distanceKm })} · ${t("results.perHour", { rate: s.rateFrom })} · ★ ${s.rating.toFixed(1)} (${s.reviews})</p>
       <div class="mt-2.5 flex gap-2">
         <a href="/specialist/${s.id}" class="flex-1 rounded-tile border border-line-2 px-3 py-1.5 text-center text-[12px] font-medium text-ink">${t("results.profile")}</a>
-        <button class="flex-1 rounded-tile bg-ink px-3 py-1.5 text-[12px] font-semibold text-white">${t("results.contact")}</button>
+        <button type="button" data-skill-contact class="flex-1 rounded-tile bg-ink px-3 py-1.5 text-[12px] font-semibold text-white">${t("results.contact")}</button>
       </div>
     </div>`;
 }
@@ -55,6 +56,11 @@ export function MapView({
   center?: [number, number];
 }) {
   const { t } = useI18n();
+  const { open: openContact } = useContact();
+  const openContactRef = useRef(openContact);
+  useEffect(() => {
+    openContactRef.current = openContact;
+  }, [openContact]);
 
   // Zones (districts) come from the backend per city — add zones by inserting rows, not code.
   const { data: zones = [] } = useQuery({
@@ -246,6 +252,12 @@ export function MapView({
       .setLngLat([s.lng, s.lat])
       .setHTML(popupHtml(s, tRef.current))
       .addTo(map);
+    // The popup is rendered as an HTML string (MapLibre setHTML), so the "Kontakt" button has no
+    // React handler — wire it to the shared contact flow (same as SpecialistCard's open()).
+    popup
+      .getElement()
+      ?.querySelector<HTMLButtonElement>("[data-skill-contact]")
+      ?.addEventListener("click", () => openContactRef.current(s));
     // Closing the popup (X / click-away) deselects the pin so it won't reappear later.
     popup.on("close", () => {
       if (suppressCloseRef.current) return;
