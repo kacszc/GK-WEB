@@ -421,7 +421,36 @@ export type WorkerOnboardingData = {
   specializationCodes: string[]; // stable codes → specialist's specialization relation
   customSpecializations: { industryCode: string; label: string }[]; // "Inne" — custom role(s), no catalog code
   languages: string[];
+  /** Proficiency per language code (code → basic/conversational/advanced). */
+  languageLevels?: Record<string, string>;
+  /** Dynamic attribute answers from the catalog-driven onboarding step. */
+  attributes?: WorkerAttributeInput[];
 };
+
+/** One attribute answer submitted from the dynamic onboarding step. */
+export type WorkerAttributeInput = {
+  attributeCode: string;
+  optionCode?: string | null;
+  boolValue?: boolean | null;
+  textValue?: string | null;
+  dateValue?: string | null; // ISO date
+  validUntil?: string | null; // ISO date (for BOOL_EXPIRY)
+};
+
+/** Attribute schema (groups → attributes → options) for the dynamic onboarding step. */
+export type AttributeOptionDef = { code: string; label: string; help?: string | null; position: number };
+export type AttributeDef = {
+  code: string;
+  label: string;
+  help?: string | null;
+  type: "SINGLE_SELECT" | "MULTI_SELECT" | "BOOL" | "BOOL_EXPIRY" | "DATE" | "TEXT";
+  required: boolean;
+  position: number;
+  matchKey?: string | null;
+  appliesTo: string;
+  options: AttributeOptionDef[];
+};
+export type AttributeGroupDef = { code: string; label: string; position: number; attributes: AttributeDef[] };
 
 /** Result of completing specialist onboarding. */
 export type WorkerOnboardingResult = {

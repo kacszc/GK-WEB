@@ -5,6 +5,7 @@ import type {
   WorkerOnboardingResult,
   EmployerOnboardingData,
   EmployerOnboardingResult,
+  AttributeGroupDef,
 } from "@/lib/types";
 import { apiGet, apiPost } from "@/lib/api-client";
 
@@ -48,6 +49,18 @@ export const onboardingService = {
     return teamSizes;
   },
 
+  /**
+   * Catalog-driven attribute schema for the dynamic onboarding step: groups → attributes → options,
+   * already localized by the backend. Scoped to the chosen industry + specializations.
+   */
+  async getAttributes(industry: string, specializations: string[]): Promise<AttributeGroupDef[]> {
+    const params = new URLSearchParams();
+    if (industry) params.set("industry", industry);
+    for (const code of specializations) params.append("specialization", code);
+    const qs = params.toString();
+    return apiGet<AttributeGroupDef[]>(`/api/catalog/attributes${qs ? `?${qs}` : ""}`);
+  },
+
   /** Look up a company in the GUS registry by NIP. */
   async lookupGus(nip: string): Promise<GusCompany> {
     const clean = nip.replace(/\s+/g, "");
@@ -65,7 +78,10 @@ export const onboardingService = {
       lng: data.lng,
       specializationCodes: data.specializationCodes, // structured codes → search relation
       customSpecializations: data.customSpecializations, // "Inne" → industry + free-text role
-      languageCodes: data.languages, // language codes → language filter
+      languageCodes: data.languages, // language codes → language filter (back-compat)
+      // Languages with proficiency level (code → level); falls back to plain codes server-side.
+      languages: data.languages.map((code) => ({ code, level: data.languageLevels?.[code] ?? null })),
+      attributes: data.attributes ?? [], // dynamic attribute answers
     });
     return { trustScore: res.trustScore, firstName };
   },
