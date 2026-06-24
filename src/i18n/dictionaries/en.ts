@@ -478,6 +478,8 @@ const en: Dictionary = {
     mapPickNoDistrict: "Point picked (couldn't resolve a district).",
     mapPickConfirm: "Use this location",
     sContact: "Contact",
+    sOffer: "What you provide",
+    sOfferHint: "Accommodation, transport, tools… — helps match out-of-town workers and speeds up hiring.",
     contactApp: "In-app",
     contactPhone: "Phone",
     phoneLabel: "Phone number",

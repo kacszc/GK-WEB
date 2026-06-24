@@ -25,6 +25,7 @@ import { requestErrorToast } from "@/lib/errorToast";
 import type { Locale } from "@/i18n/config";
 import { cn } from "@/lib/cn";
 import type { JobDraft, JobDuration, JobEngagement, JobRateType } from "@/lib/types";
+import { AttributeFields, buildAttributePayload, type AttrVal } from "@/components/attributes/AttributeFields";
 
 const dpLocales: Record<Locale, DateFnsLocale> = { pl, en: enUS, uk };
 const intlTags: Record<Locale, string> = { pl: "pl-PL", en: "en-GB", uk: "uk-UA" };
@@ -117,6 +118,13 @@ export function PostJobScreen({
     queryFn: () => onboardingService.getSpecializations(draft.industry),
     enabled: !!draft.industry,
   });
+  // Job-side catalog attributes (accommodation/equipment offered, …) for the chosen industry+profession.
+  const [jobAttrValues, setJobAttrValues] = useState<Record<string, AttrVal>>({});
+  const { data: jobAttrGroups = [] } = useQuery({
+    queryKey: ["jobAttributes", draft.industry, draft.profession],
+    queryFn: () => onboardingService.getAttributes(draft.industry, draft.profession ? [draft.profession] : [], "job"),
+    enabled: !!draft.industry,
+  });
 
   // Districts come from the chosen curated city's backend zones (geocoded cities have none).
   const { data: zones = [] } = useQuery({
@@ -189,13 +197,18 @@ export function PostJobScreen({
   // Create flow: publish now or save as a draft.
   function submit(publish: boolean) {
     if (!validate()) return;
-    createJob({ draft, publish });
+    createJob({ draft: { ...draft, jobAttributes: buildAttributePayload(jobAttrGroups, jobAttrValues) }, publish });
   }
 
   // Edit flow: save changes (status unchanged), then return to the job's management screen.
   function saveEdit() {
     if (!validate()) return;
-    update.mutate(draft, {
+    // Only send job attributes if the operator touched the section — otherwise omit so the backend
+    // preserves existing answers (they are not prefilled into the edit form yet).
+    const editDraft: JobDraft = Object.keys(jobAttrValues).length
+      ? { ...draft, jobAttributes: buildAttributePayload(jobAttrGroups, jobAttrValues) }
+      : draft;
+    update.mutate(editDraft, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["myJobs"] });
         queryClient.invalidateQueries({ queryKey: ["job", jobId] });
@@ -680,6 +693,14 @@ export function PostJobScreen({
                   </>
                 )}
               </SectionCard>
+
+              {/* Job-side catalog attributes (accommodation/equipment offered, …) — shown when the
+                  chosen industry/profession defines any. */}
+              {jobAttrGroups.length > 0 && (
+                <SectionCard title={t("postJob.sOffer")} hint={t("postJob.sOfferHint")}>
+                  <AttributeFields groups={jobAttrGroups} values={jobAttrValues} setValues={setJobAttrValues} />
+                </SectionCard>
+              )}
             </div>
 
             {/* Summary */}

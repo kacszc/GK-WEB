@@ -114,6 +114,9 @@ function toJobBody(draft: JobDraft) {
     duration: draft.duration || null,
     workDate: draft.date ? draft.date.toISOString().slice(0, 10) : null,
     workDateTo: draft.dateTo ? draft.dateTo.toISOString().slice(0, 10) : null,
+    // Job-side catalog attributes (accommodation/equipment offered, …). Omitted (undefined) → the
+    // backend leaves existing answers untouched (so editing without re-loading them is non-destructive).
+    ...(draft.jobAttributes ? { jobAttributes: draft.jobAttributes } : {}),
   };
 }
 

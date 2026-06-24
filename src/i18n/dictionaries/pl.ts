@@ -477,6 +477,8 @@ const pl = {
     mapPickNoDistrict: "Punkt wybrany (dzielnicy nie udało się ustalić).",
     mapPickConfirm: "Użyj tej lokalizacji",
     sContact: "Kontakt",
+    sOffer: "Co zapewniasz",
+    sOfferHint: "Zakwaterowanie, transport, narzędzia… — pomaga dopasować przyjezdnych i przyspiesza rekrutację.",
     contactApp: "Przez aplikację",
     contactPhone: "Telefon",
     phoneLabel: "Numer telefonu",

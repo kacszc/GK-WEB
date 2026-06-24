@@ -478,6 +478,8 @@ const uk: Dictionary = {
     mapPickNoDistrict: "Точку обрано (район визначити не вдалося).",
     mapPickConfirm: "Використати це місце",
     sContact: "Контакт",
+    sOffer: "Що ви забезпечуєте",
+    sOfferHint: "Житло, транспорт, інструменти… — допомагає підібрати приїжджих і пришвидшує найм.",
     contactApp: "Через застосунок",
     contactPhone: "Телефон",
     phoneLabel: "Номер телефону",

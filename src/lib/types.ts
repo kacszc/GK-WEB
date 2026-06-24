@@ -237,6 +237,8 @@ export type JobDraft = {
   hours: number | null; // hours per day (auto for full/part time)
   contactMethod: "app" | "phone";
   phone: string;
+  /** Job-side catalog attribute answers (accommodation/equipment offered, …). */
+  jobAttributes?: WorkerAttributeInput[];
 };
 
 /** Result of creating/publishing a job. */

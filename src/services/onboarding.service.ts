@@ -53,10 +53,15 @@ export const onboardingService = {
    * Catalog-driven attribute schema for the dynamic onboarding step: groups → attributes → options,
    * already localized by the backend. Scoped to the chosen industry + specializations.
    */
-  async getAttributes(industry: string, specializations: string[]): Promise<AttributeGroupDef[]> {
+  async getAttributes(
+    industry: string,
+    specializations: string[],
+    side: "specialist" | "job" = "specialist",
+  ): Promise<AttributeGroupDef[]> {
     const params = new URLSearchParams();
     if (industry) params.set("industry", industry);
     for (const code of specializations) params.append("specialization", code);
+    if (side === "job") params.set("side", "job");
     const qs = params.toString();
     return apiGet<AttributeGroupDef[]>(`/api/catalog/attributes${qs ? `?${qs}` : ""}`);
   },
