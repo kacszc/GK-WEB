@@ -14,6 +14,7 @@ import {
   type User as FirebaseUser,
 } from "firebase/auth";
 import { firebaseAuth } from "@/lib/firebase";
+import { apiGet } from "@/lib/api-client";
 import type { AuthUser, UserRole } from "@/lib/types";
 
 // We mirror the Firebase-derived user here to avoid a flash of "logged out"
@@ -55,14 +56,25 @@ function roleFromClaim(claim: unknown): UserRole {
   return String(claim ?? "").toUpperCase() === "SPECIALIST" ? "specialist" : "employer";
 }
 
-/** Derive the app user from a Firebase user + its ID token custom claims. */
+/** Derive the app user from a Firebase user. Role comes from the backend (authoritative). */
 async function deriveUser(fb: FirebaseUser, forceRefresh = false): Promise<AuthUser> {
+  // The Firebase `role` claim is only a hint: it requires Firebase Admin to be configured (absent
+  // locally) and a token refresh to land, so it can be missing/stale. The source of truth is the
+  // backend's app_user.role, read via GET /api/me. Fall back to the claim only if /api/me fails.
   let role: UserRole = "employer";
   try {
     const res = await fb.getIdTokenResult(forceRefresh);
     role = roleFromClaim(res.claims.role);
   } catch {
-    // If claims can't be read, default to employer; backend register fixes it.
+    // ignore — overridden by /api/me below when reachable
+  }
+  try {
+    const me = await apiGet<{ role?: string }>("/api/me");
+    if (me?.role) {
+      role = String(me.role).toUpperCase() === "SPECIALIST" ? "specialist" : "employer";
+    }
+  } catch {
+    // backend unreachable / not provisioned yet — keep the claim-derived role
   }
   const name = fb.displayName?.trim() || fb.email?.split("@")[0] || "Użytkownik";
   return { name, email: fb.email ?? "", role, emailVerified: fb.emailVerified };

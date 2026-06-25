@@ -293,24 +293,32 @@ export function WorkerOnboarding({
                 <Chip key={l.code} label={l.name} selected={langs.includes(l.code)} onClick={() => toggle(langs, setLangs, l.code)} />
               ))}
             </div>
-            {/* Proficiency per selected language (basic/conversational/advanced). */}
+            {/* Proficiency per selected language — segmented control (nicer than a dropdown). */}
             {langs.length > 0 && (
-              <div className="mt-3 flex flex-col gap-2">
+              <div className="mt-3 flex flex-col gap-2.5">
                 {langs.map((code) => {
                   const name = languages.find((l) => l.code === code)?.name ?? code;
                   return (
-                    <div key={code} className="flex items-center justify-between gap-3">
-                      <span className="text-[13px] text-ink-2">{name}</span>
-                      <select
-                        value={langLevels[code] ?? ""}
-                        onChange={(e) => setLangLevels((m) => ({ ...m, [code]: e.target.value }))}
-                        className="rounded-tile border border-line-2 bg-surface px-2.5 py-1.5 text-[12px] text-ink outline-none"
-                      >
-                        <option value="">{t("onboarding.langLevel")}</option>
-                        {LANG_LEVELS.map((lvl) => (
-                          <option key={lvl} value={lvl}>{t(`onboarding.lvl_${lvl}`)}</option>
-                        ))}
-                      </select>
+                    <div key={code} className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="text-[13px] font-medium text-ink-2">{name}</span>
+                      <div className="inline-flex rounded-tile border border-line-2 p-0.5">
+                        {LANG_LEVELS.map((lvl) => {
+                          const on = langLevels[code] === lvl;
+                          return (
+                            <button
+                              key={lvl}
+                              type="button"
+                              onClick={() => setLangLevels((m) => ({ ...m, [code]: on ? "" : lvl }))}
+                              className={cn(
+                                "rounded-[7px] px-2.5 py-1 text-[12px] font-medium transition-colors",
+                                on ? "bg-ink text-on-dark" : "text-ink-3 hover:text-ink",
+                              )}
+                            >
+                              {t(`onboarding.lvl_${lvl}`)}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   );
                 })}
