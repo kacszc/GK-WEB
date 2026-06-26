@@ -783,6 +783,13 @@ const en: Dictionary = {
     latePayment: "Did not pay on time",
     conditionsDifferent: "Conditions differed from agreed",
   },
+  profileNudge: {
+    title: "Finish your profile",
+    descSpecialist: "Complete your profile to appear in results and receive jobs.",
+    descEmployer: "Complete your company profile to post jobs and build trust.",
+    cta: "Finish",
+    dismiss: "Hide",
+  },
   onboarding: {
     // shared
     stepOf: "Step {n} of {total}",

@@ -783,6 +783,13 @@ const uk: Dictionary = {
     latePayment: "Не заплатив вчасно",
     conditionsDifferent: "Умови відрізнялися від домовлених",
   },
+  profileNudge: {
+    title: "Завершіть профіль",
+    descSpecialist: "Заповніть профіль, щоб зʼявлятися в результатах і отримувати замовлення.",
+    descEmployer: "Заповніть профіль компанії, щоб публікувати замовлення та будувати довіру.",
+    cta: "Завершити",
+    dismiss: "Сховати",
+  },
   onboarding: {
     // shared
     stepOf: "Крок {n} з {total}",

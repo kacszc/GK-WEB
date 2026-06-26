@@ -782,6 +782,13 @@ const pl = {
     latePayment: "Nie zapłacił w terminie",
     conditionsDifferent: "Warunki inne niż ustalone",
   },
+  profileNudge: {
+    title: "Dokończ profil",
+    descSpecialist: "Uzupełnij profil, żeby pojawić się w wynikach i dostawać zlecenia.",
+    descEmployer: "Uzupełnij profil firmy, żeby publikować zlecenia i budować zaufanie.",
+    cta: "Dokończ",
+    dismiss: "Ukryj",
+  },
   onboarding: {
     // shared
     stepOf: "Krok {n} z {total}",

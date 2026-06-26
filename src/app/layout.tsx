@@ -13,6 +13,7 @@ import { ToastProvider } from "@/lib/ToastProvider";
 import { NotificationToaster } from "@/components/layout/NotificationToaster";
 import { ErrorToaster } from "@/components/layout/ErrorToaster";
 import { VerifyNotice } from "@/components/layout/VerifyNotice";
+import { ProfileNudge } from "@/components/layout/ProfileNudge";
 import { AnnouncementBar } from "@/components/layout/AnnouncementBar";
 import { CookieConsentProvider } from "@/lib/CookieConsentProvider";
 import { TourProvider } from "@/lib/TourProvider";
@@ -73,6 +74,7 @@ export default async function RootLayout({
                       <AnnouncementBar />
                       <VerifyNotice variant="banner" />
                       {children}
+                      <ProfileNudge />
                       <NotificationToaster />
                       <ErrorToaster />
                       <CookieConsent />
