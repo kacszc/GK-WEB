@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ChevronDown, SlidersHorizontal } from "lucide-react";
 import { useI18n } from "@/i18n/I18nProvider";
 import { specialistsService, type SpecialistFilters } from "@/services";
-import type { Availability, UserLocation } from "@/lib/types";
+import type { Availability, UserLocation, AttributeDef } from "@/lib/types";
 import { LocationPicker } from "./LocationPicker";
 import { WhenFilter, isoToWhen, whenToISO } from "@/components/landing/WhenFilter";
 import { cn } from "@/lib/cn";
@@ -86,6 +86,35 @@ export function FilterSidebar({
     setOpenIndustry(industryCode);
   };
 
+  // Catalog-attribute filters, scoped to the chosen branże/specjalizacje (so gastronomy filters
+  // don't show for a construction search). Industries come from whole-industry picks, "Inne", and
+  // the industries the picked specializations belong to. Backend returns only in-scope attributes.
+  const attrIndustries = Array.from(
+    new Set([
+      ...industries,
+      ...customIndustries,
+      ...(schema
+        ? Object.keys(schema.specializations).filter((code) =>
+            schema.specializations[code].some((s) => professions.includes(s.code)),
+          )
+        : []),
+    ]),
+  );
+  const hasAttrScope = attrIndustries.length > 0 || professions.length > 0;
+  const { data: attrGroups } = useQuery({
+    queryKey: ["searchAttrFilters", locale, [...attrIndustries].sort().join(","), [...professions].sort().join(",")],
+    queryFn: () => specialistsService.getAttributeFilters(attrIndustries, professions, locale),
+    enabled: hasAttrScope,
+  });
+
+  // Only SELECT/BOOL attributes are filterable (DATE/TEXT can't map to a token).
+  const FILTERABLE = new Set(["SINGLE_SELECT", "MULTI_SELECT", "BOOL", "BOOL_EXPIRY"]);
+  const filterableGroups = (attrGroups ?? [])
+    .map((g) => ({ ...g, attributes: g.attributes.filter((a) => FILTERABLE.has(a.type)) }))
+    .filter((g) => g.attributes.length > 0);
+  const attrTokens = filters.attributes ?? [];
+  const toggleAttr = (token: string) => onPatch({ attributes: toggle(attrTokens, token) });
+
   const trust = schema?.trust ?? { min: 0, max: 100, defaultValue: 75 };
   const distance = schema?.distanceKm ?? { min: 1, max: 50, defaultValue: 25 };
 
@@ -159,6 +188,19 @@ export function FilterSidebar({
           <p className="mt-2 text-[12px] text-ink-4">{t("results.fPickIndustry")}</p>
         )}
       </Section>
+
+      {/* Catalog attributes (profession-driven): rendered only once a branża/specjalizacja is picked,
+          so the relevant filters (np. doświadczenie, uprawnienia, języki obce) appear in context. */}
+      {hasAttrScope &&
+        filterableGroups.map((g) => (
+          <Section key={g.code} title={g.label}>
+            <div className="flex flex-col gap-3">
+              {g.attributes.map((a) => (
+                <AttributeFilter key={a.code} attr={a} selected={attrTokens} onToggle={toggleAttr} />
+              ))}
+            </div>
+          </Section>
+        ))}
 
       {/* Availability status (self-declared by the specialist) — a plain status filter. */}
       <Section title={t("results.fAvailability")}>
@@ -312,6 +354,50 @@ export function FilterSidebar({
       >
         {t("results.clear")}
       </button>
+    </div>
+  );
+}
+
+/** One catalog attribute as a filter control. BOOL/BOOL_EXPIRY → a single check (token = `code`);
+ * SELECT types → option pills (token = `code:option`). Multiple options of one attribute are OR'd
+ * by the backend, so they can be freely combined. */
+function AttributeFilter({
+  attr,
+  selected,
+  onToggle,
+}: {
+  attr: AttributeDef;
+  selected: string[];
+  onToggle: (token: string) => void;
+}) {
+  if (attr.type === "BOOL" || attr.type === "BOOL_EXPIRY") {
+    return (
+      <CheckRow
+        label={attr.label}
+        checked={selected.includes(attr.code)}
+        onChange={() => onToggle(attr.code)}
+      />
+    );
+  }
+  return (
+    <div>
+      <p className="mb-1.5 text-[12px] font-medium text-ink-2" title={attr.help ?? undefined}>
+        {attr.label}
+      </p>
+      <div className="flex flex-wrap gap-1.5">
+        {attr.options.map((o) => {
+          const token = `${attr.code}:${o.code}`;
+          return (
+            <Pill
+              key={o.code}
+              label={o.label}
+              small
+              selected={selected.includes(token)}
+              onClick={() => onToggle(token)}
+            />
+          );
+        })}
+      </div>
     </div>
   );
 }

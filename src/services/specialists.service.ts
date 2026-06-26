@@ -1,4 +1,10 @@
-import type { Specialist, SpecialistSearch, Availability, SpecialistProfile } from "@/lib/types";
+import type {
+  Specialist,
+  SpecialistSearch,
+  Availability,
+  SpecialistProfile,
+  AttributeGroupDef,
+} from "@/lib/types";
 import { apiGet } from "@/lib/api-client";
 
 /** Backend specialist DTO (search results + detail; detail adds the optional fields). */
@@ -104,6 +110,9 @@ export type SpecialistFilters = {
   rateMax?: number;
   kyc?: boolean;
   languages?: string[];
+  /** Catalog-attribute filters as tokens: `code` (BOOL = true) or `code:option` (a SELECT answer).
+   * Backend semantics: OR within one attribute (any selected option), AND across attributes. */
+  attributes?: string[];
   sort?: SpecialistSort;
   near?: { lng: number; lat: number };
   /** "When" range (ISO yyyy-mm-dd) — flags specialists not fully free in the term (warning, not a cut). */
@@ -136,6 +145,7 @@ export const specialistsService = {
     if (filters.rateMax != null) params.set("rateMax", String(filters.rateMax));
     if (filters.kyc) params.set("kyc", "true");
     if (filters.languages?.length) params.set("languages", filters.languages.join(","));
+    if (filters.attributes?.length) params.set("attr", filters.attributes.join(","));
     if (filters.sort) params.set("sort", filters.sort);
     if (filters.fromDate) params.set("from", filters.fromDate);
     if (filters.toDate) params.set("to", filters.toDate);
@@ -187,6 +197,23 @@ export const specialistsService = {
   /** The backend-defined filter schema (industries → specializations, availability, sort, ranges). */
   async getFilters(locale?: string): Promise<SearchFilterSchema> {
     return apiGet<SearchFilterSchema>("/api/specialists/filters", { locale });
+  },
+
+  /**
+   * Catalog-driven attribute schema scoped to the selected industries/specializations — drives the
+   * dynamic attribute filters in the sidebar. Same endpoint the onboarding wizard uses (specialist
+   * side); labels/help already localized by the backend. Empty scope → only global attributes.
+   */
+  async getAttributeFilters(
+    industries: string[],
+    specializations: string[],
+    locale?: string,
+  ): Promise<AttributeGroupDef[]> {
+    const params = new URLSearchParams();
+    for (const code of industries) params.append("industries", code);
+    for (const code of specializations) params.append("specialization", code);
+    const qs = params.toString();
+    return apiGet<AttributeGroupDef[]>(`/api/catalog/attributes${qs ? `?${qs}` : ""}`, { locale });
   },
 };
 

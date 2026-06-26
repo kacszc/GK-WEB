@@ -35,6 +35,36 @@ export function ActiveFilters({
     queryKey: ["searchFilters", locale],
     queryFn: () => specialistsService.getFilters(locale),
   });
+
+  // Attribute-filter chips need the catalog labels for their tokens (`code` / `code:option`). Reuse
+  // the sidebar's scoped schema (same query key) so it's already cached; only fetch when there are
+  // attribute tokens to label.
+  const professions = filters.professions ?? [];
+  const attrIndustries = Array.from(
+    new Set([
+      ...(filters.industries ?? []),
+      ...(filters.customIndustries ?? []),
+      ...(schema
+        ? Object.keys(schema.specializations).filter((code) =>
+            schema.specializations[code].some((s) => professions.includes(s.code)),
+          )
+        : []),
+    ]),
+  );
+  const { data: attrGroups } = useQuery({
+    queryKey: ["searchAttrFilters", locale, [...attrIndustries].sort().join(","), [...professions].sort().join(",")],
+    queryFn: () => specialistsService.getAttributeFilters(attrIndustries, professions, locale),
+    enabled: (filters.attributes?.length ?? 0) > 0,
+  });
+  const attrDefs = (attrGroups ?? []).flatMap((g) => g.attributes);
+  const attrLabel = (token: string): string => {
+    const [code, opt] = token.split(":");
+    const def = attrDefs.find((a) => a.code === code);
+    if (!def) return token;
+    if (!opt) return def.label; // BOOL
+    return def.options.find((o) => o.code === opt)?.label ?? def.label;
+  };
+
   const chips: { key: string; label: string; remove: () => void }[] = [];
 
   if (filters.q) chips.push({ key: "q", label: filters.q, remove: () => onPatch({ q: undefined }) });
@@ -79,6 +109,12 @@ export function ActiveFilters({
       key: `lng-${l}`,
       label: t(LANG_KEY[l] ?? l),
       remove: () => onPatch({ languages: (filters.languages ?? []).filter((x) => x !== l) }),
+    });
+  for (const token of filters.attributes ?? [])
+    chips.push({
+      key: `attr-${token}`,
+      label: attrLabel(token),
+      remove: () => onPatch({ attributes: (filters.attributes ?? []).filter((x) => x !== token) }),
     });
 
   if (chips.length === 0) return null;

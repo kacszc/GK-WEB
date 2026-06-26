@@ -94,6 +94,7 @@ export function SearchScreen({
     (filters.industries?.length ?? 0) +
     (filters.customIndustries?.length ?? 0) +
     (filters.availability?.length ?? 0) +
+    (filters.attributes?.length ?? 0) +
     (filters.kyc ? 1 : 0) +
     (filters.minTrust ? 1 : 0) +
     (filters.maxDistanceKm != null ? 1 : 0);

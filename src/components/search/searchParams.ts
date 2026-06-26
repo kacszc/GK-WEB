@@ -46,6 +46,7 @@ export function parseSearchFilters(sp: SearchParamsInput): { filters: Specialist
     rateMax: numOrUndef(first(sp.rateMax)),
     kyc: kyc === "1" || kyc === "true",
     languages: csv(first(sp.languages)),
+    attributes: csv(first(sp.attr)),
     sort: (first(sp.sort) as SpecialistSort) || DEFAULT_SORT,
     fromDate: first(sp.from) || undefined,
     toDate: first(sp.to) || undefined,
@@ -78,6 +79,7 @@ export function serializeSearchFilters(f: SpecialistFilters, view: ResultsView):
   if (f.rateMax != null) p.set("rateMax", String(f.rateMax));
   if (f.kyc) p.set("kyc", "1");
   if (f.languages?.length) p.set("languages", f.languages.join(","));
+  if (f.attributes?.length) p.set("attr", f.attributes.join(","));
   if (f.sort) p.set("sort", f.sort);
   if (f.fromDate) p.set("from", f.fromDate);
   if (f.toDate) p.set("to", f.toDate);
