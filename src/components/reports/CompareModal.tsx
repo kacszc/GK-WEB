@@ -98,13 +98,6 @@ export function CompareModal({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-line">
-                  <MetricRow label={t("reports.compareTrust")}>
-                    {chosen.map((c) => (
-                      <Cell key={c.id}>
-                        <span className="font-bold text-ink">{c.trustScore}</span>
-                      </Cell>
-                    ))}
-                  </MetricRow>
                   <MetricRow label={t("reports.colRating")}>
                     {chosen.map((c) => (
                       <Cell key={c.id}>

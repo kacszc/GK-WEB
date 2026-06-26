@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { SearchTopbar } from "@/components/search/SearchTopbar";
-import { TrustBadge, AvailabilityTag } from "@/components/search/SpecialistCard";
+import { AvailabilityTag } from "@/components/search/SpecialistCard";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
@@ -29,7 +29,6 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { useSpecialist } from "@/hooks/useSpecialist";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useContact } from "@/lib/ContactProvider";
-import { contactTokenCost } from "@/lib/contactCost";
 import { portfolioService } from "@/services";
 import { ReviewsSection } from "@/components/reviews/ReviewsSection";
 import { cn } from "@/lib/cn";
@@ -89,7 +88,6 @@ function Profile({ s, t }: { s: SpecialistProfile; t: (k: string, p?: Record<str
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-2xl font-bold tracking-[-0.5px] text-ink">{s.name}</h1>
-            <TrustBadge score={s.trustScore} />
           </div>
           <p className="mt-0.5 text-sm text-ink-2">{s.role}</p>
 
@@ -142,7 +140,7 @@ function Profile({ s, t }: { s: SpecialistProfile; t: (k: string, p?: Record<str
             className="rounded-tile px-4 py-2.5 text-[13px]"
           >
             {t("results.contact")}
-            <span className="font-normal opacity-70">{t("results.tok", { n: contactTokenCost(s.trustScore) })}</span>
+            <span className="font-normal opacity-70">{t("results.tok", { n: s.contactCost })}</span>
           </Button>
           <button className="grid h-10 w-10 place-items-center rounded-tile border border-line-2 text-ink-2 hover:bg-muted">
             <Bookmark className="h-4 w-4" />
@@ -241,7 +239,7 @@ function Profile({ s, t }: { s: SpecialistProfile; t: (k: string, p?: Record<str
               className="mt-3 w-full rounded-tile py-3 text-sm"
             >
               {t("results.contact")}
-              <span className="font-normal opacity-80">{t("results.tok", { n: contactTokenCost(s.trustScore) })}</span>
+              <span className="font-normal opacity-80">{t("results.tok", { n: s.contactCost })}</span>
             </Button>
             {s.responseTimeMin > 0 && (
               <p className="mt-2 text-center text-[12px] text-ink-3">

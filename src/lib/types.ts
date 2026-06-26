@@ -185,8 +185,7 @@ export type Specialist = {
   name: string;
   avatarIndex: number;
   role: string; // e.g. "Barmanka, kelner"
-  trustScore: number; // 0–100
-  reliabilityScore?: number; // 0–100 behavioural track record (distinct from Trust Score)
+  contactCost: number; // backend-computed token cost to reveal contact (Trust Score is internal/hidden)
   noShowCount?: number; // public counter: no-shows without notice
   availability: Availability;
   availableFrom?: string; // for availability === "date"
@@ -348,6 +347,7 @@ export type Notification = {
 /** Full specialist profile (search card data + detail). */
 export type SpecialistProfile = Specialist & {
   bio: string;
+  reliabilityScore?: number; // 0–100 behavioural score (detail only; distinct from the hidden Trust Score)
   completedJobs: number;
   responseTimeMin: number;
   memberSince: string;

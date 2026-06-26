@@ -29,7 +29,6 @@ function popupHtml(s: Specialist, t: TFunction): string {
         <div class="min-w-0 flex-1">
           <div class="flex items-center justify-between gap-2">
             <span class="truncate text-[13px] font-semibold text-ink">${s.name}</span>
-            <span class="rounded-full bg-success-badge px-1.5 py-0.5 text-[10px] font-bold text-white">★ ${s.trustScore}</span>
           </div>
           <p class="truncate text-[11px] text-ink-3">${s.role}</p>
         </div>

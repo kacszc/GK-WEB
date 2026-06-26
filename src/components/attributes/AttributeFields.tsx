@@ -2,7 +2,6 @@
 
 import { Info } from "lucide-react";
 import { useI18n } from "@/i18n/I18nProvider";
-import { cn } from "@/lib/cn";
 import { Chip, fieldInput } from "@/components/onboarding/parts";
 import type { AttributeGroupDef, AttributeDef, WorkerAttributeInput } from "@/lib/types";
 
@@ -120,19 +119,28 @@ function AttributeField({
     const on = value?.bool ?? false;
     return (
       <div>
-        {label}
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => onPatch({ bool: !on })}
-            className={cn(
-              "rounded-tile border px-3 py-1.5 text-[13px] font-medium transition-colors",
-              on ? "border-ink bg-ink text-on-dark" : "border-line-2 text-ink hover:bg-muted",
+        {/* Whole row is the checkbox: label + help on the left, checkbox on the right. */}
+        <label className="flex cursor-pointer items-start justify-between gap-4">
+          <span className="min-w-0">
+            <span className="text-[13px] font-medium text-ink">{attr.label}</span>
+            {attr.help && (
+              <span className="mt-0.5 flex items-start gap-1.5 text-[11px] leading-snug text-ink-4">
+                <Info className="mt-0.5 h-3 w-3 shrink-0" />
+                {attr.help}
+              </span>
             )}
-          >
-            {on ? t("onboarding.yes") : t("onboarding.no")}
-          </button>
-          {attr.type === "BOOL_EXPIRY" && on && (
+          </span>
+          <input
+            type="checkbox"
+            checked={on}
+            onChange={() => onPatch({ bool: !on })}
+            className="mt-0.5 h-[18px] w-[18px] shrink-0 cursor-pointer accent-ink"
+          />
+        </label>
+        {/* Expiry date appears below, only once checked. */}
+        {attr.type === "BOOL_EXPIRY" && on && (
+          <div className="mt-2 flex items-center gap-2">
+            <span className="text-[12px] text-ink-3">{t("onboarding.validUntil")}</span>
             <input
               type="date"
               value={value?.validUntil ?? ""}
@@ -140,8 +148,8 @@ function AttributeField({
               aria-label={t("onboarding.validUntil")}
               className="rounded-tile border border-line-2 bg-surface px-2.5 py-1.5 text-[12px] text-ink outline-none"
             />
-          )}
-        </div>
+          </div>
+        )}
       </div>
     );
   }

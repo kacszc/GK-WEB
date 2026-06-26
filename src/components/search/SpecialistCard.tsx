@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/Button";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { useI18n } from "@/i18n/I18nProvider";
 import { useContact } from "@/lib/ContactProvider";
-import { contactTokenCost } from "@/lib/contactCost";
 import { cn } from "@/lib/cn";
 import type { Specialist } from "@/lib/types";
 
@@ -121,7 +120,6 @@ export function SpecialistCard({
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
             <span className="truncate text-sm font-semibold text-ink">{s.name}</span>
-            <TrustBadge score={s.trustScore} />
           </div>
           <p className="truncate text-[12px] text-ink-3">{s.role}</p>
         </div>
@@ -199,7 +197,7 @@ export function SpecialistCard({
           className="rounded-tile px-3 py-2 text-[12px]"
         >
           {t("results.contact")}
-          <span className="font-normal opacity-70">{t("results.tok", { n: contactTokenCost(s.trustScore) })}</span>
+          <span className="font-normal opacity-70">{t("results.tok", { n: s.contactCost })}</span>
         </Button>
       </div>
     </>

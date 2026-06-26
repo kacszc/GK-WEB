@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { MapPin, Star, ChevronRight } from "lucide-react";
+import { MapPin, ChevronRight } from "lucide-react";
 import { accountService } from "@/services";
 import { Avatar } from "@/components/ui/Avatar";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -40,10 +40,6 @@ export function ContactsList() {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span className="truncate text-sm font-semibold text-ink">{c.name}</span>
-                  <span className="inline-flex items-center gap-0.5 rounded-full bg-success-badge px-1.5 py-0.5 text-[10px] font-bold text-on-dark">
-                    <Star className="h-2.5 w-2.5 fill-current" />
-                    {c.trustScore}
-                  </span>
                 </div>
                 <p className="truncate text-[12px] text-ink-3">{c.role}</p>
                 <p className="mt-0.5 flex items-center gap-1 text-[12px] text-ink-2">

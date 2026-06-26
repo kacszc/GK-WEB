@@ -7,8 +7,9 @@ type SpecialistDto = {
   name: string;
   headline: string;
   district: string;
-  trustScore: number;
-  reliabilityScore?: number; // 0–100 behavioural score (distinct from trust)
+  contactCost: number; // backend-computed token cost to reveal contact (Trust Score is hidden)
+  reliabilityScore?: number; // 0–100 behavioural score (detail only) — distinct from the hidden Trust Score
+  kycVerified?: boolean; // backend-owned verified flag
   noShowCount?: number; // public no-show counter
   rating: number | null;
   reviews: number | null;
@@ -48,11 +49,10 @@ function toSpecialist(d: SpecialistDto, i: number): Specialist {
     name: d.name,
     avatarIndex: i,
     role: d.headline,
-    trustScore: d.trustScore,
-    reliabilityScore: d.reliabilityScore,
+    contactCost: d.contactCost,
     noShowCount: d.noShowCount,
     availability: availabilityFromBackend(d.availability),
-    kyc: d.trustScore >= 70,
+    kyc: !!d.kycVerified,
     topRated: (d.rating ?? 0) >= 4.8,
     district: d.district,
     distanceKm: d.distanceKm,
@@ -173,6 +173,7 @@ export const specialistsService = {
     };
     return {
       ...base,
+      reliabilityScore: dto.reliabilityScore,
       ...profileExtras(
         base,
         dto.completedJobs ?? 0,

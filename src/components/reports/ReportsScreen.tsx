@@ -163,7 +163,6 @@ export function ReportsScreen() {
                       <Avatar name={h.name} index={h.avatarIndex} size={30} />
                       <div>
                         <p className="font-semibold text-ink">{h.name}</p>
-                        <p className="text-[11px] text-ink-4">Trust {h.trustScore}</p>
                       </div>
                     </div>
                   </td>

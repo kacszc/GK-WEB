@@ -295,11 +295,11 @@ export function WorkerOnboarding({
             </div>
             {/* Proficiency per selected language — segmented control (nicer than a dropdown). */}
             {langs.length > 0 && (
-              <div className="mt-3 flex flex-col gap-2.5">
+              <div className="mt-3 flex flex-col gap-3.5">
                 {langs.map((code) => {
                   const name = languages.find((l) => l.code === code)?.name ?? code;
                   return (
-                    <div key={code} className="flex flex-wrap items-center justify-between gap-2">
+                    <div key={code} className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
                       <span className="text-[13px] font-medium text-ink-2">{name}</span>
                       <div className="inline-flex rounded-tile border border-line-2 p-0.5">
                         {LANG_LEVELS.map((lvl) => {
@@ -354,13 +354,6 @@ export function WorkerOnboarding({
               <p className="mt-2 text-[13px] text-ink-3">
                 {t("onboarding.wDoneDesc", { city: baseLocation || "Warszawa" })}
               </p>
-            </div>
-            <div className="mt-5 rounded-panel bg-muted p-4">
-              <p className="text-[11px] font-bold tracking-[0.5px] text-ink-3">{t("onboarding.wTrustLabel")}</p>
-              <div className="mt-1.5 flex items-start gap-3">
-                <span className="text-3xl font-bold text-[#e0a400]">{result.trustScore}</span>
-                <p className="text-[12px] leading-snug text-ink-3">{t("onboarding.wTrustHint")}</p>
-              </div>
             </div>
             {/* "Zaczynamy" → dashboard, where the platform tour auto-opens (it ends with the
                 role-appropriate next step). */}

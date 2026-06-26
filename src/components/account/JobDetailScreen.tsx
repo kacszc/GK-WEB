@@ -239,12 +239,6 @@ export function JobDetailScreen({ id }: { id: string }) {
                         <Link href={`/specialist/${a.id}`} className="text-sm font-semibold text-ink hover:underline">
                           {a.name}
                         </Link>
-                        {a.trustScore > 0 && (
-                          <span className="inline-flex items-center gap-0.5 rounded-full bg-success-badge px-1.5 py-0.5 text-[10px] font-bold text-on-dark">
-                            <Star className="h-2.5 w-2.5 fill-current" />
-                            {a.trustScore}
-                          </span>
-                        )}
                         <span className="text-[11px] text-ink-4">{a.appliedAgo}</span>
                       </div>
                       {a.role && (
