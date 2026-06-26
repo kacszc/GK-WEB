@@ -75,7 +75,7 @@ export function ProfileNudge() {
 
   return (
     <div className="fixed right-4 top-20 z-50 w-[300px] max-w-[calc(100vw-2rem)] animate-fade-up">
-      <div className="relative rounded-panel border border-line-3 bg-surface p-4 shadow-search">
+      <div className="relative rounded-panel border border-line-3 bg-surface p-4 shadow-[0_10px_30px_-8px_rgba(16,24,40,0.18),-12px_6px_28px_-14px_rgba(16,24,40,0.14)]">
         <button
           type="button"
           onClick={dismiss}
