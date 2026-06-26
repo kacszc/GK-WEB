@@ -81,8 +81,6 @@ export function ActiveFilters({
       label: allSpecs.find((s) => s.code === code)?.label ?? code,
       remove: () => onPatch({ professions: (filters.professions ?? []).filter((c) => c !== code) }),
     });
-  if (filters.minTrust)
-    chips.push({ key: "trust", label: `Trust ≥ ${filters.minTrust}`, remove: () => onPatch({ minTrust: 0 }) });
   if (filters.maxDistanceKm != null)
     chips.push({
       key: "dist",

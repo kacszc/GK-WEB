@@ -115,7 +115,6 @@ export function FilterSidebar({
   const attrTokens = filters.attributes ?? [];
   const toggleAttr = (token: string) => onPatch({ attributes: toggle(attrTokens, token) });
 
-  const trust = schema?.trust ?? { min: 0, max: 100, defaultValue: 75 };
   const distance = schema?.distanceKm ?? { min: 1, max: 50, defaultValue: 25 };
 
   return (
@@ -260,37 +259,7 @@ export function FilterSidebar({
         />
       </Section>
 
-      {/* Trust */}
-      <Section title={t("results.fMinTrust")}>
-        <div className="flex items-center justify-between text-[13px] font-bold text-success">
-          <span>{filters.minTrust ?? trust.defaultValue}</span>
-          <span className="text-ink-4">{t("results.fTo100")}</span>
-        </div>
-        <input
-          type="range"
-          min={trust.min}
-          max={trust.max}
-          value={filters.minTrust ?? trust.defaultValue}
-          onChange={(e) => onPatch({ minTrust: Number(e.target.value) })}
-          className="mt-1 w-full cursor-pointer accent-brand-violet"
-        />
-      </Section>
-
-      {/* Reliability — separate behavioural score; opt-in (0 = any). */}
-      <Section title={t("results.fMinReliability")}>
-        <div className="flex items-center justify-between text-[13px] font-bold text-success">
-          <span>{(filters.minReliability ?? 0) > 0 ? filters.minReliability : t("results.fAny")}</span>
-          <span className="text-ink-4">{t("results.fTo100")}</span>
-        </div>
-        <input
-          type="range"
-          min={0}
-          max={100}
-          value={filters.minReliability ?? 0}
-          onChange={(e) => onPatch({ minReliability: Number(e.target.value) })}
-          className="mt-1 w-full cursor-pointer accent-brand-violet"
-        />
-      </Section>
+      {/* Trust Score & reliability are internal-only (hidden from users) — no score sliders here. */}
 
       {/* Advanced — collapsed by default to keep the panel light */}
       <div>

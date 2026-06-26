@@ -96,7 +96,6 @@ export function SearchScreen({
     (filters.availability?.length ?? 0) +
     (filters.attributes?.length ?? 0) +
     (filters.kyc ? 1 : 0) +
-    (filters.minTrust ? 1 : 0) +
     (filters.maxDistanceKm != null ? 1 : 0);
 
   // Effective "when" window for the availability badge — NEVER filters specialists out (the backend

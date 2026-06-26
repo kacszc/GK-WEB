@@ -303,7 +303,7 @@ const en: Dictionary = {
     subtitle: "{category} · Available NOW or this week",
     subtitleMap: "{category} · {now} available NOW · {week} this week",
     sortLabel: "Sort:",
-    sortTrust: "Nearest + Trust Score",
+    sortTrust: "Recommended",
     sortDistance: "Nearest",
     sortRate: "Rate",
     viewList: "List",

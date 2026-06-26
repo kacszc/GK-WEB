@@ -303,7 +303,7 @@ const uk: Dictionary = {
     subtitle: "{category} · Доступний ЗАРАЗ або цього тижня",
     subtitleMap: "{category} · {now} доступно ЗАРАЗ · {week} цього тижня",
     sortLabel: "Сортувати:",
-    sortTrust: "Найближчі + Trust Score",
+    sortTrust: "Рекомендовані",
     sortDistance: "Найближчі",
     sortRate: "Ставка",
     viewList: "Список",

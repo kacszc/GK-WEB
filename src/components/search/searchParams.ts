@@ -5,7 +5,6 @@ import type { ResultsView } from "./ResultsToolbar";
 // Single source of truth for the /search URL <-> filter mapping. The server page parses the
 // incoming query (SSR-safe, restores on reload/share); the client writes it back on change.
 
-const DEFAULT_TRUST = 75;
 const DEFAULT_AVAILABILITY: Availability[] = ["now", "week"];
 const DEFAULT_SORT: SpecialistSort = "trust";
 
@@ -14,10 +13,6 @@ export type SearchParamsInput = Record<string, string | string[] | undefined>;
 const first = (v: string | string[] | undefined): string | undefined => (Array.isArray(v) ? v[0] : v);
 const csv = (v: string | undefined): string[] | undefined =>
   v ? v.split(",").map((s) => s.trim()).filter(Boolean) : undefined;
-const numOr = (v: string | undefined, fallback: number): number => {
-  const n = v != null ? Number(v) : NaN;
-  return Number.isFinite(n) ? n : fallback;
-};
 const numOrUndef = (v: string | undefined): number | undefined => {
   const n = v != null ? Number(v) : NaN;
   return Number.isFinite(n) ? n : undefined;
@@ -35,9 +30,7 @@ export function parseSearchFilters(sp: SearchParamsInput): { filters: Specialist
     professions,
     industries: csv(first(sp.industries)),
     customIndustries: csv(first(sp.customIndustries)),
-    minTrust: numOr(first(sp.minTrust), DEFAULT_TRUST),
-    // Reliability is an opt-in cut: 0 / absent means "any" (don't reduce results unexpectedly).
-    minReliability: numOrUndef(first(sp.minReliability)),
+    // Trust Score & reliability are hidden from users — never filter by them from the UI.
     // No distance cap by default → "Proponowane" (everyone). A limit applies only once the user sets it.
     maxDistanceKm: numOrUndef(first(sp.maxDistanceKm)),
     // Present (even empty) → user-controlled; absent → default. Lets the user clear it explicitly.
@@ -72,8 +65,6 @@ export function serializeSearchFilters(f: SpecialistFilters, view: ResultsView):
   if (f.industries?.length) p.set("industries", f.industries.join(","));
   if (f.customIndustries?.length) p.set("customIndustries", f.customIndustries.join(","));
   p.set("availability", (f.availability ?? []).join(",")); // always present to preserve "cleared"
-  if (f.minTrust != null) p.set("minTrust", String(f.minTrust));
-  if (f.minReliability != null && f.minReliability > 0) p.set("minReliability", String(f.minReliability));
   if (f.maxDistanceKm != null) p.set("maxDistanceKm", String(f.maxDistanceKm));
   if (f.rateMin != null) p.set("rateMin", String(f.rateMin));
   if (f.rateMax != null) p.set("rateMax", String(f.rateMax));

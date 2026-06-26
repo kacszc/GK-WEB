@@ -302,7 +302,7 @@ const pl = {
     subtitle: "{category} · Dostępny TERAZ lub w tym tygodniu",
     subtitleMap: "{category} · {now} dostępnych TERAZ · {week} w tym tygodniu",
     sortLabel: "Sortuj:",
-    sortTrust: "Najbliższy + Trust Score",
+    sortTrust: "Polecane",
     sortDistance: "Najbliżej",
     sortRate: "Stawka",
     viewList: "Lista",
