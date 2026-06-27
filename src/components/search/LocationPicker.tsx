@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { MapPin, Loader2, ChevronDown, Navigation, Check } from "lucide-react";
+import { MapPin, Loader2, ChevronDown, Navigation, Check, Globe } from "lucide-react";
 import { Popover } from "@/components/ui/Popover";
 import { useI18n } from "@/i18n/I18nProvider";
 import { locateWarsawDistrict, reverseGeocodeCity } from "@/lib/geo";
@@ -29,11 +29,25 @@ export function LocationPicker({
   const { t, locale } = useI18n();
   const [state, setState] = useState<State>("idle");
   const [query, setQuery] = useState("");
+  const [debounced, setDebounced] = useState("");
 
   // Cities are backend-defined (geo.city) — add a city by inserting a row, no frontend change.
   const { data: cities = [] } = useQuery({
     queryKey: ["geoCities", locale],
     queryFn: () => geoService.getCities(locale),
+  });
+
+  // Debounce the geocoder lookup so any city worldwide (Sosnowiec, Chorzów…) can be a search origin,
+  // not just the curated list. Mirrors the post-job CityCombobox.
+  useEffect(() => {
+    const id = setTimeout(() => setDebounced(query.trim()), 350);
+    return () => clearTimeout(id);
+  }, [query]);
+  const { data: geo = [], isFetching } = useQuery({
+    queryKey: ["geoCitySearch", debounced, locale],
+    queryFn: () => geoService.searchCities(debounced, locale),
+    enabled: debounced.length >= 3,
+    staleTime: 5 * 60_000,
   });
 
   const defaultCity = cities[0]?.name ?? "Warszawa";
@@ -65,9 +79,11 @@ export function LocationPicker({
     );
   }
 
-  const filtered = cities.filter((c) =>
-    c.name.toLowerCase().includes(query.trim().toLowerCase()),
-  );
+  const q = query.trim().toLowerCase();
+  const filtered = cities.filter((c) => c.name.toLowerCase().includes(q));
+  // Worldwide geocoder hits, minus any that are already a curated city.
+  const curatedNames = new Set(cities.map((c) => c.name.toLowerCase()));
+  const geoOnly = geo.filter((g) => !curatedNames.has(g.name.toLowerCase()));
 
   return (
     <Popover
@@ -139,6 +155,41 @@ export function LocationPicker({
                 </li>
               );
             })}
+
+            {/* Worldwide geocoder results — any city outside the curated list (no districts). */}
+            {(geoOnly.length > 0 || (debounced.length >= 3 && isFetching)) && (
+              <li className="mt-1 flex items-center gap-1.5 px-3 pb-1 pt-2 text-[11px] font-semibold tracking-[0.3px] text-ink-4">
+                <Globe className="h-3 w-3" />
+                {t("results.otherCities")}
+                {isFetching && <Loader2 className="h-3 w-3 animate-spin" />}
+              </li>
+            )}
+            {geoOnly.map((g) => (
+              <li key={`${g.name}-${g.lat}-${g.lng}`}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onLocate({ lng: g.lng, lat: g.lat, city: g.name, label: g.name });
+                    close();
+                  }}
+                  className="flex w-full items-center gap-2 rounded-tile px-3 py-2 text-left text-[13px] text-ink-2 transition-colors hover:bg-muted"
+                >
+                  <MapPin className="h-3.5 w-3.5 shrink-0 text-ink-4" />
+                  <span className="flex-1 truncate">
+                    {g.name}
+                    {(g.region || g.country) && (
+                      <span className="text-ink-4">{" · "}{[g.region, g.country].filter(Boolean).join(", ")}</span>
+                    )}
+                  </span>
+                </button>
+              </li>
+            ))}
+
+            {filtered.length === 0 && geoOnly.length === 0 && !isFetching && (
+              <li className="px-3 py-3 text-center text-[12px] text-ink-4">
+                {debounced.length >= 3 ? t("results.cityNoResults") : t("results.cityHint")}
+              </li>
+            )}
           </ul>
 
           {value && (
