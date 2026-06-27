@@ -601,6 +601,8 @@ const pl = {
     fieldRate: "Stawka od",
     fieldSpecializations: "Specjalizacje",
     fieldLanguages: "Języki",
+    fieldAvailability: "Dostępność",
+    fieldQualifications: "Kwalifikacje i szczegóły",
     fieldCompany: "Nazwa firmy",
     fieldNip: "NIP",
     fieldRegon: "REGON",

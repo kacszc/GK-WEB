@@ -602,6 +602,8 @@ const uk: Dictionary = {
     fieldRate: "Ставка від",
     fieldSpecializations: "Спеціалізації",
     fieldLanguages: "Мови",
+    fieldAvailability: "Доступність",
+    fieldQualifications: "Кваліфікація та деталі",
     fieldCompany: "Назва компанії",
     fieldNip: "Податковий номер (NIP)",
     fieldRegon: "REGON",

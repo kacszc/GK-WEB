@@ -13,8 +13,9 @@ import { cn } from "@/lib/cn";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { KycCard } from "@/components/account/KycCard";
-import { settingsService, accountService } from "@/services";
-import type { NotificationSettings } from "@/services";
+import { settingsService, accountService, specialistsService } from "@/services";
+import type { NotificationSettings, MySpecialistProfile } from "@/services";
+import type { TFunction } from "@/i18n/translate";
 import { useAuth } from "@/lib/AuthProvider";
 import { useToast } from "@/lib/ToastProvider";
 import { requestErrorToast } from "@/lib/errorToast";
@@ -301,7 +302,19 @@ function YourDetails() {
               <ReadField label={t("account.fieldLocation")} value={sp.district} />
               <ReadField label={t("account.fieldRate")} value={sp.rateFrom ? `${sp.rateFrom} zł/h` : null} />
               <ReadField label={t("account.fieldSpecializations")} value={sp.specializations.join(", ")} />
-              <ReadField label={t("account.fieldLanguages")} value={sp.languages.map(langLabel).join(", ")} />
+              <ReadField
+                label={t("account.fieldLanguages")}
+                value={sp.languages
+                  .map((c) => {
+                    const lvl = sp.languageLevels?.[c];
+                    return lvl ? `${langLabel(c)} (${t(`onboarding.lvl_${lvl}`)})` : langLabel(c);
+                  })
+                  .join(", ")}
+              />
+              <ReadField label={t("account.fieldAvailability")} value={availabilityLabel(sp.availability, t)} />
+              <div className="sm:col-span-2">
+                <SpecialistAttributesSummary sp={sp} />
+              </div>
             </>
           ))}
 
@@ -333,11 +346,86 @@ function CompleteSetup({ role }: { role: "specialist" | "employer" }) {
     <div className="sm:col-span-2">
       <p className="text-[13px] text-ink-3">{t("account.detailsEmpty")}</p>
       <Link
-        href={`/onboarding/${role}`}
+        href={role === "specialist" ? "/onboarding/specialist?resume=1" : "/onboarding/employer"}
         className="mt-3 inline-flex items-center rounded-tile bg-ink px-4 py-2.5 text-sm font-bold text-on-dark hover:bg-ink/90"
       >
         {t("account.detailsComplete")}
       </Link>
+    </div>
+  );
+}
+
+const AVAIL_KEY: Record<string, string> = {
+  NOW: "results.fAvailNow",
+  WEEK: "results.fAvailWeek",
+  DATE: "results.fAvailDate",
+};
+function availabilityLabel(a: string | null, t: TFunction): string | null {
+  if (!a) return null;
+  const key = AVAIL_KEY[a.toUpperCase()];
+  return key ? t(key) : a;
+}
+
+/**
+ * Read-only summary of the specialist's catalog answers (experience, credentials, equipment, etc.).
+ * Fetches the localized schema for the profile's industries+specializations and maps stored answers
+ * to labels — so the settings page reflects everything the user filled in during onboarding.
+ */
+function SpecialistAttributesSummary({ sp }: { sp: MySpecialistProfile }) {
+  const { t, locale } = useI18n();
+  const { data: groups = [] } = useQuery({
+    queryKey: ["myAttrSchema", locale, [...(sp.industryCodes ?? [])].sort().join(","), [...(sp.specializationCodes ?? [])].sort().join(",")],
+    queryFn: () => specialistsService.getAttributeFilters(sp.industryCodes ?? [], sp.specializationCodes ?? [], locale),
+    enabled: (sp.industryCodes?.length ?? 0) > 0 || (sp.specializationCodes?.length ?? 0) > 0,
+  });
+
+  // attributeCode → its stored answers (a MULTI_SELECT has several rows).
+  const byCode = new Map<string, MySpecialistProfile["attributes"]>();
+  for (const a of sp.attributes ?? []) {
+    byCode.set(a.attributeCode, [...(byCode.get(a.attributeCode) ?? []), a]);
+  }
+
+  const fmtDate = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString(locale) : "");
+
+  const rows: { label: string; value: string }[] = [];
+  for (const g of groups) {
+    for (const attr of g.attributes) {
+      const answers = byCode.get(attr.code);
+      if (!answers?.length) continue;
+      let value = "";
+      if (attr.type === "SINGLE_SELECT" || attr.type === "MULTI_SELECT") {
+        value = answers
+          .map((a) => attr.options.find((o) => o.code === a.optionCode)?.label ?? a.optionCode ?? "")
+          .filter(Boolean)
+          .join(", ");
+      } else if (attr.type === "BOOL" || attr.type === "BOOL_EXPIRY") {
+        if (!answers[0].boolValue) continue;
+        value = t("onboarding.yes");
+        if (attr.type === "BOOL_EXPIRY" && answers[0].validUntil) {
+          value += ` · ${t("onboarding.validUntil")} ${fmtDate(answers[0].validUntil)}`;
+        }
+      } else if (attr.type === "DATE") {
+        value = fmtDate(answers[0].dateValue);
+      } else {
+        value = answers[0].textValue ?? "";
+      }
+      if (value) rows.push({ label: attr.label, value });
+    }
+  }
+
+  if (rows.length === 0) return null;
+
+  return (
+    <div className="mt-1">
+      <Label>{t("account.fieldQualifications")}</Label>
+      <dl className="mt-1.5 grid gap-x-6 gap-y-2 rounded-tile border border-line-2 bg-muted/40 px-3.5 py-3 sm:grid-cols-2">
+        {rows.map((r) => (
+          <div key={r.label} className="flex flex-col">
+            <dt className="text-[11px] font-medium text-ink-4">{r.label}</dt>
+            <dd className="text-[13px] text-ink-2">{r.value}</dd>
+          </div>
+        ))}
+      </dl>
     </div>
   );
 }

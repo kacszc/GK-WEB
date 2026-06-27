@@ -602,6 +602,8 @@ const en: Dictionary = {
     fieldRate: "Rate from",
     fieldSpecializations: "Specializations",
     fieldLanguages: "Languages",
+    fieldAvailability: "Availability",
+    fieldQualifications: "Qualifications & details",
     fieldCompany: "Company name",
     fieldNip: "Tax ID (NIP)",
     fieldRegon: "REGON",
