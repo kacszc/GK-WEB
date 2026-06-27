@@ -94,7 +94,8 @@ export function ProfileNudge() {
               {t(role === "employer" ? "profileNudge.descEmployer" : "profileNudge.descSpecialist")}
             </p>
             <Link
-              href={`/onboarding/${role === "employer" ? "employer" : "specialist"}`}
+              // Specialist: resume mode → prefills + jumps to the unfilled step (no full restart).
+              href={role === "employer" ? "/onboarding/employer" : "/onboarding/specialist?resume=1"}
               onClick={dismiss}
               className="mt-2.5 inline-flex rounded-tile bg-ink px-3 py-1.5 text-[12px] font-semibold text-on-dark hover:bg-ink/90"
             >

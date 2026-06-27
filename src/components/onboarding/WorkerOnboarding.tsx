@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { LocationPicker } from "@/components/search/LocationPicker";
 import { useAuth } from "@/lib/AuthProvider";
-import { onboardingService } from "@/services";
+import { onboardingService, accountService } from "@/services";
 import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
 import type {
@@ -55,11 +55,15 @@ function buildAttributePayload(groups: AttributeGroupDef[], values: Record<strin
 export function WorkerOnboarding({
   initialName = "",
   initialEmail = "",
+  resume = false,
 }: {
   initialName?: string;
   initialEmail?: string;
+  /** Resume mode: prefill from the existing profile and jump to the first unfilled step
+   * (used by the "complete your profile" nudge — never restarts the whole wizard). */
+  resume?: boolean;
 }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const router = useRouter();
   const { user } = useAuth();
 
@@ -118,6 +122,58 @@ export function WorkerOnboarding({
   });
 
   const industryLabel = industries.find((i) => i.id === industry)?.label ?? "";
+
+  // Resume mode: load the existing profile once and prefill, then jump to the first unfilled step.
+  const { data: existing } = useQuery({
+    queryKey: ["mySpecialistProfileResume", locale],
+    queryFn: () => accountService.getMySpecialistProfile(locale),
+    enabled: resume,
+  });
+  // Prefill once when the existing profile arrives (render-phase seeding, same pattern as emailSeeded
+  // above — avoids a setState-in-effect cascade). Converges because it guards on `resumed`.
+  const [resumed, setResumed] = useState(false);
+  if (resume && !resumed && existing) {
+    setResumed(true);
+
+    if (existing.displayName?.trim()) {
+      setEntityType("person");
+      setName(existing.displayName.trim());
+    }
+    if (existing.industryCodes?.[0]) setIndustry(existing.industryCodes[0]);
+    if (existing.specializationCodes?.length) setSpecs(existing.specializationCodes);
+    const firstCustom = existing.customSpecializations?.find(
+      (c) => !existing.industryCodes?.length || c.industryCode === existing.industryCodes[0],
+    );
+    if (firstCustom) setOtherText(firstCustom.label);
+    if (existing.district || (existing.lat && existing.lng)) {
+      setLocation({
+        city: existing.district ?? "",
+        label: existing.district ?? "",
+        lat: existing.lat || 52.2297,
+        lng: existing.lng || 21.0122,
+      });
+    }
+    if (existing.languages?.length) setLangs(existing.languages);
+    if (existing.languageLevels) setLangLevels({ ...existing.languageLevels });
+    // Rebuild per-attribute state from stored answers (MULTI_SELECT collapses many rows into options[]).
+    const av: Record<string, AttrVal> = {};
+    for (const a of existing.attributes ?? []) {
+      const cur = av[a.attributeCode] ?? {};
+      if (a.optionCode) cur.options = [...(cur.options ?? []), a.optionCode];
+      if (a.boolValue != null) cur.bool = a.boolValue;
+      if (a.textValue != null) cur.text = a.textValue;
+      if (a.dateValue != null) cur.date = a.dateValue;
+      if (a.validUntil != null) cur.validUntil = a.validUntil;
+      av[a.attributeCode] = cur;
+    }
+    setAttrValues(av);
+
+    // First unfilled step. Completeness = name + ≥1 specialization, so resume lands on whichever
+    // is missing (never on the email-verify step — the account already exists and is verified).
+    const hasName = !!existing.displayName?.trim();
+    const hasSpec = (existing.specializationCodes?.length ?? 0) > 0 || (existing.customSpecializations?.length ?? 0) > 0;
+    setStep(!hasName ? "basics" : !hasSpec ? "industry" : "details");
+  }
 
   function toggle(list: string[], set: (v: string[]) => void, value: string) {
     set(list.includes(value) ? list.filter((x) => x !== value) : [...list, value]);
@@ -221,7 +277,7 @@ export function WorkerOnboarding({
             </div>
             <Button
               variant="dark"
-              onClick={() => setStep("verify")}
+              onClick={() => setStep(resume ? "industry" : "verify")}
               disabled={(entityType === "person" ? !name.trim() : !companyName.trim()) || !emailOk(email)}
               className="mt-5 w-full rounded-tile py-3 text-sm disabled:opacity-40"
             >

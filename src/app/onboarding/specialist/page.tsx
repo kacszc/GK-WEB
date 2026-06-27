@@ -5,8 +5,8 @@ export const metadata = { robots: { index: false } };
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ name?: string; email?: string }>;
+  searchParams: Promise<{ name?: string; email?: string; resume?: string }>;
 }) {
-  const { name, email } = await searchParams;
-  return <WorkerOnboarding initialName={name ?? ""} initialEmail={email ?? ""} />;
+  const { name, email, resume } = await searchParams;
+  return <WorkerOnboarding initialName={name ?? ""} initialEmail={email ?? ""} resume={resume === "1"} />;
 }

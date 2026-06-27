@@ -54,7 +54,7 @@ export function SpecialistOfferStatus() {
   if (incomplete) {
     return (
       <Shell tone="amber" icon={<AlertCircle className="h-5 w-5" />} title={t("offer.incompleteTitle")} desc={t("offer.incompleteDesc")}>
-        <Link href="/onboarding/specialist" className="inline-flex items-center justify-center gap-2 rounded-tile bg-ink px-4 py-2.5 text-sm font-bold text-on-dark transition-colors hover:bg-ink/90">
+        <Link href="/onboarding/specialist?resume=1" className="inline-flex items-center justify-center gap-2 rounded-tile bg-ink px-4 py-2.5 text-sm font-bold text-on-dark transition-colors hover:bg-ink/90">
           {t("offer.complete")}
         </Link>
       </Shell>
@@ -64,7 +64,7 @@ export function SpecialistOfferStatus() {
   if (published) {
     return (
       <Shell tone="green" icon={<Eye className="h-5 w-5" />} title={t("offer.publishedTitle")} desc={t("offer.publishedDesc")}>
-        <Link href="/onboarding/specialist" className={btnOutline}>
+        <Link href="/onboarding/specialist?resume=1" className={btnOutline}>
           <Pencil className="h-4 w-4" /> {t("offer.edit")}
         </Link>
         <Button variant="outline" className="rounded-tile px-4 py-2.5 text-sm" onClick={() => unpublish.mutate()} disabled={pending}>
@@ -77,7 +77,7 @@ export function SpecialistOfferStatus() {
   // Complete but hidden (draft) → publish.
   return (
     <Shell tone="neutral" icon={<EyeOff className="h-5 w-5" />} title={t("offer.hiddenTitle")} desc={t("offer.hiddenDesc")}>
-      <Link href="/onboarding/specialist" className={btnOutline}>
+      <Link href="/onboarding/specialist?resume=1" className={btnOutline}>
         <Pencil className="h-4 w-4" /> {t("offer.edit")}
       </Link>
       <Button variant="dark" className="rounded-tile px-4 py-2.5 text-sm" onClick={() => publish.mutate()} disabled={pending}>

@@ -70,14 +70,26 @@ type ContactCardDto = {
   rating: number | null;
 };
 
-/** The signed-in specialist's own profile (read-only "Your details" view). */
+/** The signed-in specialist's own profile (read-only "Your details" view + resume-onboarding data). */
 export type MySpecialistProfile = {
   displayName: string;
   headline: string | null;
   district: string | null;
   rateFrom: number;
-  specializations: string[];
+  specializations: string[]; // localized labels (for display)
+  /** Catalog specialization codes (for resuming the wizard without losing the selection). */
+  specializationCodes: string[];
+  /** "Other" custom roles: industry code + free-text label. */
+  customSpecializations: { industryCode: string; label: string }[];
+  /** Industry codes the picked specializations belong to (resume lands on the first). */
+  industryCodes: string[];
+  lat: number;
+  lng: number;
   languages: string[];
+  /** Proficiency per language code (basic/conversational/advanced). */
+  languageLevels: Record<string, string>;
+  /** Stored attribute answers (for resume prefill). */
+  attributes: SpecialistAttributeAnswer[];
   availability: string | null;
   kycVerified: boolean;
   /** Whether the offer is visible in search (false = draft/hidden). */
@@ -86,6 +98,17 @@ export type MySpecialistProfile = {
   complete: boolean;
   /** Paid-promotion end (ISO) — null/past = not promoted. */
   promotedUntil?: string | null;
+};
+
+/** One stored attribute answer (only the field matching the attribute type is set). */
+export type SpecialistAttributeAnswer = {
+  attributeCode: string;
+  optionCode: string | null;
+  boolValue: boolean | null;
+  textValue: string | null;
+  dateValue: string | null;
+  validUntil: string | null;
+  verified: boolean;
 };
 
 /** The signed-in employer's own company profile, including registry fields (NIP/REGON/address). */
