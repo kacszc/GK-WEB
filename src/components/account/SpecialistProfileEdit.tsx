@@ -86,11 +86,14 @@ export function SpecialistProfileEdit() {
       ...(profile?.industryCodes ?? []),
     ]),
   ) as string[];
-  const { data: attrGroups = [] } = useQuery({
+  const { data: attrGroups = [], isFetching: attrsFetching } = useQuery({
     queryKey: ["editAttrSchema", locale, [...attrIndustries].sort().join(","), [...specs].sort().join(",")],
     queryFn: () => specialistsService.getAttributeFilters(attrIndustries, specs, locale),
     enabled: attrIndustries.length > 0,
   });
+  // The attribute schema drives buildAttributePayload; until it's loaded the payload would be [] and
+  // the backend (which treats a present `attributes` as authoritative) would WIPE all answers.
+  const attrsReady = attrIndustries.length === 0 || (!attrsFetching && attrGroups.length > 0);
 
   const toggle = (arr: string[], v: string) => (arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
   const toggleInd = (code: string) =>
@@ -114,7 +117,9 @@ export function SpecialistProfileEdit() {
         customSpecializations: customs,
         languageCodes: langs,
         languages: langs.map((code) => ({ code, level: langLevels[code] ?? null })),
-        attributes: buildAttributePayload(attrGroups, attrValues),
+        // Only send attributes when the schema is loaded — otherwise omit so the backend leaves
+        // stored answers unchanged (never accidentally clears them on an early/empty save).
+        ...(attrGroups.length > 0 ? { attributes: buildAttributePayload(attrGroups, attrValues) } : {}),
       };
       return accountService.updateSpecialistProfile(payload);
     },
@@ -262,7 +267,7 @@ export function SpecialistProfileEdit() {
         <Button
           variant="dark"
           onClick={() => save.mutate()}
-          disabled={save.isPending || !name.trim()}
+          disabled={save.isPending || !name.trim() || !attrsReady}
           className="rounded-tile px-5 py-2.5 text-sm disabled:opacity-40"
         >
           {save.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}

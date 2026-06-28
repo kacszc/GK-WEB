@@ -113,7 +113,9 @@ export type SpecialistProfileUpdate = {
   customSpecializations: { industryCode: string; label: string }[];
   languageCodes: string[];
   languages: { code: string; level: string | null }[];
-  attributes: WorkerAttributeInput[];
+  /** Omit (undefined) to leave stored attributes UNCHANGED — backend only replaces when present.
+   * Never send an empty array unless you truly mean "clear all". */
+  attributes?: WorkerAttributeInput[];
 };
 
 /** One stored attribute answer (only the field matching the attribute type is set). */
