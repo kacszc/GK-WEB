@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, Settings, Briefcase, MessageSquare, Bookmark, Clock, Coins, ImageIcon, CalendarDays, BarChart3, Scale, BellRing, Bell, Send, Award } from "lucide-react";
+import { LayoutGrid, Settings, Briefcase, MessageSquare, Bookmark, Clock, Coins, ImageIcon, CalendarDays, BarChart3, Scale, BellRing, Bell, Send, Award, UserCog } from "lucide-react";
 import { useAuth } from "@/lib/AuthProvider";
 import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
@@ -15,6 +15,7 @@ const items = [
   { href: "/account/applications", key: "applications.navTitle", icon: Send, role: "specialist" as const },
   { href: "/account/messages", key: "account.navMessages", icon: MessageSquare },
   { href: "/account/contacts", key: "account.navContacts", icon: Bookmark, role: "employer" as const },
+  { href: "/account/profile", key: "account.navProfile", icon: UserCog, role: "specialist" as const },
   { href: "/account/portfolio", key: "portfolio.title", icon: ImageIcon, role: "specialist" as const },
   { href: "/account/certifications", key: "certifications.navTitle", icon: Award, role: "specialist" as const },
   { href: "/account/availability", key: "availability.eyebrow", icon: CalendarDays, role: "specialist" as const },

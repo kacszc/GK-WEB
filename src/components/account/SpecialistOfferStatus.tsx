@@ -77,7 +77,7 @@ export function SpecialistOfferStatus() {
   // Complete but hidden (draft) → publish.
   return (
     <Shell tone="neutral" icon={<EyeOff className="h-5 w-5" />} title={t("offer.hiddenTitle")} desc={t("offer.hiddenDesc")}>
-      <Link href="/onboarding/specialist?resume=1" className={btnOutline}>
+      <Link href="/account/profile" className={btnOutline}>
         <Pencil className="h-4 w-4" /> {t("offer.edit")}
       </Link>
       <Button variant="dark" className="rounded-tile px-4 py-2.5 text-sm" onClick={() => publish.mutate()} disabled={pending}>

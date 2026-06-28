@@ -1,4 +1,4 @@
-import type { MyJob, SavedContact, ActivityItem, ActivityType, Applicant, CompletedJobHistory, JobRateType } from "@/lib/types";
+import type { MyJob, SavedContact, ActivityItem, ActivityType, Applicant, CompletedJobHistory, JobRateType, WorkerAttributeInput } from "@/lib/types";
 import { apiGet, apiPost, ApiError } from "@/lib/api-client";
 
 /** Resolve an owner-profile GET, treating "not created yet" (404) as null rather than an error. */
@@ -98,6 +98,21 @@ export type MySpecialistProfile = {
   complete: boolean;
   /** Paid-promotion end (ISO) — null/past = not promoted. */
   promotedUntil?: string | null;
+};
+
+/** Editable specialist-profile fields (edit screen → POST /api/me/specialist-profile). */
+export type SpecialistProfileUpdate = {
+  displayName: string;
+  headline?: string | null;
+  district?: string | null;
+  lat?: number;
+  lng?: number;
+  rateFrom?: number;
+  specializationCodes: string[];
+  customSpecializations: { industryCode: string; label: string }[];
+  languageCodes: string[];
+  languages: { code: string; level: string | null }[];
+  attributes: WorkerAttributeInput[];
 };
 
 /** One stored attribute answer (only the field matching the attribute type is set). */
@@ -285,6 +300,12 @@ export const accountService = {
   /** The current specialist's own profile (localized specialization labels); null if not created yet. */
   async getMySpecialistProfile(locale?: string): Promise<MySpecialistProfile | null> {
     return optionalProfile<MySpecialistProfile>("/api/me/specialist-profile", locale);
+  },
+  /** Save edits to the current specialist's profile (upsert — send the full current state so nothing
+   * is wiped). Never touches publish state. Backend recomputes Trust Score etc. */
+  async updateSpecialistProfile(payload: SpecialistProfileUpdate): Promise<{ ok: true }> {
+    await apiPost("/api/me/specialist-profile", payload);
+    return { ok: true };
   },
   /** The current employer's own company profile (incl. NIP/REGON/address); null if not created yet. */
   async getMyEmployerProfile(locale?: string): Promise<MyEmployerProfile | null> {
