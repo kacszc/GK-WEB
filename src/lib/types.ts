@@ -156,6 +156,8 @@ export type Applicant = {
   distanceKm: number;
   appliedAgo: string;
   message: string;
+  /** The job's optional requirements + whether this applicant declared they meet each. */
+  requirements?: { label: string; met: boolean }[];
 };
 
 /** An activity-history entry. */
@@ -238,7 +240,15 @@ export type JobDraft = {
   phone: string;
   /** Job-side catalog attribute answers (accommodation/equipment offered, …). */
   jobAttributes?: WorkerAttributeInput[];
+  /** Optional requirements applicants should meet (catalog cred code or custom free-text). */
+  requirements?: JobRequirementInput[];
 };
+
+/** One optional job requirement the employer sets: a catalog attribute code OR a custom label. */
+export type JobRequirementInput = { attributeCode: string | null; label: string };
+
+/** A job requirement as shown to applicants (key for client-side auto-match + display label). */
+export type JobRequirementView = { key: string; attributeCode: string | null; label: string };
 
 /** Result of creating/publishing a job. */
 export type JobResult = {
@@ -270,6 +280,7 @@ export type JobPosting = {
   currency?: string; // ISO 4217 (default PLN)
   rateType?: JobRateType; // pay model (default hourly)
   rateTo?: number | null; // upper bound of the rate range (optional)
+  requirements?: JobRequirementView[]; // optional requirements applicants should meet
 };
 
 /** A token package available for purchase. */

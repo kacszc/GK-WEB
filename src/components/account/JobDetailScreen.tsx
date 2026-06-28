@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, MapPin, Star, Check, Loader2, CheckCircle2, MessageSquare, Pencil, Eye, EyeOff, Rocket, Sparkles } from "lucide-react";
+import { ArrowLeft, MapPin, Star, Check, X, Loader2, CheckCircle2, MessageSquare, Pencil, Eye, EyeOff, Rocket, Sparkles } from "lucide-react";
 import { accountService, jobsService } from "@/services";
 import { isPromoted, formatPromotedUntil } from "@/lib/promotion";
 import { BoostJobDialog } from "@/components/account/BoostJobDialog";
@@ -247,6 +247,22 @@ export function JobDetailScreen({ id }: { id: string }) {
                         </p>
                       )}
                       <p className="mt-2 text-[13px] text-ink-2">{a.message}</p>
+                      {(a.requirements?.length ?? 0) > 0 && (
+                        <div className="mt-2.5 flex flex-wrap gap-1.5">
+                          {a.requirements!.map((r, i) => (
+                            <span
+                              key={i}
+                              className={cn(
+                                "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium",
+                                r.met ? "bg-success-chip text-success-chip-text" : "bg-muted text-ink-4",
+                              )}
+                            >
+                              {r.met ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                              {r.label}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="mt-3 flex justify-end gap-2">

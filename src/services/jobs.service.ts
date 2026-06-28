@@ -45,6 +45,7 @@ type JobDto = {
   duration?: string;
   workDate?: string | null;
   workDateTo?: string | null;
+  requirements?: { key: string; attributeCode: string | null; label: string }[];
 };
 
 /** A job's editable content (owner edit form) + its lifecycle status. */
@@ -86,6 +87,7 @@ function toJobPosting(d: JobDto): JobPosting {
     currency: d.currency ?? "PLN",
     rateType: d.rateType ?? "hourly",
     rateTo: d.rateTo ?? null,
+    requirements: d.requirements ?? [],
   };
 }
 
@@ -117,6 +119,8 @@ function toJobBody(draft: JobDraft) {
     // Job-side catalog attributes (accommodation/equipment offered, …). Omitted (undefined) → the
     // backend leaves existing answers untouched (so editing without re-loading them is non-destructive).
     ...(draft.jobAttributes ? { jobAttributes: draft.jobAttributes } : {}),
+    // Optional requirements (undefined → backend leaves existing untouched on edit).
+    ...(draft.requirements ? { requirements: draft.requirements } : {}),
   };
 }
 
@@ -151,6 +155,7 @@ function toEditableJob(d: JobDto): EditableJob {
       hours: d.hours ?? null,
       contactMethod: "app",
       phone: "",
+      requirements: (d.requirements ?? []).map((r) => ({ attributeCode: r.attributeCode, label: r.label })),
     },
   };
 }
@@ -245,7 +250,7 @@ export const jobsService = {
   },
 
   /** Apply to a job posting (SPECIALIST). Returns the created application id. */
-  async apply(jobId: string, message: string): Promise<{ applicationId?: string }> {
-    return apiPost<{ applicationId: string }>(`/api/jobs/${encodeURIComponent(jobId)}/apply`, { message });
+  async apply(jobId: string, message: string, metRequirements: string[] = []): Promise<{ applicationId?: string }> {
+    return apiPost<{ applicationId: string }>(`/api/jobs/${encodeURIComponent(jobId)}/apply`, { message, metRequirements });
   },
 };

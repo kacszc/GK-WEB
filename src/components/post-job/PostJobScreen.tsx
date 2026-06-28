@@ -8,7 +8,7 @@ import { DayPicker } from "react-day-picker";
 import { pl, enUS, uk } from "react-day-picker/locale";
 import type { Locale as DateFnsLocale } from "react-day-picker/locale";
 import "react-day-picker/style.css";
-import { ArrowLeft, Minus, Plus, CalendarCheck, PartyPopper, Eye, Search, FileText, Save } from "lucide-react";
+import { ArrowLeft, Minus, Plus, CalendarCheck, PartyPopper, Eye, Search, FileText, Save, X } from "lucide-react";
 import { SearchTopbar } from "@/components/search/SearchTopbar";
 import { Button } from "@/components/ui/Button";
 import { inputClass } from "@/components/ui/Input";
@@ -120,11 +120,32 @@ export function PostJobScreen({
   });
   // Job-side catalog attributes (accommodation/equipment offered, …) for the chosen industry+profession.
   const [jobAttrValues, setJobAttrValues] = useState<Record<string, AttrVal>>({});
+  const [customReqText, setCustomReqText] = useState("");
   const { data: jobAttrGroups = [] } = useQuery({
     queryKey: ["jobAttributes", draft.industry, draft.profession],
     queryFn: () => onboardingService.getAttributes(draft.industry, draft.profession ? [draft.profession] : [], "job"),
     enabled: !!draft.industry,
   });
+  // Specialist-side credential attributes (BHP, sanepid book, certs, …) the employer can REQUIRE.
+  const { data: reqAttrGroups = [] } = useQuery({
+    queryKey: ["reqAttributes", draft.industry, draft.profession],
+    queryFn: () => onboardingService.getAttributes(draft.industry, draft.profession ? [draft.profession] : [], "specialist"),
+    enabled: !!draft.industry,
+  });
+  const credentialAttrs = reqAttrGroups
+    .flatMap((g) => g.attributes)
+    .filter((a) => a.type === "BOOL" || a.type === "BOOL_EXPIRY");
+  const requirements = draft.requirements ?? [];
+  const reqHas = (code: string) => requirements.some((r) => r.attributeCode === code);
+  const toggleReq = (code: string, label: string) =>
+    set({
+      requirements: reqHas(code)
+        ? requirements.filter((r) => r.attributeCode !== code)
+        : [...requirements, { attributeCode: code, label }],
+    });
+  const addCustomReq = (label: string) =>
+    set({ requirements: [...requirements, { attributeCode: null, label: label.trim() }] });
+  const removeReq = (i: number) => set({ requirements: requirements.filter((_, idx) => idx !== i) });
 
   // Districts come from the chosen curated city's backend zones (geocoded cities have none).
   const { data: zones = [] } = useQuery({
@@ -699,6 +720,71 @@ export function PostJobScreen({
               {jobAttrGroups.length > 0 && (
                 <SectionCard title={t("postJob.sOffer")} hint={t("postJob.sOfferHint")}>
                   <AttributeFields groups={jobAttrGroups} values={jobAttrValues} setValues={setJobAttrValues} />
+                </SectionCard>
+              )}
+
+              {/* Optional requirements: catalog credentials (auto-matched to applicants' profiles) + custom. */}
+              {draft.industry && (
+                <SectionCard title={t("postJob.sRequirements")} hint={t("postJob.sRequirementsHint")}>
+                  {credentialAttrs.length > 0 && (
+                    <div className="flex flex-col gap-1.5">
+                      {credentialAttrs.map((a) => (
+                        <label key={a.code} className="flex cursor-pointer items-center gap-2 text-[13px] text-ink">
+                          <input
+                            type="checkbox"
+                            checked={reqHas(a.code)}
+                            onChange={() => toggleReq(a.code, a.label)}
+                            className="h-4 w-4 accent-brand-violet"
+                          />
+                          {a.label}
+                        </label>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Custom requirements (chips) */}
+                  {requirements.filter((r) => !r.attributeCode).length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {requirements.map((r, i) =>
+                        r.attributeCode ? null : (
+                          <span key={i} className="inline-flex items-center gap-1 rounded-full bg-ink px-2.5 py-1 text-[12px] font-medium text-on-dark">
+                            {r.label}
+                            <button type="button" onClick={() => removeReq(i)} aria-label="×">
+                              <X className="h-3.5 w-3.5 opacity-70 hover:opacity-100" />
+                            </button>
+                          </span>
+                        ),
+                      )}
+                    </div>
+                  )}
+
+                  <div className="mt-3 flex gap-2">
+                    <input
+                      value={customReqText}
+                      onChange={(e) => setCustomReqText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && customReqText.trim()) {
+                          e.preventDefault();
+                          addCustomReq(customReqText);
+                          setCustomReqText("");
+                        }
+                      }}
+                      placeholder={t("postJob.reqCustomPlaceholder")}
+                      className="min-w-0 flex-1 rounded-tile border border-line-2 bg-surface px-3 py-2 text-sm text-ink outline-none focus:border-ink"
+                    />
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        if (customReqText.trim()) {
+                          addCustomReq(customReqText);
+                          setCustomReqText("");
+                        }
+                      }}
+                      className="shrink-0 rounded-tile px-3 py-2 text-[13px]"
+                    >
+                      {t("postJob.reqAdd")}
+                    </Button>
+                  </div>
                 </SectionCard>
               )}
             </div>

@@ -18,6 +18,7 @@ type ApplicantDto = {
   message: string;
   status: "APPLIED" | "SELECTED" | "REJECTED";
   appliedAt: string;
+  requirements?: { label: string; met: boolean }[];
 };
 
 /** Public specialist profile (subset) used to enrich applicants. */
@@ -215,6 +216,7 @@ function toApplicant(d: ApplicantDto, p?: SpecialistProfileDto): Applicant {
     distanceKm: 0,
     appliedAgo: appliedAgo(d.appliedAt),
     message: d.message,
+    requirements: d.requirements ?? [],
   };
 }
 
