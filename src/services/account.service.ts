@@ -279,6 +279,11 @@ export const accountService = {
     await apiPost(`/api/jobs/${encodeURIComponent(jobId)}/complete`);
     return { ok: true };
   },
+  /** Reopen a filled job to choose a different specialist; releases the previous pick (with a reason). */
+  async reopenJob(jobId: string, reason: string): Promise<{ ok: true }> {
+    await apiPost(`/api/jobs/${encodeURIComponent(jobId)}/reopen`, { reason });
+    return { ok: true };
+  },
   /** Current user's completed-jobs history (both roles) with per-job review status. [] on failure. */
   async getCompletedHistory(): Promise<CompletedJobHistory[]> {
     try {

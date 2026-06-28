@@ -11,6 +11,7 @@ import { MessageComposerDialog, type MessageTarget } from "@/components/messages
 import { jobRateLabel } from "@/lib/jobRate";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
+import { Dialog } from "@/components/ui/Dialog";
 import { OpenDisputeDialog } from "@/components/dispute/OpenDisputeDialog";
 import { MediationView } from "@/components/dispute/MediationView";
 import { ReviewDialog } from "@/components/reviews/ReviewDialog";
@@ -51,6 +52,9 @@ export function JobDetailScreen({ id }: { id: string }) {
   const [lifecycleBusy, setLifecycleBusy] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [boostOpen, setBoostOpen] = useState(false);
+  const [reopenOpen, setReopenOpen] = useState(false);
+  const [reopenReason, setReopenReason] = useState("");
+  const [reopening, setReopening] = useState(false);
 
   // Publish a draft / re-show an unpublished job, or hide an active one — owner lifecycle controls.
   async function setPublished(publish: boolean) {
@@ -82,6 +86,26 @@ export function JobDetailScreen({ id }: { id: string }) {
       ]);
     } finally {
       setSelecting(null);
+    }
+  }
+
+  async function reopen() {
+    if (!reopenReason.trim()) return;
+    setReopening(true);
+    try {
+      await accountService.reopenJob(id, reopenReason.trim());
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["applicants", id] }),
+        queryClient.invalidateQueries({ queryKey: ["job", id] }),
+        queryClient.invalidateQueries({ queryKey: ["myJobs"] }),
+      ]);
+      setReopenOpen(false);
+      setReopenReason("");
+      show({ title: t("jobDetail.reopenedToast") });
+    } catch (e) {
+      show(requestErrorToast(e, t));
+    } finally {
+      setReopening(false);
     }
   }
 
@@ -335,7 +359,15 @@ export function JobDetailScreen({ id }: { id: string }) {
                 </>
               )}
             </Button>
+            <Button
+              variant="outline"
+              onClick={() => setReopenOpen(true)}
+              className="rounded-tile px-5 py-2.5 text-sm"
+            >
+              {t("jobDetail.reopen")}
+            </Button>
           </div>
+          <p className="mt-3 text-[12px] text-ink-4">{t("jobDetail.reopenHint")}</p>
         </section>
       )}
 
@@ -432,7 +464,26 @@ export function JobDetailScreen({ id }: { id: string }) {
         onClose={() => setBoostOpen(false)}
       />
 
-
+      <Dialog open={reopenOpen} onClose={() => setReopenOpen(false)} title={t("jobDetail.reopenTitle")}>
+        <p className="text-sm leading-relaxed text-ink-2">{t("jobDetail.reopenDesc")}</p>
+        <label className="mt-4 block text-[12px] font-semibold text-ink-3">{t("jobDetail.reopenReasonLabel")}</label>
+        <textarea
+          value={reopenReason}
+          onChange={(e) => setReopenReason(e.target.value)}
+          rows={3}
+          maxLength={300}
+          placeholder={t("jobDetail.reopenReasonPlaceholder")}
+          className="mt-1.5 w-full resize-y rounded-tile border border-line-2 bg-surface px-3 py-2.5 text-sm text-ink outline-none transition-colors focus:border-ink placeholder:text-ink-4"
+        />
+        <div className="mt-5 flex justify-end gap-2">
+          <Button variant="outline" onClick={() => setReopenOpen(false)} className="rounded-tile px-4 py-2.5 text-sm">
+            {t("portfolio.cancel")}
+          </Button>
+          <Button variant="dark" onClick={reopen} disabled={reopening || !reopenReason.trim()} className="rounded-tile px-4 py-2.5 text-sm disabled:opacity-40">
+            {reopening ? <Loader2 className="h-4 w-4 animate-spin" /> : t("jobDetail.reopen")}
+          </Button>
+        </div>
+      </Dialog>
     </div>
   );
 }
