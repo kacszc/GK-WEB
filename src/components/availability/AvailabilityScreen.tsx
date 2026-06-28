@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
@@ -32,11 +32,14 @@ export function AvailabilityScreen() {
   const [removedRuleIds, setRemovedRuleIds] = useState<string[]>([]);
   const ruleId = useRef(0);
 
+  const qc = useQueryClient();
   const { data } = useQuery({
     queryKey: ["availability", month.getFullYear(), month.getMonth()],
     queryFn: () => availabilityService.getMonth(month.getFullYear(), month.getMonth()),
     placeholderData: keepPreviousData,
   });
+  // Refresh server state (days + summary) after a write so the calendar and counts stay in sync.
+  const refresh = () => qc.invalidateQueries({ queryKey: ["availability"] });
 
   // Merge server data with local edits (null override = cleared day).
   const daysMap = useMemo(() => {
@@ -78,22 +81,25 @@ export function AvailabilityScreen() {
   };
 
   function setDay(dateIso: string, state: DayState | null) {
+    // Optimistic update for instant feedback, then persist + refetch so the summary/server reconcile.
     setOverrides((o) => ({ ...o, [dateIso]: state }));
-    if (state) void availabilityService.setDay(dateIso, state);
+    if (state) void availabilityService.setDay(dateIso, state).then(refresh);
   }
 
   function addRange(from: string, to: string, state: DayState) {
     const next: Record<string, DayState | null> = {};
     const start = new Date(from);
     const end = new Date(to || from);
+    const writes: Promise<unknown>[] = [];
     for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
       const m = d.getMonth() + 1;
       const day = d.getDate();
       const key = `${d.getFullYear()}-${m < 10 ? "0" : ""}${m}-${day < 10 ? "0" : ""}${day}`;
       next[key] = state;
-      void availabilityService.setDay(key, state);
+      writes.push(availabilityService.setDay(key, state));
     }
     setOverrides((o) => ({ ...o, ...next }));
+    void Promise.allSettled(writes).then(refresh);
   }
 
   async function addRule(rule: Omit<RecurringRule, "id">) {
