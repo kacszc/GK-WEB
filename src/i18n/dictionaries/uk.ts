@@ -1175,6 +1175,7 @@ const uk: Dictionary = {
     applyTitle: "Відгукнутися на вакансію",
     applyMessageLabel: "Повідомлення роботодавцю",
     applyRequirements: "Вимоги вакансії",
+    requirementsTitle: "Вимоги",
     applyReqMissing: "немає в профілі",
     applyPlaceholder: "Представтесь і напишіть, чому ви підходите…",
     applySend: "Надіслати відгук",

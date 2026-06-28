@@ -1175,6 +1175,7 @@ const pl = {
     applyTitle: "Aplikuj na ofertę",
     applyMessageLabel: "Wiadomość do pracodawcy",
     applyRequirements: "Wymagania oferty",
+    requirementsTitle: "Wymagania",
     applyReqMissing: "brak w profilu",
     applyPlaceholder: "Przedstaw się i napisz, dlaczego pasujesz na to zlecenie…",
     applySend: "Wyślij aplikację",

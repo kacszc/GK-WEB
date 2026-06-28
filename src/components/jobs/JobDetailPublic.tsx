@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, MapPin, Coins, Clock, BadgeCheck, CalendarDays } from "lucide-react";
+import { ArrowLeft, MapPin, Coins, Clock, BadgeCheck, CalendarDays, ClipboardCheck } from "lucide-react";
 import { SearchTopbar } from "@/components/search/SearchTopbar";
 import { Button } from "@/components/ui/Button";
 import { ApplyDialog } from "./ApplyDialog";
@@ -98,6 +98,24 @@ export function JobDetailPublic({ id }: { id: string }) {
 
             {job.description && (
               <p className="mt-5 whitespace-pre-line text-[14px] leading-relaxed text-ink-2">{job.description}</p>
+            )}
+
+            {/* Optional requirements the employer set — shown before applying. */}
+            {(job.requirements?.length ?? 0) > 0 && (
+              <div className="mt-6 rounded-tile border border-line-2 bg-subtle p-4">
+                <p className="flex items-center gap-1.5 text-[12px] font-semibold text-ink-3">
+                  <ClipboardCheck className="h-3.5 w-3.5" />
+                  {t("jobs.requirementsTitle")}
+                </p>
+                <ul className="mt-2 flex flex-col gap-1.5">
+                  {job.requirements!.map((r) => (
+                    <li key={r.key} className="flex items-center gap-2 text-[13px] text-ink-2">
+                      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-ink-4" />
+                      {r.label}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
 
             <Button

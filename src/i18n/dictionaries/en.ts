@@ -1175,6 +1175,7 @@ const en: Dictionary = {
     applyTitle: "Apply for this job",
     applyMessageLabel: "Message to the employer",
     applyRequirements: "Job requirements",
+    requirementsTitle: "Requirements",
     applyReqMissing: "not on profile",
     applyPlaceholder: "Introduce yourself and say why you're a good fit…",
     applySend: "Send application",
