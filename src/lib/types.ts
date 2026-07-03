@@ -152,6 +152,7 @@ export type Applicant = {
   rating: number;
   reviews: number;
   rate: number;
+  rateType?: SpecialistRateType; // pay model of `rate` ("hourly"/"monthly")
   district: string;
   distanceKm: number;
   appliedAgo: string;
@@ -181,6 +182,9 @@ export type AuthUser = {
 /** Availability of a specialist. */
 export type Availability = "now" | "week" | "date";
 
+/** Pay model a specialist's own rate is expressed in (subset of JobRateType). */
+export type SpecialistRateType = "hourly" | "monthly";
+
 /** A specialist shown on the search-results screen and the map. */
 export type Specialist = {
   id: string;
@@ -195,7 +199,8 @@ export type Specialist = {
   topRated: boolean;
   district: string; // Warsaw district name
   distanceKm: number;
-  rateFrom: number; // zł/h
+  rateFrom: number; // rate "od" (zł) — per hour or per month depending on rateType
+  rateType?: SpecialistRateType; // pay model (default hourly)
   rating: number; // 0–5
   reviews: number;
   specialties: { label: string; count: number }[];

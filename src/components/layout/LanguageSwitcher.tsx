@@ -1,10 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Globe, Check } from "lucide-react";
+import { Check } from "lucide-react";
 import { Popover } from "@/components/ui/Popover";
 import { useI18n } from "@/i18n/I18nProvider";
-import { locales, localeNames, LOCALE_COOKIE } from "@/i18n/config";
+import { locales, localeNames, localeFlags, LOCALE_COOKIE, type Locale } from "@/i18n/config";
 import { cn } from "@/lib/cn";
 
 const ONE_YEAR = 60 * 60 * 24 * 365;
@@ -33,7 +33,7 @@ export function LanguageSwitcher() {
             open ? "ring-2 ring-ink/10" : "hover:bg-line-2",
           )}
         >
-          <Globe className="h-3.5 w-3.5 text-ink-3" />
+          <span aria-hidden className="text-sm leading-none">{localeFlags[locale as Locale]}</span>
           {locale.toUpperCase()}
         </span>
       )}
@@ -49,11 +49,12 @@ export function LanguageSwitcher() {
                   close();
                 }}
                 className={cn(
-                  "flex w-full items-center justify-between rounded-tile px-3 py-2 text-sm transition-colors hover:bg-muted cursor-pointer",
+                  "flex w-full items-center gap-2 rounded-tile px-3 py-2 text-sm transition-colors hover:bg-muted cursor-pointer",
                   l === locale ? "font-semibold text-ink" : "text-ink-2",
                 )}
               >
-                {localeNames[l]}
+                <span aria-hidden className="text-base leading-none">{localeFlags[l]}</span>
+                <span className="flex-1 text-left">{localeNames[l]}</span>
                 {l === locale && <Check className="h-4 w-4 text-brand-violet" />}
               </button>
             </li>

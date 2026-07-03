@@ -98,6 +98,7 @@ export function WhenFilter({
   return (
     <Popover
       align={align}
+      portal
       triggerClassName={fullWidth ? "w-full" : undefined}
       trigger={({ open }) => (
         <FilterTrigger

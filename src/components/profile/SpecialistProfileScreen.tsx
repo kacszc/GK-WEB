@@ -232,7 +232,9 @@ function Profile({ s, t }: { s: SpecialistProfile; t: (k: string, p?: Record<str
         {/* Contact sidebar */}
         <aside className="lg:sticky lg:top-20 lg:self-start">
           <div className="rounded-panel border border-line-3 bg-surface p-5">
-            <p className="text-[13px] text-ink-3">{t("profile.fromRate", { rate: s.rateFrom })}</p>
+            <p className="text-[13px] text-ink-3">
+              {t(s.rateType === "monthly" ? "profile.fromRateMonthly" : "profile.fromRate", { rate: s.rateFrom })}
+            </p>
             <Button
               variant="gradient"
               onClick={() => open(s)}

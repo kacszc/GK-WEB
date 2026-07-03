@@ -267,7 +267,7 @@ export function JobDetailScreen({ id }: { id: string }) {
                       </div>
                       {a.role && (
                         <p className="text-[12px] text-ink-3">
-                          {a.role} · <MapPin className="inline h-3 w-3" /> {a.district} · ★ {a.rating.toFixed(1)} ({a.reviews}) · {a.rate} zł/h
+                          {a.role} · <MapPin className="inline h-3 w-3" /> {a.district} · ★ {a.rating.toFixed(1)} ({a.reviews}) · {t(a.rateType === "monthly" ? "results.perMonth" : "results.perHour", { rate: a.rate })}
                         </p>
                       )}
                       <p className="mt-2 text-[13px] text-ink-2">{a.message}</p>
@@ -329,7 +329,7 @@ export function JobDetailScreen({ id }: { id: string }) {
             <Avatar name={worker.name} index={worker.avatarIndex} size={48} />
             <div>
               <p className="text-sm font-semibold text-ink">{worker.name}</p>
-              <p className="text-[12px] text-ink-3">{worker.role} · {worker.rate} zł/h</p>
+              <p className="text-[12px] text-ink-3">{worker.role} · {t(worker.rateType === "monthly" ? "results.perMonth" : "results.perHour", { rate: worker.rate })}</p>
             </div>
           </div>
           <div className="mt-5 flex flex-wrap gap-2">

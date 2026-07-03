@@ -116,6 +116,8 @@ export function FilterSidebar({
   const toggleAttr = (token: string) => onPatch({ attributes: toggle(attrTokens, token) });
 
   const distance = schema?.distanceKm ?? { min: 1, max: 50, defaultValue: 25 };
+  // Selected pay model for the rate filter (variant A); defaults to hourly for display.
+  const ratePeriod = filters.rateType ?? "hourly";
 
   return (
     // Plain container so the whole page scrolls naturally (no wheel-trapping). The compact variant
@@ -126,7 +128,14 @@ export function FilterSidebar({
         variant === "full" ? "self-start lg:sticky lg:top-20" : "h-full overflow-y-auto pr-1",
       )}
     >
-      <LocationPicker value={userLocation} onLocate={onLocate} onClear={onClearLocation} />
+      <LocationPicker
+        value={userLocation}
+        onLocate={onLocate}
+        onClear={onClearLocation}
+        radiusKm={filters.maxDistanceKm}
+        onRadiusChange={(km) => onPatch({ maxDistanceKm: km })}
+        radiusBounds={distance}
+      />
 
       {/* Industry → specialization. Clicking an industry selects the whole industry; expand to
           refine by ticking/unticking individual specializations (across industries too). */}
@@ -188,20 +197,8 @@ export function FilterSidebar({
         )}
       </Section>
 
-      {/* Catalog attributes (profession-driven): rendered only once a branża/specjalizacja is picked,
-          so the relevant filters (np. doświadczenie, uprawnienia, języki obce) appear in context. */}
-      {hasAttrScope &&
-        filterableGroups.map((g) => (
-          <Section key={g.code} title={g.label}>
-            <div className="flex flex-col gap-3">
-              {g.attributes.map((a) => (
-                <AttributeFilter key={a.code} attr={a} selected={attrTokens} onToggle={toggleAttr} />
-              ))}
-            </div>
-          </Section>
-        ))}
-
-      {/* Availability status (self-declared by the specialist) — a plain status filter. */}
+      {/* Dostępność — one block: the self-declared status filter + the "when" term you need someone
+          for. The "when" never excludes; it only badges each specialist as busy/unavailable for it. */}
       <Section title={t("results.fAvailability")}>
         {schema?.availability.map((a) => {
           const value = a.code.toLowerCase() as Availability;
@@ -214,49 +211,47 @@ export function FilterSidebar({
             />
           );
         })}
-      </Section>
-
-      {/* When — the term YOU need someone for. Independent of the status filter: it never excludes,
-          it only badges each specialist with their availability for that term (busy / unavailable). */}
-      <Section title={t("filters.when")}>
-        <WhenFilter
-          fullWidth
-          align="start"
-          value={isoToWhen(filters.fromDate, filters.toDate)}
-          onChange={(v) => onPatch(whenToISO(v))}
-        />
-      </Section>
-
-      {/* Distance — clearing the radius (maxDistanceKm = undefined) drops the geo limit so results
-          aren't bound to a city; the slider greys out but still re-enables the limit when dragged. */}
-      <Section title={t("results.fDistance")}>
-        <div className="flex items-center justify-between gap-2">
-          <div className="text-[13px] font-bold text-ink">
-            {filters.maxDistanceKm != null
-              ? t("filters.upTo", { km: filters.maxDistanceKm })
-              : t("results.fAnyDistance")}
-          </div>
-          {filters.maxDistanceKm != null && (
-            <button
-              type="button"
-              onClick={() => onPatch({ maxDistanceKm: undefined })}
-              className="shrink-0 text-[12px] font-medium text-ink-3 hover:text-ink"
-            >
-              {t("results.fAnyDistanceAction")}
-            </button>
-          )}
+        <div className="mt-3">
+          <p className="mb-1.5 text-[12px] font-medium text-ink-2">{t("filters.when")}</p>
+          <WhenFilter
+            fullWidth
+            align="start"
+            value={isoToWhen(filters.fromDate, filters.toDate)}
+            onChange={(v) => onPatch(whenToISO(v))}
+          />
         </div>
-        <input
-          type="range"
-          min={distance.min}
-          max={distance.max}
-          value={filters.maxDistanceKm ?? distance.defaultValue}
-          onChange={(e) => onPatch({ maxDistanceKm: Number(e.target.value) })}
-          className={cn(
-            "mt-1 w-full cursor-pointer accent-brand-violet",
-            filters.maxDistanceKm == null && "opacity-40",
-          )}
-        />
+      </Section>
+
+      {/* Stawka (variant A): pick the pay model, then a from–to range within that period so hourly and
+          monthly amounts never mix. The period only constrains results once an amount is entered. */}
+      <Section title={t("results.fRate")}>
+        <div className="mb-2 inline-flex w-fit self-start rounded-tile border border-line-2 p-0.5">
+          {(["monthly", "hourly"] as const).map((rt) => (
+            <button
+              key={rt}
+              type="button"
+              onClick={() => onPatch({ rateType: rt })}
+              className={cn(
+                "rounded-[8px] px-3 py-1.5 text-[12px] font-semibold transition-colors",
+                ratePeriod === rt ? "bg-ink text-on-dark" : "text-ink-3 hover:text-ink",
+              )}
+            >
+              {t(`filters.ratePeriod.${rt}`)}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-2">
+          <RateInput
+            placeholder={`${t("results.fFrom")} ${ratePeriod === "monthly" ? 3000 : 25}`}
+            value={filters.rateMin}
+            onChange={(v) => onPatch({ rateMin: v })}
+          />
+          <RateInput
+            placeholder={`${t("results.fTo")} ${ratePeriod === "monthly" ? 9000 : 80}`}
+            value={filters.rateMax}
+            onChange={(v) => onPatch({ rateMax: v })}
+          />
+        </div>
       </Section>
 
       {/* Trust Score & reliability are internal-only (hidden from users) — no score sliders here. */}
@@ -275,20 +270,18 @@ export function FilterSidebar({
 
         {showMore && (
           <div className="mt-4 flex flex-col gap-6">
-            <Section title={t("results.fRate")}>
-              <div className="flex items-center gap-2">
-                <RateInput
-                  placeholder={`${t("results.fFrom")} 25`}
-                  value={filters.rateMin}
-                  onChange={(v) => onPatch({ rateMin: v })}
-                />
-                <RateInput
-                  placeholder={`${t("results.fTo")} 80`}
-                  value={filters.rateMax}
-                  onChange={(v) => onPatch({ rateMax: v })}
-                />
-              </div>
-            </Section>
+            {/* Catalog attributes (profession-driven): shown only once a branża/specjalizacja is picked,
+                so the relevant filters (doświadczenie, uprawnienia, języki obce) appear in context. */}
+            {hasAttrScope &&
+              filterableGroups.map((g) => (
+                <Section key={g.code} title={g.label}>
+                  <div className="flex flex-col gap-3">
+                    {g.attributes.map((a) => (
+                      <AttributeFilter key={a.code} attr={a} selected={attrTokens} onToggle={toggleAttr} />
+                    ))}
+                  </div>
+                </Section>
+              ))}
 
             {schema?.kyc && (
               <Section title={t("results.fVerification")}>

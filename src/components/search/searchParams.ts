@@ -35,6 +35,7 @@ export function parseSearchFilters(sp: SearchParamsInput): { filters: Specialist
     maxDistanceKm: numOrUndef(first(sp.maxDistanceKm)),
     // Present (even empty) → user-controlled; absent → default. Lets the user clear it explicitly.
     availability: availabilityRaw != null ? ((csv(availabilityRaw) ?? []) as Availability[]) : DEFAULT_AVAILABILITY,
+    rateType: (first(sp.rateType) as SpecialistFilters["rateType"]) || undefined,
     rateMin: numOrUndef(first(sp.rateMin)),
     rateMax: numOrUndef(first(sp.rateMax)),
     kyc: kyc === "1" || kyc === "true",
@@ -68,6 +69,7 @@ export function serializeSearchFilters(f: SpecialistFilters, view: ResultsView):
   if (f.maxDistanceKm != null) p.set("maxDistanceKm", String(f.maxDistanceKm));
   if (f.rateMin != null) p.set("rateMin", String(f.rateMin));
   if (f.rateMax != null) p.set("rateMax", String(f.rateMax));
+  if (f.rateType && (f.rateMin != null || f.rateMax != null)) p.set("rateType", f.rateType);
   if (f.kyc) p.set("kyc", "1");
   if (f.languages?.length) p.set("languages", f.languages.join(","));
   if (f.attributes?.length) p.set("attr", f.attributes.join(","));

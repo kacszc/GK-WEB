@@ -3,6 +3,7 @@ import type {
   SpecialistSearch,
   Availability,
   SpecialistProfile,
+  SpecialistRateType,
   AttributeGroupDef,
 } from "@/lib/types";
 import { apiGet } from "@/lib/api-client";
@@ -20,6 +21,7 @@ type SpecialistDto = {
   rating: number | null;
   reviews: number | null;
   rateFrom: number;
+  rateType?: "hourly" | "monthly";
   availability: "NOW" | "WEEK" | "DATE";
   distanceKm: number;
   lat: number;
@@ -63,6 +65,7 @@ function toSpecialist(d: SpecialistDto, i: number): Specialist {
     district: d.district,
     distanceKm: d.distanceKm,
     rateFrom: d.rateFrom,
+    rateType: d.rateType ?? "hourly",
     rating: d.rating ?? 0,
     reviews: d.reviews ?? 0,
     specialties: [],
@@ -106,6 +109,8 @@ export type SpecialistFilters = {
   maxDistanceKm?: number;
   availability?: Availability[];
   specialties?: string[];
+  /** Pay model the rate range applies to (variant A) — "hourly"/"monthly"; unset = no period filter. */
+  rateType?: SpecialistRateType;
   rateMin?: number;
   rateMax?: number;
   kyc?: boolean;
@@ -141,8 +146,13 @@ export const specialistsService = {
     if (filters.availability?.length) {
       params.set("availability", filters.availability.map((a) => a.toUpperCase()).join(","));
     }
+    // The period (variant A) only constrains results when a rate bound is set — otherwise picking a
+    // period on mount would silently hide the other pool (e.g. all monthly specialists).
     if (filters.rateMin != null) params.set("rateMin", String(filters.rateMin));
     if (filters.rateMax != null) params.set("rateMax", String(filters.rateMax));
+    if (filters.rateType && (filters.rateMin != null || filters.rateMax != null)) {
+      params.set("rateType", filters.rateType);
+    }
     if (filters.kyc) params.set("kyc", "true");
     if (filters.languages?.length) params.set("languages", filters.languages.join(","));
     if (filters.attributes?.length) params.set("attr", filters.attributes.join(","));

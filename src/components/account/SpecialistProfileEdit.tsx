@@ -8,7 +8,7 @@ import { useI18n } from "@/i18n/I18nProvider";
 import { useToast } from "@/lib/ToastProvider";
 import { requestErrorToast } from "@/lib/errorToast";
 import { accountService, onboardingService, specialistsService, type SpecialistProfileUpdate } from "@/services";
-import type { UserLocation } from "@/lib/types";
+import type { UserLocation, SpecialistRateType } from "@/lib/types";
 import { LocationPicker } from "@/components/search/LocationPicker";
 import { AttributeFields, buildAttributePayload, type AttrVal } from "@/components/attributes/AttributeFields";
 import { Chip, Field, fieldInput } from "@/components/onboarding/parts";
@@ -41,6 +41,7 @@ export function SpecialistProfileEdit() {
   const [name, setName] = useState("");
   const [headline, setHeadline] = useState("");
   const [rate, setRate] = useState<number | undefined>(undefined);
+  const [rateType, setRateType] = useState<SpecialistRateType>("hourly");
   const [location, setLocation] = useState<UserLocation | null>(null);
   const [specs, setSpecs] = useState<string[]>([]);
   const [customs, setCustoms] = useState<{ industryCode: string; label: string }[]>([]);
@@ -56,6 +57,7 @@ export function SpecialistProfileEdit() {
     setName(profile.displayName ?? "");
     setHeadline(profile.headline ?? "");
     setRate(profile.rateFrom || undefined);
+    setRateType(profile.rateType ?? "hourly");
     setSpecs(profile.specializationCodes ?? []);
     setCustoms(profile.customSpecializations ?? []);
     setLangs(profile.languages?.length ? profile.languages : ["pl"]);
@@ -113,6 +115,7 @@ export function SpecialistProfileEdit() {
         lat: location?.lat,
         lng: location?.lng,
         rateFrom: rate,
+        rateType,
         specializationCodes: specs,
         customSpecializations: customs,
         languageCodes: langs,
@@ -166,9 +169,25 @@ export function SpecialistProfileEdit() {
               inputMode="numeric"
               value={rate ?? ""}
               onChange={(e) => setRate(e.target.value === "" ? undefined : Number(e.target.value))}
-              placeholder="np. 50"
+              placeholder={rateType === "monthly" ? "np. 6000" : "np. 50"}
               className={fieldInput}
             />
+            {/* Pay model (variant A): the rate figure is per hour or per month. */}
+            <div className="mt-2 inline-flex w-fit rounded-tile border border-line-2 p-0.5">
+              {(["monthly", "hourly"] as const).map((rt) => (
+                <button
+                  key={rt}
+                  type="button"
+                  onClick={() => setRateType(rt)}
+                  className={cn(
+                    "rounded-[8px] px-3 py-1.5 text-[13px] font-semibold transition-colors",
+                    rateType === rt ? "bg-ink text-on-dark" : "text-ink-3 hover:text-ink",
+                  )}
+                >
+                  {t(`editProfile.rateType.${rt}`)}
+                </button>
+              ))}
+            </div>
           </Field>
           <Field label={t("editProfile.location")}>
             <LocationPicker value={location} onLocate={setLocation} onClear={() => setLocation(null)} />

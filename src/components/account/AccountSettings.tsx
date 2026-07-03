@@ -300,7 +300,10 @@ function YourDetails() {
               <ReadField label={t("auth.name")} value={sp.displayName} />
               <ReadField label={t("account.fieldHeadline")} value={sp.headline} />
               <ReadField label={t("account.fieldLocation")} value={sp.district} />
-              <ReadField label={t("account.fieldRate")} value={sp.rateFrom ? `${sp.rateFrom} zł/h` : null} />
+              <ReadField
+                label={t("account.fieldRate")}
+                value={sp.rateFrom ? t(sp.rateType === "monthly" ? "results.perMonth" : "results.perHour", { rate: sp.rateFrom }) : null}
+              />
               <ReadField label={t("account.fieldSpecializations")} value={sp.specializations.join(", ")} />
               <ReadField
                 label={t("account.fieldLanguages")}

@@ -101,12 +101,13 @@ export function HeaderAuth() {
     );
   }
 
-  // Logged out → log in / sign up.
+  // Logged out → two equal-weight CTAs: outline "Log in" + solid "Sign up" (Glovo/Bolt style), so
+  // returning users have an obvious entry point instead of a faint text link.
   return (
     <>
       <Link
         href="/login"
-        className="hidden text-sm font-medium text-ink-2 hover:text-ink sm:inline"
+        className="inline-flex items-center rounded-full border border-line-2 bg-surface px-4 py-2 text-sm font-semibold text-ink transition-colors hover:bg-muted"
       >
         {t("nav.login")}
       </Link>

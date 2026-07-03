@@ -1,4 +1,4 @@
-import type { MyJob, SavedContact, ActivityItem, ActivityType, Applicant, CompletedJobHistory, JobRateType, WorkerAttributeInput } from "@/lib/types";
+import type { MyJob, SavedContact, ActivityItem, ActivityType, Applicant, CompletedJobHistory, JobRateType, SpecialistRateType, WorkerAttributeInput } from "@/lib/types";
 import { apiGet, apiPost, ApiError } from "@/lib/api-client";
 
 /** Resolve an owner-profile GET, treating "not created yet" (404) as null rather than an error. */
@@ -31,6 +31,7 @@ type SpecialistProfileDto = {
   rating: number | null;
   reviews: number;
   rateFrom: number;
+  rateType?: SpecialistRateType;
 };
 
 /** Relative "applied ago" label from an ISO timestamp. */
@@ -77,6 +78,7 @@ export type MySpecialistProfile = {
   headline: string | null;
   district: string | null;
   rateFrom: number;
+  rateType: SpecialistRateType; // pay model of rateFrom ("hourly"/"monthly")
   specializations: string[]; // localized labels (for display)
   /** Catalog specialization codes (for resuming the wizard without losing the selection). */
   specializationCodes: string[];
@@ -109,6 +111,7 @@ export type SpecialistProfileUpdate = {
   lat?: number;
   lng?: number;
   rateFrom?: number;
+  rateType?: SpecialistRateType;
   specializationCodes: string[];
   customSpecializations: { industryCode: string; label: string }[];
   languageCodes: string[];
@@ -214,6 +217,7 @@ function toApplicant(d: ApplicantDto, p?: SpecialistProfileDto): Applicant {
     rating: p?.rating ?? 0,
     reviews: p?.reviews ?? 0,
     rate: p?.rateFrom ?? 0,
+    rateType: p?.rateType ?? "hourly",
     district: p?.district ?? "",
     distanceKm: 0,
     appliedAgo: appliedAgo(d.appliedAt),

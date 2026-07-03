@@ -9,6 +9,14 @@ export const localeNames: Record<Locale, string> = {
   uk: "Українська",
 };
 
+/** Flag emoji per locale. EN uses the UK flag (the "en" copy is UK-style English). Paired with the
+ * locale code in the trigger so the ambiguous EN flag never stands alone. */
+export const localeFlags: Record<Locale, string> = {
+  pl: "🇵🇱",
+  en: "🇬🇧",
+  uk: "🇺🇦",
+};
+
 export const LOCALE_COOKIE = "NEXT_LOCALE";
 
 export function isLocale(value: unknown): value is Locale {

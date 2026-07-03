@@ -177,7 +177,7 @@ export function SpecialistCard({
           {/* Rate is optional — only show it when the specialist actually set one. */}
           {s.rateFrom > 0 && (
             <span className="text-[15px] font-bold text-ink">
-              {t("results.perHour", { rate: s.rateFrom })}
+              {t(s.rateType === "monthly" ? "results.perMonth" : "results.perHour", { rate: s.rateFrom })}
             </span>
           )}
           {!compact && s.reviews > 0 && (

@@ -23,14 +23,14 @@ export function SearchToggle({
     <div
       role="tablist"
       aria-label="Tryb wyszukiwania"
-      className="relative grid grid-cols-2 rounded-full border border-line-2 bg-surface p-1"
+      className="relative grid grid-cols-2 rounded-full border border-line-2 bg-surface p-1.5 shadow-search"
     >
       {/* Sliding indicator */}
       <span
         aria-hidden
-        className="absolute inset-y-1 left-1 rounded-full bg-ink transition-transform duration-300 ease-out"
+        className="absolute inset-y-1.5 left-1.5 rounded-full bg-ink transition-transform duration-300 ease-out"
         style={{
-          width: "calc(50% - 0.25rem)",
+          width: "calc(50% - 0.375rem)",
           transform: `translateX(${activeIndex * 100}%)`,
         }}
       />
@@ -43,7 +43,7 @@ export function SearchToggle({
             aria-selected={selected}
             onClick={() => onChange(m.id)}
             className={cn(
-              "relative z-10 rounded-full px-5 py-2 text-sm font-semibold transition-colors duration-200 cursor-pointer",
+              "relative z-10 rounded-full px-7 py-2.5 text-[15px] font-semibold transition-colors duration-200 cursor-pointer sm:px-9 sm:text-base",
               selected ? "text-on-dark" : "text-ink-3 hover:text-ink",
             )}
           >

@@ -21,10 +21,19 @@ export function LocationPicker({
   value,
   onLocate,
   onClear,
+  radiusKm,
+  onRadiusChange,
+  radiusBounds,
 }: {
   value: UserLocation | null;
   onLocate: (loc: UserLocation) => void;
   onClear: () => void;
+  /** Optional search radius (km). When {@code onRadiusChange} is provided, a slider is shown right
+   * under the city control once a city is picked — the "zasięg" lives with the location, not in the
+   * filter list. Omitting these props (e.g. the profile base-location picker) hides the slider. */
+  radiusKm?: number;
+  onRadiusChange?: (km: number | undefined) => void;
+  radiusBounds?: { min: number; max: number; defaultValue: number };
 }) {
   const { t, locale } = useI18n();
   const [state, setState] = useState<State>("idle");
@@ -85,11 +94,15 @@ export function LocationPicker({
   const curatedNames = new Set(cities.map((c) => c.name.toLowerCase()));
   const geoOnly = geo.filter((g) => !curatedNames.has(g.name.toLowerCase()));
 
+  const bounds = radiusBounds ?? { min: 1, max: 50, defaultValue: 25 };
+  const showRadius = !!onRadiusChange && !!value;
+
   return (
+    <div className="w-full">
     <Popover
       align="start"
+      portal
       triggerClassName="w-full"
-      panelClassName="w-full"
       trigger={({ open }) => (
         <span
           className={cn(
@@ -207,5 +220,38 @@ export function LocationPicker({
         </div>
       )}
     </Popover>
+
+      {/* Search radius (zasięg) — lives with the location, shown only after a city is picked. Clearing
+          the cap (undefined) drops the geo limit; the slider greys out but re-enables when dragged. */}
+      {showRadius && (
+        <div className="mt-2">
+          <div className="flex items-center justify-between gap-2">
+            <div className="text-[12px] font-semibold text-ink-2">
+              {radiusKm != null ? t("filters.upTo", { km: radiusKm }) : t("results.fAnyDistance")}
+            </div>
+            {radiusKm != null && (
+              <button
+                type="button"
+                onClick={() => onRadiusChange?.(undefined)}
+                className="shrink-0 text-[12px] font-medium text-ink-3 hover:text-ink"
+              >
+                {t("results.fAnyDistanceAction")}
+              </button>
+            )}
+          </div>
+          <input
+            type="range"
+            min={bounds.min}
+            max={bounds.max}
+            value={radiusKm ?? bounds.defaultValue}
+            onChange={(e) => onRadiusChange?.(Number(e.target.value))}
+            className={cn(
+              "mt-1 w-full cursor-pointer accent-brand-violet",
+              radiusKm == null && "opacity-40",
+            )}
+          />
+        </div>
+      )}
+    </div>
   );
 }
