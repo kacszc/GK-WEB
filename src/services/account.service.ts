@@ -99,6 +99,10 @@ export type MySpecialistProfile = {
   published: boolean;
   /** Whether the profile has enough data to be published. */
   complete: boolean;
+  /** Profile completeness 0–100 (backend-computed, weighted checklist). */
+  completeness: number;
+  /** Stable codes of the missing checklist fields (labels via i18n): e.g. "rate", "headline". */
+  missing: string[];
   /** Paid-promotion end (ISO) — null/past = not promoted. */
   promotedUntil?: string | null;
 };

@@ -116,7 +116,7 @@ export function SpecialistCard({
     <>
       {/* Header */}
       <div className="flex items-start gap-3">
-        <Avatar name={s.name} index={s.avatarIndex} size={compact ? 40 : 48} />
+        <Avatar name={s.name} index={s.avatarIndex} industry={s.industry} size={compact ? 40 : 48} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
             <span className="truncate text-sm font-semibold text-ink">{s.name}</span>

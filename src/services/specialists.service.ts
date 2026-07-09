@@ -23,6 +23,7 @@ type SpecialistDto = {
   rateFrom: number;
   rateType?: "hourly" | "monthly";
   availability: "NOW" | "WEEK" | "DATE";
+  industry?: string | null; // primary branża code — industry-themed avatar placeholder
   distanceKm: number;
   lat: number;
   lng: number;
@@ -61,6 +62,7 @@ function toSpecialist(d: SpecialistDto, i: number): Specialist {
     noShowCount: d.noShowCount,
     availability: availabilityFromBackend(d.availability),
     kyc: !!d.kycVerified,
+    industry: d.industry ?? undefined,
     topRated: (d.rating ?? 0) >= 4.8,
     district: d.district,
     distanceKm: d.distanceKm,

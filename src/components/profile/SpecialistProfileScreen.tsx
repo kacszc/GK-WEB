@@ -84,7 +84,7 @@ function Profile({ s, t }: { s: SpecialistProfile; t: (k: string, p?: Record<str
     <>
       {/* Header card */}
       <div className="flex flex-col gap-5 rounded-panel border border-line-3 bg-surface p-6 sm:flex-row sm:items-start">
-        <Avatar name={s.name} index={s.avatarIndex} size={84} />
+        <Avatar name={s.name} index={s.avatarIndex} industry={s.industry} size={84} />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-2xl font-bold tracking-[-0.5px] text-ink">{s.name}</h1>

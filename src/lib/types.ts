@@ -196,6 +196,7 @@ export type Specialist = {
   availability: Availability;
   availableFrom?: string; // for availability === "date"
   kyc: boolean;
+  industry?: string; // primary branża code — drives the industry-themed avatar placeholder
   topRated: boolean;
   district: string; // Warsaw district name
   distanceKm: number;

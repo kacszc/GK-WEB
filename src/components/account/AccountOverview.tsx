@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Briefcase, MessageSquare, Coins, Plus, Search, Compass, Send } from "lucide-react";
 import { accountService, messagesService, applicationsService } from "@/services";
 import { PromoteProfile } from "./PromoteProfile";
+import { ProfileChecklist } from "./ProfileChecklist";
 import { SpecialistOfferStatus } from "./SpecialistOfferStatus";
 import { Skeleton, SkeletonCard } from "@/components/ui/Skeleton";
 import { useAuth } from "@/lib/AuthProvider";
@@ -80,6 +81,8 @@ export function AccountOverview() {
         <>
           {/* Offer visibility — publish/hide/finish the specialist's listing (draft by default). */}
           <SpecialistOfferStatus />
+          {/* Progressive profiling: what was skipped in the wizard gets finished here. */}
+          <ProfileChecklist />
           <div className="grid gap-3 sm:grid-cols-2">
             <Stat icon={<Send className="h-4 w-4" />} value={applications.length} label={t("account.statApplications")} href="/account/applications" />
             <Stat icon={<MessageSquare className="h-4 w-4" />} value={unread} label={t("account.statMessages")} href="/account/messages" />
