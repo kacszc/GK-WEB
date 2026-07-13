@@ -13,6 +13,7 @@ const FIX_HREF: Record<string, string> = {
   specialization: "/onboarding/specialist?resume=1",
   rate: "/account/profile",
   headline: "/account/profile",
+  experience: "/account/profile",
   languages: "/account/profile",
   location: "/account/profile",
   attributes: "/account/profile",

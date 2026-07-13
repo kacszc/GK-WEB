@@ -1,4 +1,4 @@
-import type { MyJob, SavedContact, ActivityItem, ActivityType, Applicant, CompletedJobHistory, JobRateType, SpecialistRateType, WorkerAttributeInput } from "@/lib/types";
+import type { MyJob, SavedContact, ActivityItem, ActivityType, Applicant, CompletedJobHistory, ExperienceRange, JobRateType, SpecialistRateType, WorkerAttributeInput } from "@/lib/types";
 import { apiGet, apiPost, ApiError } from "@/lib/api-client";
 
 /** Resolve an owner-profile GET, treating "not created yet" (404) as null rather than an error. */
@@ -79,6 +79,8 @@ export type MySpecialistProfile = {
   district: string | null;
   rateFrom: number;
   rateType: SpecialistRateType; // pay model of rateFrom ("hourly"/"monthly")
+  /** Experience bucket code (ranges, not exact years); null until set. */
+  experienceRange: ExperienceRange | null;
   specializations: string[]; // localized labels (for display)
   /** Catalog specialization codes (for resuming the wizard without losing the selection). */
   specializationCodes: string[];
@@ -116,6 +118,8 @@ export type SpecialistProfileUpdate = {
   lng?: number;
   rateFrom?: number;
   rateType?: SpecialistRateType;
+  /** Experience bucket; explicit "none" clears the stored value (omit = leave unchanged). */
+  experienceRange?: ExperienceRange | "none";
   specializationCodes: string[];
   customSpecializations: { industryCode: string; label: string }[];
   languageCodes: string[];
@@ -123,6 +127,8 @@ export type SpecialistProfileUpdate = {
   /** Omit (undefined) to leave stored attributes UNCHANGED — backend only replaces when present.
    * Never send an empty array unless you truly mean "clear all". */
   attributes?: WorkerAttributeInput[];
+  /** Publish immediately after saving (offer visible in search) — used by the quick interview. */
+  publish?: boolean;
 };
 
 /** One stored attribute answer (only the field matching the attribute type is set). */

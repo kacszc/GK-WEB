@@ -105,6 +105,11 @@ function Profile({ s, t }: { s: SpecialistProfile; t: (k: string, p?: Record<str
                 {t("results.topRated")}
               </Tag>
             )}
+            {s.experienceRange && (
+              <Tag className="bg-muted text-ink-2">
+                {t("experience.short", { range: t(`experience.${s.experienceRange}`) })}
+              </Tag>
+            )}
             {(s.noShowCount ?? 0) > 0 && (
               <Tag className="bg-[#fdecec] text-[#c0322b]">
                 <AlertTriangle className="h-3 w-3" />

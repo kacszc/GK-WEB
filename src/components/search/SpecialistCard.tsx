@@ -148,6 +148,11 @@ export function SpecialistCard({
             {t("results.topRated")}
           </Tag>
         )}
+        {s.experienceRange && (
+          <Tag className="bg-muted text-ink-2">
+            {t("experience.short", { range: t(`experience.${s.experienceRange}`) })}
+          </Tag>
+        )}
       </div>
 
       {/* Location */}

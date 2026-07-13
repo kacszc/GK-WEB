@@ -17,7 +17,9 @@ import type {
   AttributeGroupDef,
   AttributeDef,
   WorkerAttributeInput,
+  ExperienceRange,
 } from "@/lib/types";
+import { experienceRanges } from "@/lib/types";
 import { OnboardingCard, StepHeading, Field, fieldInput, Chip } from "./parts";
 
 type Step = "basics" | "verify" | "industry" | "spec" | "details" | "done";
@@ -95,6 +97,7 @@ export function WorkerOnboarding({
   const [radiusKm, setRadiusKm] = useState(25);
   const [specs, setSpecs] = useState<string[]>([]);
   const [otherText, setOtherText] = useState(""); // "Inne" — custom role in the chosen industry
+  const [expRange, setExpRange] = useState<ExperienceRange | null>(null); // experience bucket (optional)
   const [langs, setLangs] = useState<string[]>(["pl"]);
   const [langLevels, setLangLevels] = useState<Record<string, string>>({});
   const [attrValues, setAttrValues] = useState<Record<string, AttrVal>>({});
@@ -155,6 +158,7 @@ export function WorkerOnboarding({
     }
     if (existing.languages?.length) setLangs(existing.languages);
     if (existing.languageLevels) setLangLevels({ ...existing.languageLevels });
+    if (existing.experienceRange) setExpRange(existing.experienceRange);
     // Rebuild per-attribute state from stored answers (MULTI_SELECT collapses many rows into options[]).
     const av: Record<string, AttrVal> = {};
     for (const a of existing.attributes ?? []) {
@@ -206,6 +210,7 @@ export function WorkerOnboarding({
         customSpecializations: custom,
         languages: langs,
         languageLevels: langLevels,
+        experienceRange: expRange ?? undefined,
         attributes: buildAttributePayload(attrGroups, attrValues),
       });
       setResult(res);
@@ -343,6 +348,18 @@ export function WorkerOnboarding({
               placeholder={t("onboarding.wOtherPlaceholder")}
               className={`${fieldInput} mt-3`}
             />
+            {/* Experience bucket — deliberate RANGES (never exact years, never age). Optional. */}
+            <p className="mb-2 mt-5 text-[12px] font-semibold text-ink-3">{t("experience.question")}</p>
+            <div className="flex flex-wrap gap-2">
+              {experienceRanges.map((r) => (
+                <Chip
+                  key={r}
+                  label={t(`experience.${r}`)}
+                  selected={expRange === r}
+                  onClick={() => setExpRange(expRange === r ? null : r)}
+                />
+              ))}
+            </div>
             <p className="mb-2 mt-5 text-[12px] font-semibold text-ink-3">{t("onboarding.wLanguages")}</p>
             <div className="flex flex-wrap gap-2">
               {languages.map((l) => (

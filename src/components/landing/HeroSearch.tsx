@@ -13,7 +13,20 @@ function toISODate(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-export function HeroSearch({ mode, seedKeys = [] }: { mode: SearchMode; seedKeys?: Specialization[] }) {
+export function HeroSearch({
+  mode,
+  seedKeys = [],
+  gate,
+  defaultProfessionCode,
+}: {
+  mode: SearchMode;
+  seedKeys?: Specialization[];
+  /** Optional pre-search interceptor (e.g. the signed-out "Szukam pracy" auth prompt). Return true
+   * to swallow the search; call the provided `proceed` later to continue it (e.g. after "skip"). */
+  gate?: (proceed: () => void) => boolean;
+  /** Signed-in specialist's own profession — an EMPTY search defaults to it instead of "everything". */
+  defaultProfessionCode?: string;
+}) {
   // Seed dropdown state from the landing payload so focus shows suggestions with no extra fetch.
   const seedState: SearchSuggestions = useMemo(
     () => ({
@@ -46,6 +59,12 @@ export function HeroSearch({ mode, seedKeys = [] }: { mode: SearchMode; seedKeys
   const router = useRouter();
 
   function goToResults(value: string, opts?: { view?: "map"; professionCode?: string }) {
+    // Let the parent intercept (auth prompt) — it gets a continuation to resume this exact search.
+    if (gate?.(() => runSearch(value, opts))) return;
+    runSearch(value, opts);
+  }
+
+  function runSearch(value: string, opts?: { view?: "map"; professionCode?: string }) {
     const q = value.trim();
     const base = mode === "job" ? "/jobs" : "/search";
     // Remember the search for the "recently viewed" landing section.
@@ -54,6 +73,8 @@ export function HeroSearch({ mode, seedKeys = [] }: { mode: SearchMode; seedKeys
     // A picked profession goes by code (pre-selects the filter); free text goes by q.
     if (opts?.professionCode) params.set("profession", opts.professionCode);
     else if (q) params.set("q", q);
+    // Nothing typed nor picked → default to the signed-in specialist's own profession.
+    else if (defaultProfessionCode) params.set("profession", defaultProfessionCode);
     if (opts?.view) params.set("view", opts.view);
     // Carry the picked city (lat/lng anchor + radius) to results. No city → "Proponowane" (everyone).
     if (where.city) {

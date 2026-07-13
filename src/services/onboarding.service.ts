@@ -83,6 +83,7 @@ export const onboardingService = {
       lng: data.lng,
       specializationCodes: data.specializationCodes, // structured codes → search relation
       customSpecializations: data.customSpecializations, // "Inne" → industry + free-text role
+      experienceRange: data.experienceRange ?? null, // experience bucket (ranges, never age)
       languageCodes: data.languages, // language codes → language filter (back-compat)
       // Languages with proficiency level (code → level); falls back to plain codes server-side.
       languages: data.languages.map((code) => ({ code, level: data.languageLevels?.[code] ?? null })),

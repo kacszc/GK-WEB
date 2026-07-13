@@ -22,6 +22,7 @@ type SpecialistDto = {
   reviews: number | null;
   rateFrom: number;
   rateType?: "hourly" | "monthly";
+  experienceRange?: "under1" | "1to3" | "3to5" | "over5" | null;
   availability: "NOW" | "WEEK" | "DATE";
   industry?: string | null; // primary branża code — industry-themed avatar placeholder
   distanceKm: number;
@@ -68,11 +69,11 @@ function toSpecialist(d: SpecialistDto, i: number): Specialist {
     distanceKm: d.distanceKm,
     rateFrom: d.rateFrom,
     rateType: d.rateType ?? "hourly",
+    experienceRange: d.experienceRange ?? undefined,
     rating: d.rating ?? 0,
     reviews: d.reviews ?? 0,
     specialties: [],
     languages: [],
-    experienceYears: 0,
     lng: d.lng,
     lat: d.lat,
   };

@@ -40,6 +40,7 @@ function useIsDesktop() {
 export function JobsScreen({
   initialQuery,
   initialProfession,
+  initialIndustry,
   initialLocation = null,
   initialMaxDistanceKm,
   initialFromDate,
@@ -47,6 +48,8 @@ export function JobsScreen({
 }: {
   initialQuery: string;
   initialProfession?: string;
+  /** Whole-industry pre-filter (branża code) — used when only the industry is known (mini interview). */
+  initialIndustry?: string;
   initialLocation?: UserLocation | null;
   initialMaxDistanceKm?: number;
   initialFromDate?: string;
@@ -58,6 +61,7 @@ export function JobsScreen({
   const [filters, setFilters] = useState<JobFilters>({
     q: initialQuery || undefined,
     professions: initialProfession ? [initialProfession] : undefined,
+    industries: initialIndustry ? [initialIndustry] : undefined,
     maxDistanceKm: initialMaxDistanceKm,
     fromDate: initialFromDate,
     toDate: initialToDate,

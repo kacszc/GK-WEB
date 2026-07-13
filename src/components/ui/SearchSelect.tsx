@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, Search, Check } from "lucide-react";
+import { ChevronDown, Search, Check, X } from "lucide-react";
 import { Popover } from "@/components/ui/Popover";
 import { cn } from "@/lib/cn";
 
@@ -10,6 +10,7 @@ export type SelectOption = { value: string; label: string };
 /**
  * Searchable select (combobox): a text-field-like trigger that opens a list with a search box on
  * top; typing filters the options. Generic — reuse for city, currency, etc.
+ * Pass `onClear` to make the selection optional: a ✕ appears on the trigger when a value is set.
  */
 export function SearchSelect({
   value,
@@ -18,6 +19,7 @@ export function SearchSelect({
   placeholder,
   searchPlaceholder,
   triggerClassName,
+  onClear,
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -25,6 +27,8 @@ export function SearchSelect({
   placeholder?: string;
   searchPlaceholder?: string;
   triggerClassName?: string;
+  /** Renders a clear (✕) affordance on the trigger when a value is selected. */
+  onClear?: () => void;
 }) {
   const [query, setQuery] = useState("");
   const selected = options.find((o) => o.value === value);
@@ -47,7 +51,31 @@ export function SearchSelect({
           <span className={cn("flex-1 truncate text-left", selected ? "text-ink" : "text-ink-4")}>
             {selected?.label ?? placeholder ?? ""}
           </span>
-          <ChevronDown className={cn("h-4 w-4 shrink-0 text-ink-4 transition-transform", open && "rotate-180")} />
+          {onClear && selected ? (
+            // Not a <button> — the whole trigger already is one (invalid nesting); stop the
+            // propagation so clearing doesn't toggle the dropdown.
+            <span
+              role="button"
+              aria-label="Clear"
+              tabIndex={0}
+              onClick={(e) => {
+                e.stopPropagation();
+                onClear();
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  onClear();
+                }
+              }}
+              className="grid h-5 w-5 shrink-0 place-items-center rounded-full text-ink-4 transition-colors hover:bg-muted hover:text-ink"
+            >
+              <X className="h-3.5 w-3.5" />
+            </span>
+          ) : (
+            <ChevronDown className={cn("h-4 w-4 shrink-0 text-ink-4 transition-transform", open && "rotate-180")} />
+          )}
         </span>
       )}
     >

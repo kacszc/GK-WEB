@@ -185,6 +185,10 @@ export type Availability = "now" | "week" | "date";
 /** Pay model a specialist's own rate is expressed in (subset of JobRateType). */
 export type SpecialistRateType = "hourly" | "monthly";
 
+/** Experience bucket codes — deliberate RANGES (never exact years, never age); labels via i18n. */
+export type ExperienceRange = "under1" | "1to3" | "3to5" | "over5";
+export const experienceRanges: ExperienceRange[] = ["under1", "1to3", "3to5", "over5"];
+
 /** A specialist shown on the search-results screen and the map. */
 export type Specialist = {
   id: string;
@@ -202,11 +206,11 @@ export type Specialist = {
   distanceKm: number;
   rateFrom: number; // rate "od" (zł) — per hour or per month depending on rateType
   rateType?: SpecialistRateType; // pay model (default hourly)
+  experienceRange?: ExperienceRange; // experience bucket (labels via i18n)
   rating: number; // 0–5
   reviews: number;
   specialties: { label: string; count: number }[];
   languages: string[]; // locale-ish codes: pl, en, uk, de, ru
-  experienceYears: number;
   lng: number;
   lat: number;
 };
@@ -442,6 +446,8 @@ export type WorkerOnboardingData = {
   languages: string[];
   /** Proficiency per language code (code → basic/conversational/advanced). */
   languageLevels?: Record<string, string>;
+  /** Experience bucket (ranges by design — never exact years, never age). */
+  experienceRange?: ExperienceRange;
   /** Dynamic attribute answers from the catalog-driven onboarding step. */
   attributes?: WorkerAttributeInput[];
 };

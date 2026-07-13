@@ -18,6 +18,7 @@ export default async function JobsPage({
       <JobsScreen
         initialQuery={first(sp.q) ?? ""}
         initialProfession={first(sp.profession)}
+        initialIndustry={first(sp.industry)}
         initialLocation={parseLocation(sp)}
         initialMaxDistanceKm={Number.isFinite(md) ? md : undefined}
         initialFromDate={first(sp.from)}

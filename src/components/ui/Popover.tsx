@@ -69,7 +69,8 @@ export function Popover({ trigger, children, align = "end", panelClassName, trig
       ref={panelRef}
       style={portal && pos ? { position: "fixed", top: pos.top, left: pos.left, right: pos.right, minWidth: pos.width } : undefined}
       className={cn(
-        "z-50 animate-pop-in rounded-panel border border-line bg-surface p-4 shadow-dropdown",
+        // z above the Dialog overlay (z-[70]) so portaled pickers work inside modals too.
+        "z-[80] animate-pop-in rounded-panel border border-line bg-surface p-4 shadow-dropdown",
         portal ? "" : cn("absolute top-full mt-2", align === "end" ? "right-0" : "left-0"),
         panelClassName,
       )}

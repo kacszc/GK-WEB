@@ -8,7 +8,8 @@ import { useI18n } from "@/i18n/I18nProvider";
 import { useToast } from "@/lib/ToastProvider";
 import { requestErrorToast } from "@/lib/errorToast";
 import { accountService, onboardingService, specialistsService, type SpecialistProfileUpdate } from "@/services";
-import type { UserLocation, SpecialistRateType } from "@/lib/types";
+import type { UserLocation, SpecialistRateType, ExperienceRange } from "@/lib/types";
+import { experienceRanges } from "@/lib/types";
 import { LocationPicker } from "@/components/search/LocationPicker";
 import { AttributeFields, buildAttributePayload, type AttrVal } from "@/components/attributes/AttributeFields";
 import { Chip, Field, fieldInput } from "@/components/onboarding/parts";
@@ -42,6 +43,7 @@ export function SpecialistProfileEdit() {
   const [headline, setHeadline] = useState("");
   const [rate, setRate] = useState<number | undefined>(undefined);
   const [rateType, setRateType] = useState<SpecialistRateType>("hourly");
+  const [expRange, setExpRange] = useState<ExperienceRange | null>(null);
   const [location, setLocation] = useState<UserLocation | null>(null);
   const [specs, setSpecs] = useState<string[]>([]);
   const [customs, setCustoms] = useState<{ industryCode: string; label: string }[]>([]);
@@ -58,6 +60,7 @@ export function SpecialistProfileEdit() {
     setHeadline(profile.headline ?? "");
     setRate(profile.rateFrom || undefined);
     setRateType(profile.rateType ?? "hourly");
+    setExpRange(profile.experienceRange ?? null);
     setSpecs(profile.specializationCodes ?? []);
     setCustoms(profile.customSpecializations ?? []);
     setLangs(profile.languages?.length ? profile.languages : ["pl"]);
@@ -116,6 +119,8 @@ export function SpecialistProfileEdit() {
         lng: location?.lng,
         rateFrom: rate,
         rateType,
+        // Full-state save: a deselected bucket sends the explicit "none" so the backend clears it.
+        experienceRange: expRange ?? "none",
         specializationCodes: specs,
         customSpecializations: customs,
         languageCodes: langs,
@@ -193,6 +198,24 @@ export function SpecialistProfileEdit() {
             <LocationPicker value={location} onLocate={setLocation} onClear={() => setLocation(null)} />
           </Field>
         </div>
+        {/* Experience bucket — deliberate RANGES (never exact years, never age). Optional. */}
+        <Field label={t("experience.label")}>
+          <div className="inline-flex w-fit flex-wrap gap-1 rounded-tile border border-line-2 p-0.5">
+            {experienceRanges.map((r) => (
+              <button
+                key={r}
+                type="button"
+                onClick={() => setExpRange(expRange === r ? null : r)}
+                className={cn(
+                  "rounded-[8px] px-3 py-1.5 text-[13px] font-semibold transition-colors",
+                  expRange === r ? "bg-ink text-on-dark" : "text-ink-3 hover:text-ink",
+                )}
+              >
+                {t(`experience.${r}`)}
+              </button>
+            ))}
+          </div>
+        </Field>
       </section>
 
       {/* Specializations (industry → specs accordion) */}
