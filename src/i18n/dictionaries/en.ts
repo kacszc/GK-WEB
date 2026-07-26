@@ -45,6 +45,9 @@ const en: Dictionary = {
     ivPhotoNote: "Industry avatar — add a photo later",
     ivSave: "Save & search",
     ivSkip: "Skip for now",
+    chooseTitle: "What do you need today?",
+    chooseWorkerDesc: "Browse verified specialists available near you",
+    chooseJobDesc: "See offers matched to you and apply in one click",
   },
   tour: {
     title: "Quick tour",

@@ -16,14 +16,13 @@ function toISODate(d: Date): string {
 export function HeroSearch({
   mode,
   seedKeys = [],
-  gate,
+  appendAuthPrompt,
   defaultProfessionCode,
 }: {
   mode: SearchMode;
   seedKeys?: Specialization[];
-  /** Optional pre-search interceptor (e.g. the signed-out "Szukam pracy" auth prompt). Return true
-   * to swallow the search; call the provided `proceed` later to continue it (e.g. after "skip"). */
-  gate?: (proceed: () => void) => boolean;
+  /** Signed-out job search: carry ?authPrompt=1 so /jobs opens the auth gate OVER the results. */
+  appendAuthPrompt?: boolean;
   /** Signed-in specialist's own profession — an EMPTY search defaults to it instead of "everything". */
   defaultProfessionCode?: string;
 }) {
@@ -59,12 +58,6 @@ export function HeroSearch({
   const router = useRouter();
 
   function goToResults(value: string, opts?: { view?: "map"; professionCode?: string }) {
-    // Let the parent intercept (auth prompt) — it gets a continuation to resume this exact search.
-    if (gate?.(() => runSearch(value, opts))) return;
-    runSearch(value, opts);
-  }
-
-  function runSearch(value: string, opts?: { view?: "map"; professionCode?: string }) {
     const q = value.trim();
     const base = mode === "job" ? "/jobs" : "/search";
     // Remember the search for the "recently viewed" landing section.
@@ -89,6 +82,8 @@ export function HeroSearch({
       params.set("from", toISODate(when.from));
       if (when.to) params.set("to", toISODate(when.to));
     }
+    // Signed-out job search → the results page opens the auth gate over the list.
+    if (appendAuthPrompt && mode === "job") params.set("authPrompt", "1");
     const qs = params.toString();
     router.push(`${base}${qs ? `?${qs}` : ""}`);
   }

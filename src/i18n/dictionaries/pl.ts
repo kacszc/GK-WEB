@@ -44,6 +44,9 @@ const pl = {
     ivPhotoNote: "Awatar branżowy — zdjęcie dodasz później",
     ivSave: "Zapisz wizytówkę i szukaj",
     ivSkip: "Pomiń na razie",
+    chooseTitle: "Czego dziś potrzebujesz?",
+    chooseWorkerDesc: "Przeglądaj zweryfikowanych specjalistów dostępnych w Twojej okolicy",
+    chooseJobDesc: "Zobacz oferty dopasowane do Ciebie i aplikuj jednym kliknięciem",
   },
   tour: {
     title: "Szybki przewodnik",

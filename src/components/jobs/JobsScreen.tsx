@@ -13,6 +13,8 @@ import { Pagination } from "@/components/search/Pagination";
 import { JobsFilterSidebar } from "./JobsFilterSidebar";
 import { JobsMapView } from "./JobsMapView";
 import { ApplyDialog } from "./ApplyDialog";
+import { JobsAuthGate } from "@/components/auth/JobsAuthGate";
+import { useAuth } from "@/lib/AuthProvider";
 import { useJobSearch } from "@/hooks/useJobSearch";
 import type { JobFilters } from "@/services";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -45,6 +47,7 @@ export function JobsScreen({
   initialMaxDistanceKm,
   initialFromDate,
   initialToDate,
+  initialAuthPrompt = false,
 }: {
   initialQuery: string;
   initialProfession?: string;
@@ -54,8 +57,21 @@ export function JobsScreen({
   initialMaxDistanceKm?: number;
   initialFromDate?: string;
   initialToDate?: string;
+  /** Landing carried ?authPrompt=1 (signed-out "Szukam pracy") — open the auth gate over the results. */
+  initialAuthPrompt?: boolean;
 }) {
   const { t } = useI18n();
+  const { user, ready } = useAuth();
+  // Auth gate latch: waits for the auth state, opens once for signed-out visitors, then stays
+  // open until explicitly closed — registering INSIDE it signs the user in, and a user-dependent
+  // condition would slam it shut between the register and interview steps. Render-phase
+  // transition with a guard (same pattern as the seeded states elsewhere) — no effect needed.
+  const [gateState, setGateState] = useState<"pending" | "open" | "closed">(
+    initialAuthPrompt ? "pending" : "closed",
+  );
+  if (gateState === "pending" && ready) {
+    setGateState(user ? "closed" : "open");
+  }
   // No distance cap by default → "Proponowane" (everyone). A limit applies only once the user sets it
   // (or when the landing carried a city + radius).
   const [filters, setFilters] = useState<JobFilters>({
@@ -228,6 +244,20 @@ export function JobsScreen({
       </Dialog>
 
       <ApplyDialog key={applyJob?.id ?? "none"} job={applyJob} onClose={() => setApplyJob(null)} />
+
+      {/* Signed-out "Szukam pracy" gate — over the live proposals, never an empty screen.
+          Saving the mini interview filters the list right behind it. */}
+      <JobsAuthGate
+        open={gateState === "open"}
+        onClose={() => setGateState("closed")}
+        onFinished={(picked) => {
+          setGateState("closed");
+          patch({
+            professions: picked.professionCode ? [picked.professionCode] : undefined,
+            industries: picked.professionCode ? undefined : picked.industryCode ? [picked.industryCode] : undefined,
+          });
+        }}
+      />
     </>
   );
 }

@@ -1,15 +1,11 @@
 "use client";
 
-import { useRef, useState } from "react";
-import Link from "next/link";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { Briefcase } from "lucide-react";
+import { Briefcase, Search, ArrowRight } from "lucide-react";
 import { SearchToggle } from "./SearchToggle";
 import { HeroSearch } from "./HeroSearch";
-import { Dialog } from "@/components/ui/Dialog";
-import { useRouter } from "next/navigation";
-import { QuickRegisterForm } from "@/components/auth/QuickRegisterForm";
-import { QuickInterviewForm, type QuickInterviewResult } from "@/components/auth/QuickInterviewForm";
 import { useAuth } from "@/lib/AuthProvider";
 import { useI18n } from "@/i18n/I18nProvider";
 import { accountService } from "@/services";
@@ -35,46 +31,64 @@ export function Hero({ seedKeys = [] }: { seedKeys?: Specialization[] }) {
   });
   const defaultProfessionCode = myProfile?.specializationCodes?.[0];
 
-  // "Szukam pracy" is the key conversion entry for specialists. A signed-out job SEARCH (the
-  // toggle itself stays free) gets a soft auth gate: quick in-modal registration / login link /
-  // a subtle skip. Skip or a successful registration resumes the intercepted search.
-  const [authPrompt, setAuthPrompt] = useState(false);
-  const [promptView, setPromptView] = useState<"prompt" | "register" | "interview">("prompt");
-  const skippedRef = useRef(false);
-  const pendingSearchRef = useRef<(() => void) | null>(null);
+  // First screen for signed-out visitors: JUST the two big buttons (corridor-tested — the old
+  // toggle looked like buttons but only swapped the headline, so "nothing happened"). Picking
+  // "pracownika" reveals the search panel; picking "pracy" goes straight to the job proposals,
+  // where the auth gate modal shows OVER the results (never on an empty screen).
+  // The choice screen is ALSO the SSR/loading state: real content (h1 + buttons) for bots and
+  // instant paint for the signed-out majority; a signed-in session swaps it for the panel as
+  // soon as auth restores.
+  const showChoice = (!ready || !user) && override === null;
+  const gateJobSearch = !user;
 
-  function jobGate(proceed: () => void): boolean {
-    if (!ready || user || skippedRef.current) return false;
-    pendingSearchRef.current = proceed;
-    setPromptView("prompt");
-    setAuthPrompt(true);
-    return true;
-  }
-
-  function resumeSearch() {
-    setAuthPrompt(false);
-    pendingSearchRef.current?.();
-    pendingSearchRef.current = null;
-  }
-
-  function skipGate() {
-    skippedRef.current = true;
-    resumeSearch();
-  }
-
-  // Interview saved: land on /jobs pre-filtered by what was just picked (profession beats the
-  // whole industry). Nothing picked → just resume the originally intercepted search.
-  function finishInterview(picked: QuickInterviewResult) {
-    if (!picked.professionCode && !picked.industryCode) {
-      resumeSearch();
+  // Signed-out "Szukam pracy" ALWAYS acts the same (stakeholder rule: login or proposals) —
+  // also when flipped via the toggle after picking "pracownika" first.
+  function changeMode(m: SearchMode) {
+    if (m === "job" && ready && !user) {
+      router.push("/jobs?authPrompt=1");
       return;
     }
-    setAuthPrompt(false);
-    pendingSearchRef.current = null;
-    const params = new URLSearchParams();
-    if (picked.professionCode) params.set("profession", picked.professionCode);
-    else if (picked.industryCode) params.set("industry", picked.industryCode);
-    router.push(`/jobs?${params.toString()}`);
+    setOverride(m);
+  }
+
+  if (showChoice) {
+    return (
+      <section className="mx-auto flex w-full max-w-[1280px] flex-col items-center gap-8 px-4 pb-10 pt-12 sm:px-8 sm:pt-20">
+        <h1 className="text-center text-3xl font-bold leading-[1.1] tracking-[-1px] text-ink sm:text-4xl">
+          {t("hero.chooseTitle")}
+        </h1>
+        <div className="grid w-full max-w-[760px] gap-4 sm:grid-cols-2">
+          <button
+            type="button"
+            onClick={() => setOverride("worker")}
+            className="group flex cursor-pointer flex-col gap-3 rounded-card bg-ink p-6 text-left shadow-search transition hover:-translate-y-1 hover:shadow-xl sm:p-8"
+          >
+            <span className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-on-dark">
+              <Search className="h-5 w-5" />
+            </span>
+            <span className="flex items-center gap-2 text-xl font-bold text-on-dark sm:text-2xl">
+              {t("hero.toggleWorker")}
+              <ArrowRight className="h-5 w-5 opacity-0 transition-opacity group-hover:opacity-100" />
+            </span>
+            <span className="text-[13px] leading-snug text-on-dark/70">{t("hero.chooseWorkerDesc")}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => router.push("/jobs?authPrompt=1")}
+            className="group flex cursor-pointer flex-col gap-3 rounded-card border-2 border-line-2 bg-surface p-6 text-left shadow-search transition hover:-translate-y-1 hover:border-ink/30 hover:shadow-xl sm:p-8"
+          >
+            <span className="grid h-11 w-11 place-items-center rounded-full bg-[#eef1ff] text-brand-violet">
+              <Briefcase className="h-5 w-5" />
+            </span>
+            <span className="flex items-center gap-2 text-xl font-bold text-ink sm:text-2xl">
+              {t("hero.toggleJob")}
+              <ArrowRight className="h-5 w-5 opacity-0 transition-opacity group-hover:opacity-100" />
+            </span>
+            <span className="text-[13px] leading-snug text-ink-3">{t("hero.chooseJobDesc")}</span>
+          </button>
+        </div>
+      </section>
+    );
   }
 
   return (
@@ -82,7 +96,7 @@ export function Hero({ seedKeys = [] }: { seedKeys?: Specialization[] }) {
       {user && (
         <p className="-mb-4 text-[13px] font-medium text-ink-3">{t("account.greeting", { name: user.name })}</p>
       )}
-      <SearchToggle mode={mode} onChange={setOverride} />
+      <SearchToggle mode={mode} onChange={changeMode} />
 
       <h1
         key={mode}
@@ -97,74 +111,10 @@ export function Hero({ seedKeys = [] }: { seedKeys?: Specialization[] }) {
       <HeroSearch
         mode={mode}
         seedKeys={seedKeys}
-        gate={mode === "job" ? jobGate : undefined}
+        // Signed-out job searches land on /jobs with the auth-gate modal over the results.
+        appendAuthPrompt={mode === "job" && gateJobSearch}
         defaultProfessionCode={mode === "job" ? defaultProfessionCode : undefined}
       />
-
-      <Dialog
-        open={authPrompt}
-        onClose={() => {
-          // Backdrop/Escape: drop the intercepted search (no silent skip) — next Szukaj asks again.
-          setAuthPrompt(false);
-          pendingSearchRef.current = null;
-        }}
-      >
-        <div className="flex flex-col items-center gap-1 text-center">
-          <span className="mb-2 grid h-14 w-14 place-items-center rounded-full bg-[#eef1ff] text-brand-violet">
-            <Briefcase className="h-7 w-7" />
-          </span>
-          <h2 className="text-xl font-bold tracking-[-0.5px] text-ink">
-            {t(promptView === "register" ? "hero.qrTitle" : promptView === "interview" ? "hero.ivTitle" : "hero.authPromptTitle")}
-          </h2>
-          <p className="max-w-[340px] text-[13px] leading-snug text-ink-3">
-            {t(promptView === "register" ? "hero.qrDesc" : promptView === "interview" ? "hero.ivDesc" : "hero.authPromptDesc")}
-          </p>
-        </div>
-
-        {promptView === "interview" ? (
-          <div className="mt-5">
-            {/* The stakeholder "mini interview": one compact card — saving publishes the profile,
-                skipping just continues the intercepted search (checklist picks up the rest). */}
-            <QuickInterviewForm onDone={finishInterview} onSkip={resumeSearch} />
-          </div>
-        ) : promptView === "prompt" ? (
-          <div className="mt-5 flex flex-col gap-2.5">
-            <button
-              type="button"
-              onClick={() => setPromptView("register")}
-              className="inline-flex w-full cursor-pointer items-center justify-center rounded-tile bg-ink py-3 text-sm font-bold text-on-dark transition-colors hover:bg-ink/90"
-            >
-              {t("hero.authPromptRegister")}
-            </button>
-            <Link
-              href="/login?redirect=/"
-              className="inline-flex w-full items-center justify-center rounded-tile border border-line-2 bg-surface py-3 text-sm font-semibold text-ink transition-colors hover:bg-muted"
-            >
-              {t("hero.authPromptLogin")}
-            </Link>
-            <button
-              type="button"
-              onClick={skipGate}
-              className="mt-1 cursor-pointer text-center text-[13px] font-medium text-ink-4 transition-colors hover:text-ink"
-            >
-              {t("hero.authPromptSkip")}
-            </button>
-          </div>
-        ) : (
-          <div className="mt-5 flex flex-col gap-2.5">
-            {/* Account only — no e-mail verification, no wizard. Next: the compact mini-interview
-                (skippable) so employers can actually find the fresh account. */}
-            <QuickRegisterForm role="specialist" onRegistered={() => setPromptView("interview")} />
-            <button
-              type="button"
-              onClick={() => setPromptView("prompt")}
-              className="cursor-pointer text-center text-[13px] font-medium text-ink-4 transition-colors hover:text-ink"
-            >
-              {t("hero.qrBack")}
-            </button>
-          </div>
-        )}
-      </Dialog>
     </section>
   );
 }

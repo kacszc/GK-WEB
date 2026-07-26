@@ -428,8 +428,7 @@ export function WorkerOnboarding({
                 {t("onboarding.wDoneDesc", { city: baseLocation || "Warszawa" })}
               </p>
             </div>
-            {/* "Zaczynamy" → dashboard, where the platform tour auto-opens (it ends with the
-                role-appropriate next step). */}
+            {/* "Zaczynamy" → dashboard (the platform tour is opt-in there, via "Przewodnik"). */}
             <Button variant="dark" onClick={() => router.push("/account")} className="mt-5 w-full rounded-tile py-3 text-sm">
               {t("tour.finish")}
             </Button>

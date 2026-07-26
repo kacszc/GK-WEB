@@ -23,6 +23,7 @@ export default async function JobsPage({
         initialMaxDistanceKm={Number.isFinite(md) ? md : undefined}
         initialFromDate={first(sp.from)}
         initialToDate={first(sp.to)}
+        initialAuthPrompt={first(sp.authPrompt) === "1"}
       />
       <Footer />
     </>

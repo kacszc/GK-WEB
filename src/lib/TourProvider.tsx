@@ -1,45 +1,30 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { createContext, useContext, useState } from "react";
 import { PlatformTour, type TourAction } from "@/components/onboarding/PlatformTour";
 import { useAuth } from "@/lib/AuthProvider";
 import { useI18n } from "@/i18n/I18nProvider";
 import type { UserRole } from "@/lib/types";
 
-const seenKey = (role: UserRole) => `skill_tour_seen_${role}`;
-/** Pages where the tour may auto-open for a first-time signed-in user (logged-in "home" surfaces). */
-const HOME_PATHS = new Set(["/", "/account"]);
-
 type TourContextValue = { open: () => void };
 const TourContext = createContext<TourContextValue | null>(null);
 
 /**
- * Mounts the platform tour once (app-wide). It auto-opens ONCE per role the first time a signed-in
- * user lands on the landing or /account — so it shows whether or not they finished onboarding, and
- * even if they bailed mid-way. `open()` re-launches it manually (e.g. the /account guide button).
- * The final card carries the role-appropriate next step (employer → post a job, specialist → publish).
+ * Mounts the platform tour once (app-wide). Opt-in only: `open()` launches it (the /account
+ * "Przewodnik" button); it never auto-opens. The final card carries the role-appropriate next
+ * step (employer → post a job, specialist → publish).
  */
 export function TourProvider({ children }: { children: React.ReactNode }) {
   const { user, ready } = useAuth();
   const { t } = useI18n();
-  const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
   const role: UserRole = user?.role === "employer" ? "employer" : "specialist";
 
-  useEffect(() => {
-    if (!ready || !user || typeof window === "undefined") return;
-    if (HOME_PATHS.has(pathname) && !localStorage.getItem(seenKey(role))) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setOpen(true);
-    }
-  }, [pathname, ready, user, role]);
-
-  const close = () => {
-    setOpen(false);
-    if (typeof window !== "undefined") localStorage.setItem(seenKey(role), "1");
-  };
+  // The tour NEVER auto-opens (stakeholder feedback: a forced multi-slide walkthrough is a chore
+  // and localStorage-based "seen once" made it look inconsistent across devices). It's opt-in
+  // only, via the dashboard "Przewodnik" button (`open()`).
+  const close = () => setOpen(false);
 
   const finishActions: TourAction[] =
     role === "employer"
