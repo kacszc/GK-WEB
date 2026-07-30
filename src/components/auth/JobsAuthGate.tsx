@@ -27,7 +27,9 @@ export function JobsAuthGate({
   const [view, setView] = useState<"prompt" | "register" | "interview">("prompt");
 
   return (
-    <Dialog open={open} onClose={onClose}>
+    // Non-dismissible + blurred backdrop: corridor tests showed people reflexively clicking the
+    // offers behind the modal — one visible action only; leaving goes through the explicit "skip".
+    <Dialog open={open} onClose={onClose} dismissible={false} backdrop="blur">
       <div className="flex flex-col items-center gap-1 text-center">
         <span className="mb-2 grid h-14 w-14 place-items-center rounded-full bg-[#eef1ff] text-brand-violet">
           <Briefcase className="h-7 w-7" />

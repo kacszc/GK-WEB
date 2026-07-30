@@ -100,16 +100,9 @@ export function QuickInterviewForm({
   }
 
   return (
+    // Field order is deliberate (stakeholder feedback): skills first — the user invests in
+    // describing what they DO before handing over personal data (name/phone at the end).
     <div className="flex flex-col gap-3">
-      <Field label={t("hero.ivName")}>
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder={t("onboarding.wNamePlaceholder")}
-          className={cn(fieldInput, showErrors && invalid.name && "border-[#e11d48]")}
-        />
-      </Field>
-
       {/* Slim profession picker: branża → zawód, both searchable, optional and clearable (✕). */}
       <div className="grid grid-cols-2 gap-2.5">
         <Field label={t("hero.ivIndustry")}>
@@ -150,33 +143,43 @@ export function QuickInterviewForm({
         <LocationPicker value={location} onLocate={setLocation} onClear={() => setLocation(null)} />
       </Field>
 
-      <div className="grid grid-cols-2 gap-2.5">
-        <Field label={t("hero.ivRate")}>
-          <div className="flex items-center gap-1.5">
-            <input
-              type="number"
-              inputMode="numeric"
-              value={rate ?? ""}
-              onChange={(e) => setRate(e.target.value === "" ? undefined : Number(e.target.value))}
-              placeholder={rateType === "monthly" ? "6000" : "50"}
-              className={cn(fieldInput, "min-w-0 flex-1")}
-            />
-            <div className="inline-flex shrink-0 rounded-tile border border-line-2 p-0.5">
-              {(["monthly", "hourly"] as const).map((rt) => (
-                <button
-                  key={rt}
-                  type="button"
-                  onClick={() => setRateType(rt)}
-                  className={cn(
-                    "rounded-[7px] px-2 py-1 text-[11px] font-semibold transition-colors",
-                    rateType === rt ? "bg-ink text-on-dark" : "text-ink-3 hover:text-ink",
-                  )}
-                >
-                  {t(rt === "hourly" ? "hero.ivPerHour" : "hero.ivPerMonth")}
-                </button>
-              ))}
-            </div>
+      <Field label={t("hero.ivRate")}>
+        <div className="flex items-center gap-1.5">
+          <input
+            type="number"
+            inputMode="numeric"
+            value={rate ?? ""}
+            onChange={(e) => setRate(e.target.value === "" ? undefined : Number(e.target.value))}
+            placeholder={rateType === "monthly" ? "6000" : "50"}
+            className={cn(fieldInput, "min-w-0 flex-1")}
+          />
+          <div className="inline-flex shrink-0 rounded-tile border border-line-2 p-0.5">
+            {(["monthly", "hourly"] as const).map((rt) => (
+              <button
+                key={rt}
+                type="button"
+                onClick={() => setRateType(rt)}
+                className={cn(
+                  "rounded-[7px] px-2 py-1 text-[11px] font-semibold transition-colors",
+                  rateType === rt ? "bg-ink text-on-dark" : "text-ink-3 hover:text-ink",
+                )}
+              >
+                {t(rt === "hourly" ? "hero.ivPerHour" : "hero.ivPerMonth")}
+              </button>
+            ))}
           </div>
+        </div>
+      </Field>
+
+      {/* Personal data last — by the time the user gets here they're already invested. */}
+      <div className="grid grid-cols-2 gap-2.5">
+        <Field label={t("hero.ivName")}>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder={t("onboarding.wNamePlaceholder")}
+            className={cn(fieldInput, showErrors && invalid.name && "border-[#e11d48]")}
+          />
         </Field>
         <Field label={t("hero.ivPhone")}>
           <input

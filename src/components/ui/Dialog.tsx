@@ -16,17 +16,25 @@ export function Dialog({
   onClose,
   title,
   size = "md",
+  dismissible = true,
+  backdrop = "default",
   children,
 }: {
   open: boolean;
   onClose: () => void;
   title?: string;
   size?: keyof typeof sizes;
+  /** When false, backdrop clicks and Escape do nothing — the dialog closes only via its own
+   * buttons. Use for focus-critical flows where a stray click must not dismiss (e.g. auth gate). */
+  dismissible?: boolean;
+  /** "blur" heavily blurs and darkens the page behind — content stays visible as a teaser but
+   * is unreadable and non-distracting (corridor tests: people clicked the background instead). */
+  backdrop?: "default" | "blur";
   children: React.ReactNode;
 }) {
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && dismissible && onClose();
     document.addEventListener("keydown", onKey);
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -34,13 +42,18 @@ export function Dialog({
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = prev;
     };
-  }, [open, onClose]);
+  }, [open, onClose, dismissible]);
 
   if (!open || typeof document === "undefined") return null;
 
   return createPortal(
     <div className="fixed inset-0 z-[70] flex items-end justify-center sm:items-center">
-      <div className="absolute inset-0 animate-fade-in bg-ink/40" onClick={onClose} />
+      <div
+        className={`absolute inset-0 animate-fade-in ${
+          backdrop === "blur" ? "bg-ink/60 backdrop-blur-md" : "bg-ink/40"
+        }`}
+        onClick={dismissible ? onClose : undefined}
+      />
       <div
         className={`relative z-10 max-h-[92dvh] w-full animate-dialog-in overflow-y-auto rounded-t-card border border-line bg-surface p-6 shadow-dropdown sm:rounded-card ${sizes[size]}`}
       >
