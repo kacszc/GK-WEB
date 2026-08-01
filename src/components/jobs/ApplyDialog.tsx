@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Check, X, Loader2 } from "lucide-react";
 import { Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
+import { AuthGateFlow } from "@/components/auth/AuthGateFlow";
 import { VerifyNotice } from "@/components/layout/VerifyNotice";
 import { jobsService, accountService } from "@/services";
 import { jobRateLabel } from "@/lib/jobRate";
@@ -98,14 +99,18 @@ export function ApplyDialog({ job, onClose }: { job: JobPosting | null; onClose:
             </p>
           </div>
           {!user ? (
-            <div className="mt-4 rounded-tile border border-line-2 p-4 text-center">
-              <p className="text-sm text-ink-2">{t("jobs.applyLoginRequired")}</p>
-              <a
-                href="/login"
-                className="mt-3 inline-flex w-full items-center justify-center rounded-tile bg-ink px-4 py-2.5 text-sm font-bold text-on-dark hover:bg-ink/90"
-              >
-                {t("contact.loginCta")}
-              </a>
+            // Signed-out "Aplikuj" → the same quick-register + mini-interview flow as the jobs
+            // gate, inline. Registering re-renders this dialog into the next gate (e-mail
+            // verification — a backend anti-spam requirement for applying). Skip closes.
+            <div className="mt-4">
+              <AuthGateFlow
+                onSkip={onClose}
+                onFinished={() => {
+                  /* user is signed in now — the dialog re-renders into the verify/apply view */
+                }}
+                skipLabel={t("editProfile.cancel")}
+                loginRedirect={typeof window !== "undefined" ? window.location.pathname : "/jobs"}
+              />
             </div>
           ) : !user.emailVerified ? (
             <VerifyNotice variant="panel" message={t("verify.noticeContact")} className="mt-4" />

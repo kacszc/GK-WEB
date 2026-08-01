@@ -26,8 +26,9 @@ type SpecialistDto = {
   availability: "NOW" | "WEEK" | "DATE";
   industry?: string | null; // primary branża code — industry-themed avatar placeholder
   distanceKm: number;
-  lat: number;
-  lng: number;
+  /** Coarse (~1 km) coordinates — search cards only; the DETAIL endpoint carries none (privacy). */
+  lat?: number;
+  lng?: number;
   // Detail-only fields.
   completedJobs?: number;
   memberSince?: number; // year, e.g. 2026 (0 when unknown)
@@ -74,8 +75,9 @@ function toSpecialist(d: SpecialistDto, i: number): Specialist {
     reviews: d.reviews ?? 0,
     specialties: [],
     languages: [],
-    lng: d.lng,
-    lat: d.lat,
+    // Detail responses carry no coordinates (privacy) — 0,0 is fine, the profile page never maps.
+    lng: d.lng ?? 0,
+    lat: d.lat ?? 0,
   };
 }
 

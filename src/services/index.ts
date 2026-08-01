@@ -44,3 +44,5 @@ export { settingsService } from "./settings.service";
 export type { NotificationSettings, ConsentChange } from "./settings.service";
 export { kycService } from "./kyc.service";
 export type { KycStatus } from "./kyc.service";
+export { assistantService } from "./assistant.service";
+export type { ProfileDraft } from "./assistant.service";

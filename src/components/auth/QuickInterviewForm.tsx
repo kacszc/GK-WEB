@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
 import { SearchSelect } from "@/components/ui/SearchSelect";
 import { Avatar } from "@/components/ui/Avatar";
 import { LocationPicker } from "@/components/search/LocationPicker";
 import { Chip, Field, fieldInput } from "@/components/onboarding/parts";
-import { onboardingService, accountService, settingsService } from "@/services";
+import { onboardingService, accountService, settingsService, assistantService } from "@/services";
 import { useAuth } from "@/lib/AuthProvider";
 import { useI18n } from "@/i18n/I18nProvider";
 import { cn } from "@/lib/cn";
@@ -45,6 +45,10 @@ export function QuickInterviewForm({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
+  // Assisted fill: free text → backend extraction → pre-filled fields (user reviews below).
+  const [aiText, setAiText] = useState("");
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiDone, setAiDone] = useState<"ok" | "fail" | null>(null);
 
   const { data: industries = [] } = useQuery({
     queryKey: ["industries"],
@@ -59,6 +63,27 @@ export function QuickInterviewForm({
   // Only the name is required. A profession makes the profile publishable — but it's optional.
   const invalid = { name: !name.trim() };
   const hasErrors = invalid.name;
+
+  /** Send the self-description to the backend and pre-fill whatever it recognized. */
+  async function assistFill() {
+    if (!aiText.trim() || aiBusy) return;
+    setAiBusy(true);
+    setAiDone(null);
+    try {
+      const draft = await assistantService.draftProfile(aiText.trim());
+      if (draft.industry) setIndustry(draft.industry);
+      if (draft.profession) setSpec(draft.profession);
+      if (draft.experienceRange) setExpRange(draft.experienceRange);
+      if (draft.rateFrom) setRate(draft.rateFrom);
+      if (draft.rateType) setRateType(draft.rateType);
+      const anything = !!(draft.industry || draft.profession || draft.experienceRange || draft.rateFrom);
+      setAiDone(anything ? "ok" : "fail");
+    } catch {
+      setAiDone("fail");
+    } finally {
+      setAiBusy(false);
+    }
+  }
 
   async function save() {
     if (hasErrors) {
@@ -103,6 +128,37 @@ export function QuickInterviewForm({
     // Field order is deliberate (stakeholder feedback): skills first — the user invests in
     // describing what they DO before handing over personal data (name/phone at the end).
     <div className="flex flex-col gap-3">
+      {/* Assisted fill (oferteo-style "virtual assistant"): describe yourself in plain words,
+          the backend extracts the fields below — the user reviews before saving. */}
+      <div className="rounded-tile border border-line-2 bg-muted/60 p-3">
+        <p className="mb-1.5 flex items-center gap-1.5 text-[12px] font-semibold text-ink">
+          <Sparkles className="h-3.5 w-3.5 text-brand-violet" />
+          {t("hero.aiTitle")}
+        </p>
+        <textarea
+          value={aiText}
+          onChange={(e) => setAiText(e.target.value)}
+          placeholder={t("hero.aiPlaceholder")}
+          rows={2}
+          maxLength={2000}
+          className="w-full resize-none rounded-tile border border-line-2 bg-surface px-3 py-2 text-sm text-ink outline-none placeholder:text-ink-4 focus:border-ink/40"
+        />
+        <div className="mt-1.5 flex items-center justify-between gap-2">
+          <p className="text-[11px] text-ink-4">
+            {aiDone === "ok" ? t("hero.aiOk") : aiDone === "fail" ? t("hero.aiFail") : ""}
+          </p>
+          <button
+            type="button"
+            onClick={assistFill}
+            disabled={aiBusy || !aiText.trim()}
+            className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-tile bg-ink px-3 py-1.5 text-[12px] font-semibold text-on-dark transition-colors hover:bg-ink/90 disabled:opacity-40"
+          >
+            {aiBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+            {t("hero.aiFill")}
+          </button>
+        </div>
+      </div>
+
       {/* Slim profession picker: branża → zawód, both searchable, optional and clearable (✕). */}
       <div className="grid grid-cols-2 gap-2.5">
         <Field label={t("hero.ivIndustry")}>
