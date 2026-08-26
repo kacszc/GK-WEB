@@ -21,6 +21,7 @@ import type {
 } from "@/lib/types";
 import { experienceRanges } from "@/lib/types";
 import { OnboardingCard, StepHeading, Field, fieldInput, Chip } from "./parts";
+import { AiAssistCard } from "./AiAssistCard";
 
 type Step = "basics" | "verify" | "industry" | "spec" | "details" | "done";
 const emailOk = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
@@ -305,6 +306,22 @@ export function WorkerOnboarding({
         {step === "industry" && (
           <OnboardingCard step={2} total={total} stepLabel={t("onboarding.stepOf", { n: 2, total })}>
             <StepHeading title={t("onboarding.wIndustryTitle")} subtitle={t("onboarding.wIndustrySubtitle")} />
+            {/* Assisted fill: a plain-words self-description pre-picks industry + specialization
+                + experience (applied here and on the next step) — the user reviews the chips. */}
+            <div className="mb-4">
+              <AiAssistCard
+                onDraft={(draft) => {
+                  // A recognized profession always carries its industry (extractor contract).
+                  if (draft.industry) {
+                    setIndustry(draft.industry);
+                    setSpecs(draft.profession ? [draft.profession] : []);
+                    setOtherText("");
+                  }
+                  if (draft.experienceRange) setExpRange(draft.experienceRange);
+                  return !!(draft.industry || draft.experienceRange);
+                }}
+              />
+            </div>
             <p className="mb-2 text-[12px] font-semibold text-ink-3">{t("onboarding.wChooseIndustry")}</p>
             <div className="flex flex-wrap gap-2">
               {industries.map((i) => (
